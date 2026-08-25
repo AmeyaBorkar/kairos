@@ -14,6 +14,14 @@ export {
   ruleIds,
 } from "./classify.js";
 export {
+  type ActionPrice,
+  DEFAULT_RECOVERY_CONFIG,
+  type Decision,
+  decide,
+  type RecoveryConfig,
+  worstActionCostPaise,
+} from "./decide.js";
+export {
   DEFAULT_RECOVERY_MODEL,
   type RecoveryFeatures,
   RecoveryModel,

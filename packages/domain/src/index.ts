@@ -16,6 +16,7 @@ export {
   STOP_REASONS,
   type StopReason,
 } from "./admission.js";
+export { inHoldout, stableDraw } from "./assignment.js";
 export {
   type Attempt,
   type AttemptStatus,
