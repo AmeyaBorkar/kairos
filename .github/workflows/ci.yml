@@ -36,6 +36,9 @@ jobs:
       - name: Lint and format check
         run: pnpm lint
 
+      - name: Workspace dependencies are declared
+        run: pnpm check:deps
+
       - name: Typecheck
         run: pnpm typecheck
 

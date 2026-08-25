@@ -25,6 +25,8 @@
     "@kairos/terminus": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^22.10.0"
+    "@kairos/ledger": "workspace:*",
+    "@types/node": "^22.10.0",
+    "throttlekit": "^1.7.0"
   }
 }
