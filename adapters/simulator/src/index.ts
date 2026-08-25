@@ -1,3 +1,4 @@
+export { type AppliedPlan, type Choice, type ChoiceModel, chooseUnderPlan } from "./choice.js";
 export {
   BASELINE_FAILURES,
   DEGRADATION_FAILURES,
