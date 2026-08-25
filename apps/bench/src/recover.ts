@@ -76,6 +76,14 @@ export interface ArmResult {
   readonly wastedPaise: number;
   /** Refusals by binding axis, from the ledger. */
   readonly refusals: Readonly<Record<string, number>>;
+  /**
+   * Whether the audit chain this arm wrote still hashes end to end.
+   *
+   * The spend and prevention harnesses have always checked this; the recovery one asserted it in
+   * prose and never in code. A chain nobody verifies is a log.
+   */
+  readonly ledgerVerified: boolean;
+  readonly auditRecords: number;
 }
 
 /** One point on the spontaneous-window sweep. */
@@ -452,6 +460,10 @@ function doNothing(truths: readonly Truth[]): ArmResult {
     wastedActions: 0,
     wastedPaise: 0,
     refusals: {},
+    // An arm that takes no action writes no audit records, and an empty chain verifies trivially.
+    // Saying so is better than leaving the field to be read as "we checked".
+    ledgerVerified: true,
+    auditRecords: 0,
   };
 }
 
@@ -805,5 +817,7 @@ function summarise(
     wastedActions: wasted.length,
     wastedPaise: wasted.reduce((sum, a) => sum + a.cost, 0),
     refusals: ledger.countByBinding(),
+    ledgerVerified: ledger.verify().valid,
+    auditRecords: ledger.length,
   };
 }
