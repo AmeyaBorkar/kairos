@@ -6,6 +6,7 @@ import {
   isWorthDoing,
   type ProposedAction,
 } from "./action.js";
+import { BINDING_AXES, isBindingAxis, isStopReason, STOP_REASONS } from "./admission.js";
 import { type Attempt, isFailure, isResolved, isRetryable } from "./attempt.js";
 import { DomainError } from "./brand.js";
 import {
@@ -165,5 +166,29 @@ describe("action", () => {
   it("reports the margin, including when negative", () => {
     expect(expectedNetValue(base)).toBeCloseTo(0.22 * 49_900 - 25, 6);
     expect(expectedNetValue({ ...base, successProbability: 0 })).toBe(-25);
+  });
+});
+
+describe("admission vocabulary", () => {
+  it("recognises every axis it publishes", () => {
+    for (const axis of BINDING_AXES) expect(isBindingAxis(axis)).toBe(true);
+  });
+
+  it("rejects an axis it does not publish", () => {
+    // The ledger and the console read this enum. A typo that silently passed would produce a
+    // refusal reason nothing downstream knows how to render.
+    expect(isBindingAxis("vibes")).toBe(false);
+  });
+
+  it("recognises every stop reason it publishes", () => {
+    for (const reason of STOP_REASONS) expect(isStopReason(reason)).toBe(true);
+    expect(isStopReason("bored")).toBe(false);
+  });
+
+  it("keeps the two vocabularies disjoint", () => {
+    // A stop reason is terminal and an axis is a moment; conflating them in a query would silently
+    // report a permanently dead casualty as one that might succeed later.
+    const axes = new Set<string>(BINDING_AXES);
+    for (const reason of STOP_REASONS) expect(axes.has(reason)).toBe(false);
   });
 });
