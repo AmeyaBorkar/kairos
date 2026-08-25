@@ -10,6 +10,7 @@ export default defineConfig({
     // Production resolution goes through each package's own `exports`.
     alias: {
       "@kairos/domain": pkg("domain"),
+      "@kairos/detect": pkg("detect"),
       "@kairos/ledger": pkg("ledger"),
     },
   },
