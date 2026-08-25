@@ -70,6 +70,17 @@ because the healthy UPI users it nudges land on cards, which fail six times as o
 reported, not netted away. A moderate UPI outage produces **no steer at all** — there is nowhere
 better to send anyone, and a system that steered anyway would cause the loss it exists to prevent.
 
+**Recovery** — against a fixed +1h/+24h/+72h ladder given the same budget, contact cap and quiet
+hours, Kairos recovers **6% less money** and does it with **half the messages** and **43 customers
+lost to opt-outs rather than 153**. Priced at what consent is worth, that is a **72% lower true
+cost**. Brute force finds money; it finds it by spending goodwill nobody put on the invoice. The
+recovery probability is calibrated to **1.6% expected error**, which is the property an
+expected-value gate actually needs — not accuracy, but that 30% means thirty per cent.
+
+A tenth of casualties are held out of treatment entirely, so every recovery figure above is
+*incremental*: 24% of the lost money came back with no help at all, and a system reporting gross
+recovery would be reporting the customer's own behaviour and billing for it.
+
 Design claims that did not survive contact with measurement — each corrected in the open rather than
 quietly:
 
@@ -80,7 +91,15 @@ quietly:
   earn its place (Phase 2);
 - suppression cannot be the primary steering lever, because Razorpay Checkout cannot see a UPI
   payment's issuer — roughly seventy per cent of Indian volume
-  ([ADR 0002](docs/decisions/0002-two-steering-levers-because-checkout-cannot-see-a-upi-issuer.md)).
+  ([ADR 0002](docs/decisions/0002-two-steering-levers-because-checkout-cannot-see-a-upi-issuer.md));
+- the recoverability taxonomy was missing its largest class, and the one it was missing is the one
+  that must be asked exactly once
+  ([ADR 0003](docs/decisions/0003-a-sixth-recoverability-class-for-the-customer-who-must-simply-try-again.md));
+- "retry when the rail heals" is available on about one payment in eight, because everything else
+  needs the customer to enter a PIN
+  ([ADR 0004](docs/decisions/0004-a-retry-is-only-free-when-the-customer-is-not-needed.md));
+- waiting before spending was expected to trade recovery for restraint, and costs nothing at all —
+  it sends fewer messages, wastes far fewer of them, and recovers *more* (Phase 4).
 
 ## Status
 

@@ -169,7 +169,7 @@ Hexagonal. Three rings: a pure core, a set of ports, and adapters that satisfy t
 | `@kairos/domain` | Value types and invariants: `Paise`, `Slice`, `Attempt`, `Outcome`, `Incident`, `Casualty`, `Action`, `Mandate`, `AuditRecord`. Branded types so `Paise` cannot be assigned from a bare number. |
 | `@kairos/detect` | The change detector. `(DetectorState, Observation) → (DetectorState, Verdict)`. Baselines, CUSUM, hysteresis, hierarchical rollup. |
 | `@kairos/policy` | Steering decisions: which rail to move traffic off, by how much, and who is held back as a control. Prices every steer before making it. Holds the rail-health window, which is deliberately *not* the detector's frozen baseline. |
-| `@kairos/recover` | Classification, expected-value gating, playbook selection, next-action scheduling. |
+| `@kairos/recover` | Classification, expected-value gating, action selection, next-action scheduling, and the calibrated recovery-probability model. Also owns the drain loop, which takes every side effect as a port. |
 | `@kairos/terminus` | The governance kernel. Mandates, reservation/reconcile, stopping rules, admission. Wraps `throttlekit`. |
 | `@kairos/ledger` | Hash-chained append and verification. |
 
@@ -205,7 +205,7 @@ what lets the entire system run offline in CI.
 | App | What it is |
 |---|---|
 | `sentry` | Ingests outcomes, runs detection, publishes the current steering plan. Stateless, horizontally scalable. |
-| `recover-worker` | Drains the casualty queue. **Deliberately multi-instance** — this is where a naive budget check would race, and where Terminus earns its place. |
+| `recover-worker` | Drains the casualty queue. **Deliberately multi-instance** — this is where a naive budget check would race, and where Terminus earns its place. Ships in dry-run delivery: every decision real, no message sent. |
 | `checkout` | Demo storefront on Razorpay Checkout whose method configuration is driven by `sentry`. |
 | `console` | Operator view: live rail health, active incidents, which bound is binding, the audit trail. |
 | `bench` | The measurement harness. Runs experiments on fixed seeds, emits the scorecard. |
@@ -417,20 +417,46 @@ different `CasualtyKind`s.
 Keyed on Razorpay's error taxonomy — `error_source`, `error_step`, `error_reason` — into
 recoverability classes:
 
-| Class | Example causes | Action |
-|---|---|---|
-| `transient` | issuer down, gateway timeout, network | Retry **when the rail heals** — we own the detector |
-| `timed` | insufficient funds | Retry at a balance-likely moment (salary cycle, per-customer history) |
-| `customer-action` | card expired, invalid VPA, mandate revoked | Retrying is pointless. Contact with a specific fix-link |
-| `dead` | stolen/blocked card, international not permitted, fraud flag | **Stop.** Do not chase |
-| `unknown` | anything unmapped | One low-cost contact, then stop |
+| Class | Example causes | Action | Share of failures on a healthy rail |
+|---|---|---|---:|
+| `customer-retry` | cancelled collect request, abandoned bank page, wrong PIN or OTP | One ask, then stop | **31%** |
+| `timed` | insufficient funds, wallet empty, credit limit | Retry at a balance-likely moment | 27% |
+| `transient` | issuer down, gateway timeout, network | Retry **when the rail heals** — we own the detector | 24% |
+| `customer-action` | card expired, invalid VPA, mandate revoked | Retrying is pointless. Contact with a specific fix-link | 12% |
+| `dead` | stolen/blocked card, international not permitted, fraud flag | **Stop.** Do not chase | 6% |
+| `unknown` | anything unmapped | One low-cost contact, then stop | — |
+
+`customer-retry` was not in the original five and was added because building the rule table showed
+that the largest bucket of ordinary failure fit none of them — see
+[ADR 0003](decisions/0003-a-sixth-recoverability-class-for-the-customer-who-must-simply-try-again.md).
+The shares are volume-weighted across the modelled Indian mix. During a degradation they collapse:
+**100%** of the excess failures are `transient`, which is the whole reason knowing *which situation
+you are in* is worth more than any improvement to a retry schedule.
 
 **The rule table is deterministic.** Where the taxonomy is unambiguous, an LLM does not get a vote —
 it classifies only the residual, and its output is constrained to the enum above and validated before
 use. Money decisions ride on the deterministic path (P1).
 
-The exact enum values are built from Razorpay's live error-code documentation at implementation time
-rather than assumed here; the table above is the shape, not the contents.
+Two properties of the table matter more than its coverage. It **degrades rather than collapsing** on
+an error nobody has mapped, because `source` and `step` still say who broke it and where, so a code
+Razorpay ships next Tuesday classifies sensibly at reduced confidence instead of falling into the
+residual. And it **carries that confidence** rather than discarding it: a structural guess and an
+exact match produce different recovery probabilities through the same model, so uncertainty about the
+cause becomes reluctance to spend with no special case anywhere.
+
+### Whether we can act on it at all
+
+A class says whether the *failure* could come out differently. It does not say whether Kairos can
+find out without asking the customer, and on Indian rails it usually cannot: a UPI payment needs a
+PIN, a card needs an OTP, netbanking needs a login. Only a payment against standing consent — a
+token, a UPI Autopay mandate, an e-mandate — can be charged again by a server with nobody watching.
+
+So every casualty carries a **retry capability** alongside its class. Where a payment is
+`autonomous`, retrying is a server-to-server call that costs nothing, disturbs nobody and can happen
+at three in the morning. Where it is `requires-customer`, the retry action does not exist and the
+only lever is a message — which costs money, burns a contact allowance, is subject to quiet hours,
+and risks the customer's consent. On a mixed merchant that is **around one payment in eight**. See
+[ADR 0004](decisions/0004-a-retry-is-only-free-when-the-customer-is-not-needed.md).
 
 ### Expected-value gate
 
@@ -446,6 +472,14 @@ and no calibration, because the gate consumes the probability directly.
 This gate is also where the false-positive cost becomes concrete: every action below the line that we
 took anyway is measurable waste.
 
+**`E[cost of action]` is not the postage.** At Indian message prices and Indian order values an SMS
+pays for its own postage above about three rupees, so a gate priced on send cost alone approves
+chasing everybody and is not a gate. What actually stops it is the chance of losing the customer's
+consent to be contacted at all — a cost that appears on no invoice, cannot be reserved against, and
+must not be booked as spend. It is priced in the decision layer and subtracted there. Terminus
+applies its own expected-value test against real money, and that one is deliberately the weaker of
+the two: a budget can only be reconciled against spend that actually leaves the account.
+
 ### Scheduling — the `kairos` part
 
 Every dunning system retries on `chronos`: +1h, +24h, +72h, indifferent to the world. Kairos schedules
@@ -456,6 +490,14 @@ on the cause:
 - `customer-action` → immediate contact, then a bounded ladder
 
 Subject always to quiet hours, DND, and per-customer timezone.
+
+**And subject to waiting.** Before anything is spent on a customer, they are given a window to come
+back unprompted — because a great many of them do, and a message that arrives first is paid for by
+recoveries that would have happened anyway. The harness sweeps that window and finds it costs
+nothing: messages and wasted actions fall with it and incremental recovery does not, because a
+customer who returns unaided closes their own casualty and a transient one asked later is asked when
+its rail is likelier to have healed. Waiting is not the price of restraint here. It is most of the
+product, and it is what the product is named for.
 
 ### Stopping rules — hard, evaluated inside admission
 
@@ -821,7 +863,7 @@ shown.
 | **1 · Detection** | Simulator, CUSUM detector, baselines, hysteresis — and the latency/FAR curve |
 | **2 · Terminus** | Mandates, commitment accounting, stopping rules, audit integration — and the overspend bound, measured against fleet size |
 | **3 · Prevention** | Steering policy, holdout, `sentry` — and the lift measured against a control group |
-| **4 · Recovery** | Classification, EV gate, scheduling, Razorpay actions, `recover-worker` |
+| **4 · Recovery** | Classification, EV gate, scheduling, `recover-worker` — and the incremental recovery measured against a control arm and three baselines |
 | **5 · Proof** | Harness, baselines, scorecard, calibration, `bench.yml` regression gate |
 | **6 · Demonstration** | Console, chaos scenarios, pitch materials |
 
@@ -857,9 +899,10 @@ confidence.
    earliest live reservation's expiry would be tighter, and is not yet built.
 5. **Reservation TTL against real action durations.** A TTL shorter than the action it covers turns a
    bounded reservation into an unaccounted spend — the ledger counts these as orphan settlements and
-   the harness asserts zero, but only against simulated action durations. The real distribution of
-   SMS and gateway latencies is unknown until Phase 4, and the TTL must be set from its tail rather
-   than its median.
+   the harness asserts zero. Phase 4 bounded the *client* side: the Razorpay client carries a
+   whole-call deadline across every retry and clamps a stated `Retry-After`, so a gateway asking for
+   an hour cannot park a worker past its TTL. The real latency distribution of a live SMS provider
+   is still unknown, and the TTL must be set from its tail rather than its median.
 6. ~~**Checkout method configuration limits.**~~ **Answered in Phase 3.** `config.display.hide`
    reaches instrument level, so netbanking banks, card issuers and wallets can be suppressed
    precisely — but a UPI payment's issuer is the customer's own bank and is invisible to Checkout,
@@ -885,6 +928,27 @@ confidence.
    demotion does. The harness sweeps it and the policy is not fragile to it in the direction that
    decides *whether* to steer, but at 90% elasticity the system does three times the collateral
    damage it priced. A live deployment can measure this from its own funnel and should.
-11. **Recovery attribution.** If a customer would have retried unprompted, our contact did not recover
-   that money. The holdout handles this for prevention; recovery needs its own control arm, and it
-   costs us recovered revenue to run one. We run it anyway.
+11. ~~**Recovery attribution.**~~ **Answered in Phase 4.** A tenth of casualties are held out of
+   treatment entirely, and the harness reports incremental recovery — gross minus what the untouched
+   population collected — rather than the gross figure every dunning dashboard shows. The gap is
+   large: on the class that recovers best unaided, nearly nine in ten of the recoveries a message
+   appears to produce were already on their way. It costs real revenue and is run anyway.
+12. **The fixed ladder recovers slightly more money than Kairos does.** Measured: about 6% more
+   incremental revenue, by sending 2.1x the messages and costing 153 customers their consent rather
+   than 43. Whether the trade is worth taking depends entirely on what a merchant thinks consent is
+   worth, and the harness prices it at ₹200 per opt-out on a stated derivation rather than a
+   measurement. A merchant with a real churn model would get a different answer, and the honest claim
+   is that Kairos matches brute force at a third of the damage — not that it beats it.
+13. **The spontaneous window is probably too short.** The sweep says messages and wasted actions fall
+   monotonically with it while incremental recovery does not, so 45 minutes is defensible and two
+   hours looked better. The opt-out counts across the sweep are too noisy for the cheapest row to be
+   stable, so the default was left where it was rather than tuned to one run. Longer windows, and a
+   per-class window, are unmeasured.
+14. **The recovery probability model is blind to the payment method.** It keys on action, class,
+   rail health and attempt ordinal, on the argument that what predicts recovery is what the customer
+   has to do next rather than which rail they did it on. That argument is untested; a real merchant's
+   data would settle it in a week.
+15. **The casualty queue has no durable store.** `CasualtyStore` is an interface with an in-memory
+   implementation and an atomic lease, which is what makes a fleet safe — Terminus's idempotent
+   authority prevents double-*spending* but not double-*sending*. The Postgres implementation is not
+   built, so `recover-worker` today is a single instance holding its own queue.

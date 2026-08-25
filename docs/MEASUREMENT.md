@@ -11,6 +11,10 @@ pnpm bench:detect          # detection curve, ~11s
 pnpm bench:detect:quick    # reduced sweep for CI
 pnpm bench:spend           # overspend under concurrency, ~3s
 pnpm bench:spend:quick     # reduced sweep for CI
+pnpm bench:prevent         # steering lift against a holdout
+pnpm bench:prevent:quick   # reduced sweep for CI
+pnpm bench:recover         # recovery against a control arm and three baselines, ~25s
+pnpm bench:recover:quick   # reduced sweep for CI
 ```
 
 ---
@@ -425,7 +429,162 @@ every refusal — carries a named binding axis.
 
 ---
 
-## Phase 4 onward
+## Phase 4 — Recovery
 
-Not yet measured. Recovery rate against baselines, calibration of `p(recover)`, and false-positive
-cost in rupees land with their phases.
+### What was measured
+
+`pnpm bench:recover`. Four hours of simulated Indian traffic at 300 attempts a minute with two
+injected outages, producing **5,556 casualties worth ₹48,04,504**, then worked for forty days.
+
+Four arms over the same population, the same seed and the same simulated world, so a casualty's fate
+under no intervention is the same fact in all of them. The baselines are given every advantage that
+is not the point of the comparison — the same Terminus mandate, budget, contact cap, and a message
+deferred rather than dropped when it lands in quiet hours. They are denied only Kairos's
+classification, which a naive ladder has not done and must not benefit from.
+
+Kairos schedules on what **its own detector** believes, not on the ground truth the harness holds.
+Anything else would measure a system that already knows when rails break.
+
+### What the casualties are made of
+
+| Class | Casualties | Share |
+|---|---:|---:|
+| `transient` | 2,684 | 48.3% |
+| `customer-retry` | 1,158 | 20.8% |
+| `timed` | 1,057 | 19.0% |
+| `customer-action` | 424 | 7.6% |
+| `dead` | 233 | 4.2% |
+
+Nothing fell through to `unknown`, which is the minimum bar for the measurement to mean anything: a
+classifier that could not name the failures in our own traffic model would be measuring its fallback.
+
+**Only 12.0% of these payments can be charged again without the customer being present.** The class
+the recovery-edge idea exists for is 48% of the casualties; the operation it describes is available
+on an eighth of them. See
+[ADR 0004](decisions/0004-a-retry-is-only-free-when-the-customer-is-not-needed.md).
+
+### The comparison
+
+| Arm | Recovered | Incremental | Postage | Lost | True cost | Messages | Retries | Wasted |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| do nothing | ₹11,39,929 | — | ₹0 | 0 | ₹0 | 0 | 0 | 0 |
+| chronos ladder (+1h, +24h, +72h) | ₹18,82,021 | ₹7,42,092 | ₹2,402 | 153 | ₹33,002 | 12,249 | 0 | 749 |
+| message everyone, immediately | ₹13,05,958 | ₹1,66,029 | ₹1,088 | 67 | ₹14,488 | 5,556 | 0 | 758 |
+| **kairos** | **₹18,36,607** | **₹6,96,678** | **₹642** | **43** | **₹9,242** | 5,719 | 249 | 730 |
+
+**`incremental` is recovery minus what the do-nothing arm collected**, and it is the column no
+dunning dashboard shows. The do-nothing arm recovered ₹11.4 lakh with no help at all — 24% of the
+lost money simply came back — so a system reporting gross recovery would be reporting the customer's
+own behaviour and billing for it.
+
+`true cost` adds the priced value of every customer lost to an opt-out, at ₹200 each. That figure is
+derived rather than measured — a customer with two failed payments a year, a 30% margin and a fifth
+recovery rate is worth roughly ₹150 a year in recoveries, so a few years of consent is a couple of
+hundred rupees — and it is the term that dominates. Postage is almost free; consent is not.
+
+### The result, stated the way it came out
+
+**Kairos recovers about 6% less than the fixed ladder.** Brute force works: messaging every casualty
+three times finds money that thinking about it does not.
+
+It works by sending **2.1× the messages** and costing **153 customers their consent rather than 43**.
+Priced, that is **72% more true cost** for 6% more revenue. The claim worth making is that Kairos
+matches brute force at a third of the damage — not that it beats it.
+
+The immediate-blast arm is the useful control on the other side: one message to everyone, at once,
+recovers only ₹1.66 lakh incremental against the ladder's ₹7.42 lakh. Timing is most of what the
+ladder is doing, and most of what Kairos improves on.
+
+### The spontaneous window, which reversed
+
+The window exists on the argument that a nudge ninety seconds after a cancelled payment is mostly
+paid for by people already reaching for another card — so waiting trades recovery for restraint.
+
+| Window | Incremental | Messages | Wasted | Opt-outs | True cost |
+|---|---:|---:|---:|---:|---:|
+| none | ₹6,78,411 | 6,084 | 1,074 | 56 | ₹11,892 |
+| 5 min | ₹6,68,524 | 6,021 | 993 | 69 | ₹14,781 |
+| 15 min | ₹6,56,834 | 5,914 | 900 | 61 | ₹12,945 |
+| **45 min** (default) | ₹6,96,678 | 5,719 | 730 | 43 | **₹9,242** |
+| 120 min | **₹7,27,726** | **5,404** | **537** | 56 | ₹11,878 |
+
+**There is no trade.** Messages and wasted actions fall monotonically with the window and incremental
+recovery does not fall with them, because the two mechanisms point the same way: a customer who
+returns unaided closes their own casualty and never costs a message, and a transient casualty asked
+later is asked when its rail is likelier to have healed. Waiting two hours rather than none sends
+11% fewer messages, wastes 50% fewer of them, and recovers 7% more.
+
+The 45-minute default was chosen before this table existed and the sweep says it is too short. It was
+left alone rather than tuned to one run, because the opt-out counts are noisy enough that the
+cheapest row is not stable — see open question 13.
+
+### Calibration
+
+5,968 predictions. **Expected calibration error 1.6%**, Brier 0.1404, skill score 0.236.
+
+| Predicted | n | Mean p | Actual | Gap |
+|---|---:|---:|---:|---:|
+| 0–10% | 1,418 | 5.8% | 4.7% | −1.1 |
+| 10–20% | 1,594 | 13.7% | 11.9% | −1.8 |
+| 20–30% | 818 | 24.7% | 23.8% | −0.9 |
+| 30–40% | 505 | 37.6% | 37.8% | +0.2 |
+| 40–50% | 1,379 | 42.5% | 40.6% | −1.9 |
+| 50–60% | 18 | 57.9% | 83.3% | +25.5 |
+| 60–70% | 9 | 64.1% | 66.7% | +2.5 |
+| 70–80% | 2 | 73.4% | 50.0% | −23.4 |
+| 80–90% | 5 | 84.3% | 100.0% | +15.7 |
+| 90–100% | 220 | 94.9% | 99.1% | +4.2 |
+
+The gate multiplies this probability by a rupee amount, so the property that matters is not accuracy
+but whether 30% means thirty per cent. It is within two points across every bin carrying real volume.
+
+The four middle bins are worthless — nine, two and five predictions — and are shown rather than
+hidden, because a calibration curve with its thin bins removed is a curve chosen after seeing the
+answer. The 90–100% bin is the autonomous retries fired on a healed rail, which is exactly the
+population the model should be nearly certain about.
+
+The skill score sits beside the calibration error because a model that repeats the base rate for ever
+is perfectly calibrated and worth nothing.
+
+### The recovery control arm
+
+**2,343 casualties held out of treatment entirely**, of which **₹5,83,753 came back unaided**.
+
+That population costs real recovered revenue and is the only reason any number above has a
+denominator. It answers open question 11.
+
+### Compliance
+
+The audit chain verifies and every admission, allowed or refused, carries a named binding axis. In
+this run Kairos was refused on **no axis at all** — an earlier version was refused 233 times on quiet
+hours, which turned out to be a defect rather than a bound doing its job: the worker acted whenever
+the store said a casualty was due, without re-checking the schedule, so it proposed messages at three
+in the morning that Terminus then had to decline. Deferring reaches the same outcome without the
+wasted pass. The bounds themselves are measured under contention in Phase 2, not here.
+
+### Caveats
+
+1. **Customer behaviour is a model, not an observation** — the same caveat as prevention, and it
+   binds harder here. Spontaneous return rates, nudge uplift, opt-out rates and how quickly somebody
+   replaces an expired card are all invented. Their *ordering* is defensible — a customer who
+   cancelled ninety seconds ago is standing at a checkout, one whose card expired is not — and their
+   levels are guesses.
+2. **The opt-out cost is derived, not measured**, and it decides the whole comparison. At ₹0 the
+   fixed ladder wins outright; at ₹200 Kairos wins on cost and loses on revenue; at ₹1,000 Kairos
+   wins on both. A merchant with a real churn model would get a real answer, and this one is stated
+   where it can be argued with.
+3. **No live gateway or messenger.** The decision path, the composition, the segment counting and the
+   cost accounting are real. The final network call is not made by anything in this repository, and
+   the worker ships in dry-run delivery for that reason.
+4. **One merchant shape.** 14% of payments mandated. A subscription business would get a recovery arm
+   that is nearly free to run and a very different table.
+5. **The rupee totals are the least trustworthy numbers here**, for the same reason as in prevention:
+   they multiply modelled recovery rates by a simulated amount distribution. The *ratios* between
+   arms are the result; the absolute figures illustrate them.
+
+---
+
+## Phase 5 onward
+
+Not yet measured. The consolidated scorecard, the regression gate, and the chaos demonstrations land
+with their phases.
