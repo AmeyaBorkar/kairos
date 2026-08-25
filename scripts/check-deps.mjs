@@ -1,9 +1,11 @@
 #!/usr/bin/env node
 /**
- * Two checks, both answering the same question: does this repository resolve in a clean checkout?
+ * Three checks, all answering the same question: does this repository resolve in a clean checkout?
  *
- * Both mistakes they catch are invisible on a developer machine and fatal in CI, and both have
- * happened here. pnpm gives each package a `node_modules` containing only its declared
+ * The workspace graph is declared in three separate places — each manifest's dependencies, each
+ * tsconfig's `paths`, and the test runner's alias map — and every one of them can disagree with the
+ * others silently. Each mistake is invisible on a developer machine and fatal in CI. pnpm gives each
+ * package a `node_modules` containing only its declared
  * dependencies, but a stale directory left by an earlier install will happily resolve an undeclared
  * import, and Windows path resolution is more forgiving than Linux besides. A leftover `dist` does
  * the same for the typechecker. The result either way is a package that works for the person who
@@ -12,7 +14,7 @@
  *
  * The checks are deliberately crude — a regular expression over `from "..."`, restricted to the
  * workspace's own packages and its handful of runtime dependencies. Anything cleverer would need a
- * module graph, and neither failure is subtle enough to be worth one.
+ * module graph, and none of these failures is subtle enough to be worth one.
  */
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
@@ -144,15 +146,46 @@ for (const [name, pkg] of packages) {
   }
 }
 
+// ── 3. Every core package is aliased for the test runner ──────────────────────────────────────
+//
+// The workspace graph is declared in three places: each manifest's dependencies, each tsconfig's
+// `paths`, and the test runner's alias map. The first two are checked above. The third is what makes
+// `pnpm test` run against *source*, so that a clean checkout needs no build step — and a package
+// missing from it does not fail loudly. It falls through to Node resolution and finds the package's
+// `dist`, which exists on a machine that has built before and nowhere else. That is the same failure
+// the check above exists for, arriving through a different door.
+//
+// Only `packages/` and `adapters/` are covered: an app is an entry point and nothing imports one by
+// name.
+{
+  let config = "";
+  try {
+    config = readFileSync("vitest.config.ts", "utf8");
+  } catch {
+    problems.push("vitest.config.ts is missing, so nothing pins the test runner to source");
+  }
+  const aliased = new Set([...config.matchAll(/"(@kairos\/[a-z-]+)"\s*:/g)].map((m) => m[1]));
+  for (const [name, pkg] of packages) {
+    if (!pkg.dir.startsWith("packages") && !pkg.dir.startsWith("adapters")) continue;
+    if (!aliased.has(name)) {
+      problems.push(
+        `${name}: has no alias in vitest.config.ts, so its tests would resolve its dist`,
+      );
+    }
+  }
+}
+
 if (problems.length > 0) {
   process.stderr.write(`${problems.join("\n")}\n`);
   process.stderr.write(
     "\nAdd each import to the package's dependencies (or devDependencies, if only its tests use " +
-      "it), and each transitively-reached package to its tsconfig `paths`.\n",
+      "it), each transitively-reached package to its tsconfig `paths`, and each core package to " +
+      "the alias map in vitest.config.ts.\n",
   );
   process.exit(1);
 }
 
 process.stdout.write(
-  "every workspace import is declared and every tsconfig path closure is complete\n",
+  "every workspace import is declared, every tsconfig path closure is complete, and every core " +
+    "package resolves to source under test\n",
 );

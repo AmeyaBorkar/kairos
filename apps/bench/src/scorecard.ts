@@ -17,6 +17,7 @@ import {
   invariant,
   type JsonValue,
   type Observation,
+  parseScorecard,
   provenance,
   type Scorecard,
 } from "@kairos/proof";
@@ -78,15 +79,19 @@ export async function runScorecard(p: Profile, onProgress?: Progress): Promise<S
 
   const config: JsonValue = describe(p);
 
-  return {
-    scorecard: {
-      provenance: provenance(p.name, config),
-      metrics,
-      invariants,
-      elapsedMs: Number(process.hrtime.bigint() - started) / 1e6,
-    },
-    detail: { detect, spend, prevent, recover },
-  };
+  // Validated on the way out rather than only on the way in. Four collectors build ids from
+  // template strings — one per scenario, one per arm — and a collision would not throw, it would
+  // quietly shadow: the comparison indexes by id, so the second entry replaces the first and the
+  // claim it carried stops being checked while still appearing to be present. Costs nothing, and a
+  // malformed scorecard should never reach a file.
+  const scorecard = parseScorecard({
+    provenance: provenance(p.name, config),
+    metrics,
+    invariants,
+    elapsedMs: Number(process.hrtime.bigint() - started) / 1e6,
+  });
+
+  return { scorecard, detail: { detect, spend, prevent, recover } };
 }
 
 // ── Detection ─────────────────────────────────────────────────────────────────────────────────
@@ -364,7 +369,7 @@ async function collectPrevent(
  * Attempt-weighted rather than averaged over incidents: an incident that saw forty attempts and one
  * that saw four thousand are not two equal opinions about the same effect.
  */
-function combine(comparisons: readonly Comparison[]): {
+export function combine(comparisons: readonly Comparison[]): {
   lossRateDelta: number;
   savedPaise: number;
 } {

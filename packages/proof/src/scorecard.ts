@@ -79,18 +79,38 @@ const INVARIANT = z.strictObject({
   label: z.string().min(1),
 });
 
+/**
+ * Ids are the join key on both sides of every comparison, so a duplicate is not a cosmetic problem.
+ * The comparison indexes observations by id; a second entry under the same id silently replaces the
+ * first, and the claim it carried is never checked again while still appearing to be present. The
+ * scorecard builds ids from template strings — one per scenario, one per arm — which is exactly the
+ * shape that collides when somebody adds a scenario with a name it already has.
+ */
+function unique<T extends { readonly id: string }>(
+  items: readonly T[],
+  ctx: z.RefinementCtx,
+): void {
+  const seen = new Set<string>();
+  for (const item of items) {
+    if (seen.has(item.id)) {
+      ctx.addIssue({ code: "custom", message: `duplicate id ${item.id}`, path: [item.id] });
+    }
+    seen.add(item.id);
+  }
+}
+
 export const SCORECARD = z.strictObject({
   provenance: PROVENANCE,
-  metrics: z.array(OBSERVATION),
-  invariants: z.array(INVARIANT),
+  metrics: z.array(OBSERVATION).superRefine(unique),
+  invariants: z.array(INVARIANT).superRefine(unique),
   elapsedMs: z.number().nonnegative(),
 });
 
 export const BASELINE = z.strictObject({
   provenance: PROVENANCE,
   blessedAt: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "expected an ISO date, e.g. 2026-08-26"),
-  metrics: z.array(GATED_METRIC),
-  invariants: z.array(INVARIANT),
+  metrics: z.array(GATED_METRIC).superRefine(unique),
+  invariants: z.array(INVARIANT).superRefine(unique),
 });
 
 /** Parse a baseline, throwing a message a human can act on. */

@@ -400,6 +400,21 @@ describe("parseBaseline", () => {
     expect(() => parseBaseline(wrong)).toThrow(/not valid/);
   });
 
+  it("rejects a duplicate metric id, which would silently shadow a claim", () => {
+    // The comparison indexes by id. A second entry under the same id replaces the first, and the
+    // claim it carried stops being checked while still appearing to be present.
+    const clashing = { ...baseline(), metrics: [gated(), gated({ value: 1 })] };
+    expect(() => parseBaseline(clashing)).toThrow(/duplicate id detect\.medianLatencyMs/);
+  });
+
+  it("rejects a duplicate invariant id", () => {
+    const clashing = {
+      ...baseline(),
+      invariants: [invariant.zero("x", "l", 0), invariant.zero("x", "l", 1)],
+    };
+    expect(() => parseBaseline(clashing)).toThrow(/duplicate id x/);
+  });
+
   it("names the offending field", () => {
     const wrong = { ...baseline(), blessedAt: "yesterday" };
     expect(() => parseBaseline(wrong)).toThrow(/blessedAt/);
