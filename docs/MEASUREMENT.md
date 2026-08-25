@@ -279,7 +279,153 @@ than by inference from an absence of activity.
 
 ---
 
-## Phase 3 onward
+## Phase 3 — Prevention
 
-Not yet measured. Recovery rate against baselines, calibration of `p(recover)`, false-positive cost in
-rupees, and the prevention arm's holdout-derived lift all land with their phases.
+### What was measured
+
+Five degradations, each run end to end with detection, steering and a 10% holdout live, at 400
+attempts a minute for 65 minutes. Customers arrive with a preferred rail, are shown whatever their
+arm entitles them to, and choose accordingly. Whatever they end up paying with is what the detector
+observes — so steering changes the evidence the next steering decision is made on, which turns out
+to matter a great deal.
+
+The scenario set is chosen so the answers can differ: precisely suppressible, addressable only by
+demoting a whole method, and one the policy ought to refuse outright.
+
+### The break-even, before any of it runs
+
+The failure rate at which a steer becomes worth making is not a tuning parameter. It falls out of the
+traffic mix, and it is very different depending on what Checkout can name.
+
+| Slice | Lever | Break-even failure rate |
+|---|---|---:|
+| `card/hdfc/visa` | suppress | 13.5% |
+| `netbanking/hdfc` | suppress | 15.0% |
+| `wallet/paytm` | suppress | 16.0% |
+| `upi` (whole method) | demote | 11.5% |
+| `upi/hdfc` | demote | **26.5%** |
+| `upi/sbi` | demote | **33.0%** |
+| `upi/hdfc/phonepe` | demote | 46.5% |
+| `upi/canara/paytm` | demote | **never** |
+
+UPI fails around 2% and cards around 12%. That gap is the whole story: a UPI *issuer* has to be more
+than twice as bad as a precisely-addressable rail before demoting the whole method pays for the
+healthy users it drags along, and a UPI slice carrying 0.4% of volume is never worth demoting a
+quarter of the checkout's traffic for, at any severity. See
+[ADR 0002](decisions/0002-two-steering-levers-because-checkout-cannot-see-a-upi-issuer.md).
+
+### Lift, decomposed by who was exposed
+
+Three populations, because one number would hide the trade. **Exposed** is customers whose preferred
+rail was the one degrading. **Collateral** is customers on the same method whose own rail was fine
+and who were moved anyway. Restricting to the exposed is a legitimate subgroup rather than a
+flattering one: preference is drawn before treatment and is independent of arm, so both arms are
+filtered identically.
+
+| scenario | who | control loss | treated loss | delta | 95% CI | real? |
+|---|---|---:|---:|---:|---:|---|
+| `card/hdfc/visa` → 40%, **suppressed** | exposed | 40.74% | 12.14% | **+28.60%** | ±13.36% | yes |
+| | collateral | 18.44% | 13.13% | +5.30% | ±5.93% | noise |
+| | overall | 6.46% | 4.92% | +1.54% | ±1.39% | yes |
+| `upi/hdfc` → 55%, **demoted** | exposed | 50.00% | 36.78% | **+13.22%** | ±6.12% | yes |
+| | collateral | 4.33% | 6.18% | **−1.85%** | ±1.78% | **harmful** |
+| | overall | 16.81% | 14.47% | +2.34% | ±2.22% | yes |
+| `upi` → 30%, **demoted** | exposed | 26.63% | 22.25% | +4.38% | ±2.97% | yes |
+| | overall | 22.14% | 18.96% | +3.19% | ±2.38% | yes |
+| `upi/hdfc` → 14% | — | *no steer issued* | | | | |
+| `netbanking/hdfc` → 45% | exposed | 32.00% | 15.08% | +16.92% | ±18.70% | noise |
+
+**Suppression is clean.** Removing a broken card instrument cuts the exposed group's loss rate from
+41% to 12%, and the collateral column is consistent with zero — which is what "precisely
+addressable" means arithmetically: nobody else's checkout changed.
+
+**Demotion is not free, and the harness says so.** Demoting UPI to deal with one issuer's outage
+helps the exposed group by 13 points and **measurably harms the bystanders by 1.85 points**, because
+the healthy UPI users it nudges land on cards, which fail six times as often. The net is positive and
+the cost is real. It is reported rather than netted away, because a merchant is entitled to know that
+the remedy has victims.
+
+**Declining is a result.** The 14% UPI scenario produces no steer at all — the destination rails are
+no better than the failing one, so there is nowhere to send anyone. A system that steered anyway
+would be causing the loss it exists to prevent.
+
+**The netbanking row is not a measurement.** That rail carries 2.3% of volume, so a 10% holdout over
+35 minutes yields 25 control observations, and an interval of ±18.7 points around a 16.9-point
+difference concludes nothing. That is [§18](ARCHITECTURE.md) question 3 made concrete rather than
+theoretical, and the arithmetic is worth stating: the control arm accumulates roughly
+`holdout × railShare × attemptsPerMinute × minutes` observations, so measuring a 2% rail at a 10%
+holdout needs either hours or pooling across incidents.
+
+### When the assumption about customers is wrong
+
+Steering rests on a belief nothing in a simulator can supply: how many people take the newly-promoted
+option instead of hunting for their usual one. The policy holds 0.35. Below, only the customers
+change.
+
+| customers actually switch | exposed delta | real? | collateral delta | real? |
+|---:|---:|---|---:|---|
+| 5% | +3.21% | noise | +0.46% | noise |
+| 20% | +11.63% | yes | −1.55% | harmful |
+| 35% *(as believed)* | +13.22% | yes | −1.85% | harmful |
+| 60% | +24.70% | yes | −4.24% | harmful |
+| 90% | +37.91% | yes | −5.55% | harmful |
+
+The benefit and the harm both scale with elasticity, and the ratio stays favourable throughout — the
+policy is not fragile to this assumption in the direction that would matter most, which is being
+wrong about whether to steer at all. What it *is* wrong about is magnitude: at 90% elasticity it does
+three times the collateral damage it priced. **The assumed elasticity is a safety parameter, and
+under-estimating it means under-estimating the harm being done to bystanders.** A live deployment
+could measure it from its own funnel, and should.
+
+### Three corrections the measurement forced
+
+**The detector's altitude is the wrong one to act at.** Rollup reports the coarsest slice that
+explains an outage, which is right for raising one alarm instead of four hundred and wrong for
+acting: an incident reported on `netbanking` cannot be suppressed precisely, while the
+`netbanking/hdfc` inside it can. Steering now prices every candidate inside the incident and takes
+the best. The first version of that search nominated a small *healthy* slice as the target, because
+doing so sweeps the broken traffic into the collateral term where moving customers off it reads as a
+benefit — the arithmetic came out right and the reported target was nonsense.
+
+**A steer must be justified by the people it was called for.** The collateral term can be positive on
+its own, since a chronically poor method's healthy users may be better off elsewhere. Left
+unconstrained, that alone was enough to justify demoting a merchant's netbanking for half an hour
+because one bank had a blip.
+
+**A steer contaminates the estimate that justifies it.** The moment traffic leaves the failing rail
+the evidence disappears, the rail looks healthy, the steer is withdrawn, and traffic returns to a rail
+that is still broken. The blended estimate cannot see through its own intervention. The holdout can:
+control-arm customers go on using the failing rail throughout, so their outcomes measure the world in
+which nothing was done. **The control group is load-bearing for stability, not only for
+measurement** — which is a second, independent reason to pay for one.
+
+The repair is partial. Rate is read from the control arm; *volume* is not, so a suppressed rail's
+apparent share collapses to the holdout fraction and the modelled benefit shrinks with it. The
+direction is safe — the contamination makes the system under-steer, never over-steer — but on a thin
+rail it is enough to make the lever flip from suppression to demotion mid-incident.
+
+### Compliance
+
+Across all ten runs: **10/10 audit chains verify**, **10/10 kept the incident open through the peak**
+of the degradation, and no steer exceeded the configured blast radius. Every admission — including
+every refusal — carries a named binding axis.
+
+### Caveats
+
+1. **Customer behaviour is a model, not an observation.** Both elasticity and abandonment are
+   invented. They are swept rather than assumed, but the absolute lift figures inherit them entirely.
+2. **Not verified against a live Razorpay Checkout.** The rendered configuration is checked against
+   the documented schema in tests, not against a rendered page. `show_default_blocks: false` with a
+   bare-method sequence is the specific behaviour most worth confirming.
+3. **One incident at a time.** Concurrent outages on unrelated rails, and the interaction between two
+   simultaneous steers competing for the same blast-radius budget, are not exercised.
+4. **The rupee totals are the least trustworthy numbers here.** They multiply a measured loss-rate
+   difference by a simulated amount distribution. The loss-rate deltas and their intervals are the
+   results; the rupee figures are illustrations of them.
+
+---
+
+## Phase 4 onward
+
+Not yet measured. Recovery rate against baselines, calibration of `p(recover)`, and false-positive
+cost in rupees land with their phases.

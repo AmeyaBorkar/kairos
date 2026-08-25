@@ -168,7 +168,7 @@ Hexagonal. Three rings: a pure core, a set of ports, and adapters that satisfy t
 |---|---|
 | `@kairos/domain` | Value types and invariants: `Paise`, `Slice`, `Attempt`, `Outcome`, `Incident`, `Casualty`, `Action`, `Mandate`, `AuditRecord`. Branded types so `Paise` cannot be assigned from a bare number. |
 | `@kairos/detect` | The change detector. `(DetectorState, Observation) → (DetectorState, Verdict)`. Baselines, CUSUM, hysteresis, hierarchical rollup. |
-| `@kairos/policy` | Steering decisions. `(Incident[], Config, Customer) → SteeringPlan`. Holdout assignment. |
+| `@kairos/policy` | Steering decisions: which rail to move traffic off, by how much, and who is held back as a control. Prices every steer before making it. Holds the rail-health window, which is deliberately *not* the detector's frozen baseline. |
 | `@kairos/recover` | Classification, expected-value gating, playbook selection, next-action scheduling. |
 | `@kairos/terminus` | The governance kernel. Mandates, reservation/reconcile, stopping rules, admission. Wraps `throttlekit`. |
 | `@kairos/ledger` | Hash-chained append and verification. |
@@ -321,21 +321,68 @@ already alarmed when the real event arrives.
 
 ### The decision
 
-Given active incidents, produce a `SteeringPlan`: for a given customer, an ordered list of payment
-methods with suppressions applied. The checkout consumes it as configuration.
+Given active incidents, produce a `SteeringPlan` per customer: instruments to remove, methods to push
+down, and the order to render. The checkout consumes it as configuration and can ignore it entirely.
+
+### Two levers, because Checkout can only act on what a customer can see
+
+**Corrected after verifying Razorpay Checkout's real capability.** This section previously assumed
+suppression — detect a failing rail, remove it. That works for a minority of Indian volume.
+
+`config.display.hide` reaches instrument level, so a netbanking bank or a card issuer can be removed
+precisely. But **a UPI payment's issuer is the customer's own bank, sitting behind a VPA nobody has
+typed yet**: when HDFC's UPI handle degrades, Checkout cannot tell which of the people on the payment
+page bank with HDFC. There is no instrument to hide, and hiding UPI outright would punish the ninety
+per cent whose bank is fine. Around seventy per cent of modelled traffic sits on slices shaped
+exactly like that.
+
+| Lever | Mechanism | Available for | Costs |
+|---|---|---|---|
+| **suppress** | `display.hide` | slices Checkout can name precisely | abandonment — some customers leave rather than switch |
+| **demote** | `display.sequence`, default blocks off | everything else | collateral — most of the people it moves were fine |
+
+Full reasoning and the measured break-even rates are in
+[ADR 0002](decisions/0002-two-steering-levers-because-checkout-cannot-see-a-upi-issuer.md).
+
+### Every steer is priced before it is made
+
+Steering has been described as moving customers off a broken rail. Arithmetically it is moving
+customers, *some* of whom were on a broken rail, onto a rail that may be worse — and on Indian
+traffic the second half is not hypothetical, because UPI fails around 2% and cards around 12%.
+
+The decision is the sign of one number, the expected change in failure probability across all
+traffic, with three constraints on top:
+
+- **the rescue must justify the steer.** The collateral term can be positive on its own, since a
+  chronically poor method's healthy users may be better off elsewhere. Letting that alone carry a
+  decision means steering on a pretext.
+- **the target may be finer than the incident.** Detection deliberately rolls up to the coarsest
+  slice that explains an outage; acting wants the narrowest slice that does. Every candidate inside
+  an incident is priced and the best one wins, provided it is at least as bad as the incident it
+  refines.
+- **the improvement must clear a margin.** The estimates feeding the decision are noisy, and a steer
+  that is break-even in expectation is a coin flip with somebody's checkout.
 
 ### Bounds — all enforced by Terminus, none by convention
 
-| Bound | Default | Why |
-|---|---|---|
-| `maxSteeredFraction` | 0.90 | The remainder is the mandatory holdout. Without it there is no lift number. |
-| `maxIncidentDurationMs` | 30 min | Steering auto-expires and must be re-affirmed by continuing evidence. A stale steer is a self-inflicted outage. |
-| `minEvidence` | 2 corroborating windows | Never steer on a single alarm. |
-| `methodFloor` | 2 | **Never leave a customer with fewer than two ways to pay.** A checkout with zero methods is a worse outage than the one we are responding to. |
-| `maxConcurrentSteers` | configurable | Global blast radius across all incidents. |
+| Bound | Default | Mechanism | Why |
+|---|---|---|---|
+| `holdoutFraction` | 0.10 | policy | Without it there is no lift number. It is also what keeps the detector's signal alive during a steer |
+| `methodFloor` | 2 | policy, twice | **Never leave a customer with fewer than two ways to pay.** |
+| `maxIncidentDurationMs` | 30 min | Terminus reservation TTL | A steer that is not re-affirmed simply stops |
+| `maxConcurrentSteers` | 3 | Terminus in-flight cap | Global blast radius, shared across instances |
+| `minEvidenceWindows` | 2 | policy | Never steer on a single alarm |
 
-`methodFloor` is the one I would defend hardest. Every other bound limits damage; this one prevents a
-category of failure where the system's own remediation is the outage.
+`methodFloor` is the one to defend hardest. Every other bound limits damage; this one prevents a
+category of failure where the system's own remediation is the outage. It is enforced twice — once
+when a steer is evaluated, and again when a customer's plan is assembled, because that is the only
+place a combination of individually-safe steers can add up to an empty checkout.
+
+**A steer is a Terminus reservation.** Blast radius is the kernel's in-flight cap; the maximum steer
+duration is its reservation TTL; letting the grant lapse *is* the auto-revert. So a `sentry` that
+dies mid-incident leaves a checkout that returns to the merchant's own configuration by itself, with
+no second expiry mechanism to get wrong. A steer moves no money, so it is always abandoned rather
+than settled.
 
 ### Holdout
 
@@ -346,11 +393,14 @@ what stops the analysis from being retrofitted.
 
 ### The hot path is advisory
 
-`checkout` calls `sentry` for a plan with a hard 50 ms timeout. Timeout, error, degraded mode, or
-Kairos being entirely absent all resolve to the merchant's default method order. **Kairos can never
-block or fail a checkout.** This is P2 in its steering direction, and it is the single most important
-production property in the system — the failure mode of a payment-health tool must never be "no
-payments".
+`checkout` calls `sentry` for a plan with a hard 50 ms timeout, and `sentry` enforces the same budget
+on its own side. Timeout, error, an unparseable customer reference, degraded mode, or Kairos being
+entirely absent all resolve to the merchant's default method order. **Kairos can never block or fail
+a checkout.** This is P2 in its steering direction, and it is the single most important production
+property in the system — the failure mode of a payment-health tool must never be "no payments".
+
+A control-arm customer receives a configuration byte-identical to the one they would get with Kairos
+never deployed, which is what makes the holdout a real counterfactual rather than a label.
 
 ---
 
@@ -770,7 +820,7 @@ shown.
 | **0 · Foundation** | Repo, CI, `domain` types, `ledger` with chain verification |
 | **1 · Detection** | Simulator, CUSUM detector, baselines, hysteresis — and the latency/FAR curve |
 | **2 · Terminus** | Mandates, commitment accounting, stopping rules, audit integration — and the overspend bound, measured against fleet size |
-| **3 · Prevention** | Steering policy, holdout, `sentry`, demo checkout — first live steering |
+| **3 · Prevention** | Steering policy, holdout, `sentry` — and the lift measured against a control group |
 | **4 · Recovery** | Classification, EV gate, scheduling, Razorpay actions, `recover-worker` |
 | **5 · Proof** | Harness, baselines, scorecard, calibration, `bench.yml` regression gate |
 | **6 · Demonstration** | Console, chaos scenarios, pitch materials |
@@ -793,9 +843,12 @@ confidence.
    of messages cost the ceiling it converges to reserving the worst case and buys nothing — the
    learner working correctly and finding nothing to find. Kept behind the `Sizer` interface so the
    measurement stays reproducible; not the default.
-3. **Holdout size versus incident length.** Short incidents may not accumulate enough control-arm
-   volume for a tight interval. We may need to pool across incidents and report confidence intervals
-   rather than point estimates — which is more honest anyway.
+3. **Holdout size versus incident length.** ~~May~~ **Does** fail to accumulate enough control-arm
+   volume, and the arithmetic is now concrete: the control arm collects roughly
+   `holdout x railShare x attemptsPerMinute x minutes` observations, so a rail carrying 2% of volume
+   at a 10% holdout yields 25 observations in half an hour and an interval wide enough to conclude
+   nothing. Intervals are reported and a span across zero is called noise rather than quoted at its
+   midpoint. Pooling across incidents is the remaining work.
 4. **What should a budget refusal say when the money is merely held?** Admission distinguishes a
    transient budget refusal (authority is committed to actions in flight, and returns when they
    reconcile) from a terminal one (the money is spent), and reports the reservation TTL as the retry
@@ -807,9 +860,12 @@ confidence.
    the harness asserts zero, but only against simulated action durations. The real distribution of
    SMS and gateway latencies is unknown until Phase 4, and the TTL must be set from its tail rather
    than its median.
-6. **Checkout method configuration limits.** Exactly how far Razorpay Checkout permits programmatic
-   method ordering and suppression needs verification against the live SDK in Phase 3, and the
-   steering vocabulary must be built to what it actually supports.
+6. ~~**Checkout method configuration limits.**~~ **Answered in Phase 3.** `config.display.hide`
+   reaches instrument level, so netbanking banks, card issuers and wallets can be suppressed
+   precisely — but a UPI payment's issuer is the customer's own bank and is invisible to Checkout,
+   which covers around seventy per cent of modelled volume. Hence two levers rather than one; see
+   [ADR 0002](decisions/0002-two-steering-levers-because-checkout-cannot-see-a-upi-issuer.md). Still
+   unverified against a rendered page rather than the documentation.
 7. **Very-low-volume slices are undetectable, and probably always will be.** A slice at ~4 attempts a
    minute cannot carry enough evidence to separate a broken rail from an unlucky run. Parent-slice
    coverage and the recovery arm bound the damage; whether that is sufficient is a question for a
@@ -818,6 +874,17 @@ confidence.
    its parent has accumulated enough evidence, so an issuer-wide problem is briefly reported as an
    app-specific one and only rolled up afterwards. A grace delay before emitting a child alarm would
    fix it; whether the added latency is worth the precision is unmeasured.
-9. **Recovery attribution.** If a customer would have retried unprompted, our contact did not recover
+9. **Steering contaminates the estimate that justifies it, and the repair is only half done.** Rate
+   is read from the control arm, which is unbiased; *volume* is not, so a suppressed rail's apparent
+   share collapses to the holdout fraction and the modelled benefit shrinks with it. The direction is
+   safe — it makes the system under-steer, never over-steer — but on a thin rail it is enough to make
+   the lever flip from suppression to demotion mid-incident. Estimating counterfactual volume from
+   the control arm needs the holdout fraction and breaks down with several simultaneous steers.
+10. **Switch elasticity is assumed, not measured.** How many customers take a newly-promoted method
+   is a fact about people that no simulator can supply, and it sets how much collateral harm a
+   demotion does. The harness sweeps it and the policy is not fragile to it in the direction that
+   decides *whether* to steer, but at 90% elasticity the system does three times the collateral
+   damage it priced. A live deployment can measure this from its own funnel and should.
+11. **Recovery attribution.** If a customer would have retried unprompted, our contact did not recover
    that money. The holdout handles this for prevention; recovery needs its own control arm, and it
    costs us recovered revenue to run one. We run it anyway.

@@ -63,10 +63,24 @@ from 1 to 64: **₹0 over, 0 violations, ≥99.6% of the budget still spent.** T
 `maxInFlight × (maxActionCost − reservation)` — both terms are mandate fields, neither is the worker
 count.
 
-Two design claims did not survive contact with measurement, and both corrections are recorded rather
-than quietly applied: the detector's threshold was wrong by a wide margin, and the ThrottleKit
-mechanism named for the campaign budget turned out to be the wrong one
-([ADR 0001](docs/decisions/0001-commitment-accounting-over-throttlekits-store.md)).
+**Steering** — suppressing a broken card instrument cuts the loss rate for exposed customers from
+**41% to 12%**, with no measurable effect on anyone else. Demoting UPI to deal with one issuer's
+outage helps exposed customers by **13 points** and **measurably harms bystanders by 1.85 points**,
+because the healthy UPI users it nudges land on cards, which fail six times as often. That cost is
+reported, not netted away. A moderate UPI outage produces **no steer at all** — there is nowhere
+better to send anyone, and a system that steered anyway would cause the loss it exists to prevent.
+
+Design claims that did not survive contact with measurement — each corrected in the open rather than
+quietly:
+
+- the detector's threshold was wrong by a wide margin (Phase 1);
+- the ThrottleKit mechanism named for the campaign budget was the wrong one
+  ([ADR 0001](docs/decisions/0001-commitment-accounting-over-throttlekits-store.md));
+- reserving the worst case does *not* sterilise a lifetime budget, so the reservation learner did not
+  earn its place (Phase 2);
+- suppression cannot be the primary steering lever, because Razorpay Checkout cannot see a UPI
+  payment's issuer — roughly seventy per cent of Indian volume
+  ([ADR 0002](docs/decisions/0002-two-steering-levers-because-checkout-cannot-see-a-upi-issuer.md)).
 
 ## Status
 
