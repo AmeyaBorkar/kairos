@@ -6,6 +6,7 @@ import {
   paise,
   type Slice,
   sliceCovers,
+  stableDraw,
 } from "@kairos/domain";
 import { drawFailure } from "./failures.js";
 import type { SliceProfile } from "./profiles.js";
@@ -39,6 +40,16 @@ export interface SimulatorConfig {
   readonly degradations: readonly Degradation[];
   /** Distinct customers in circulation. Repeat customers matter once contact caps exist. */
   readonly customerPool?: number;
+  /**
+   * Share of payments made against a token or a mandate, and therefore chargeable again in silence.
+   *
+   * The single number that decides how much of the recovery arm is available. Subscriptions,
+   * saved-card checkouts with consent and UPI Autopay can be retried by a server; a one-off UPI or
+   * card payment cannot, because the customer has to enter a PIN or an OTP. A merchant with no
+   * recurring business has no autonomous retries at all and a recovery arm made entirely of
+   * messages.
+   */
+  readonly mandatedShare?: number;
 }
 
 export function degradationEndsAt(d: Degradation): number {
@@ -89,9 +100,31 @@ export function isDegraded(config: SimulatorConfig, profile: SliceProfile, at: n
 
 const DEFAULT_CUSTOMER_POOL = 20_000;
 
+/**
+ * A mixed Indian merchant: some subscriptions and saved cards, mostly one-off checkouts.
+ *
+ * Deliberately not generous. A tool that assumes most payments are retryable would report a
+ * recovery arm that does not exist for the merchants most likely to want one.
+ */
+const DEFAULT_MANDATED_SHARE = 0.14;
+
 /** Pseudonymous, deterministic, and long enough to satisfy the CustomerRef invariant. */
 function customerAt(index: number): string {
   return `c${index.toString(16).padStart(23, "0")}`;
+}
+
+/**
+ * One generated attempt, with the fact the system is not allowed to see.
+ *
+ * `fromDegradation` is ground truth: whether this failure was caused by the injected outage or
+ * would have happened on a perfectly healthy rail. Nothing in Kairos may read it — it exists so the
+ * harness can score the classifier against what actually happened rather than against itself.
+ */
+export interface LabelledAttempt {
+  readonly attempt: Attempt;
+  readonly fromDegradation: boolean;
+  /** Whether this payment could be charged again with nobody present. */
+  readonly retry: "autonomous" | "requires-customer";
 }
 
 /**
@@ -105,6 +138,17 @@ function customerAt(index: number): string {
  * and the harness only ever needs one at a time.
  */
 export function* generate(config: SimulatorConfig): Generator<Attempt> {
+  for (const labelled of generateLabelled(config)) yield labelled.attempt;
+}
+
+/**
+ * The same stream, carrying the ground truth alongside each attempt.
+ *
+ * Split from {@link generate} rather than folded into the {@link Attempt} type, because a field on
+ * the domain object would be a fact about the world sitting in a struct the detector reads, and
+ * sooner or later something would read it. Ground truth belongs beside the data, never inside it.
+ */
+export function* generateLabelled(config: SimulatorConfig): Generator<LabelledAttempt> {
   const rng = new Rng(config.seed);
   const poolSize = config.customerPool ?? DEFAULT_CUSTOMER_POOL;
   const meanGapMs = 60_000 / config.attemptsPerMinute;
@@ -132,15 +176,33 @@ export function* generate(config: SimulatorConfig): Generator<Attempt> {
     );
 
     sequence++;
+    const id = `pay_${sequence.toString(36).padStart(9, "0")}`;
+
+    // Whether this payment could be charged again with nobody present. A token, a UPI Autopay
+    // mandate or an e-mandate can; a one-off checkout payment cannot, because UPI needs a PIN and a
+    // card needs an OTP. The share is a stated assumption about the merchant's mix, and it decides
+    // how much of the recovery arm is available at all.
+    //
+    // Drawn from the attempt's own id rather than from the main generator, so adding this fact left
+    // every previously published benchmark reproducible from its seed. A new draw in the shared
+    // stream would have shifted every subsequent number in the run.
+    const autonomous =
+      stableDraw("mandated", String(config.seed), id) <
+      (config.mandatedShare ?? DEFAULT_MANDATED_SHARE);
+
     yield {
-      id: attemptId(`pay_${sequence.toString(36).padStart(9, "0")}`),
-      orderId: orderId(`order_${sequence.toString(36).padStart(9, "0")}`),
-      customer: customerRef(customerAt(rng.int(poolSize))),
-      amount,
-      slice: profile.slice,
-      status: failed ? "failed" : "captured",
-      failure: failed ? drawFailure(rng, profile.slice.method, fromDegradation) : null,
-      at: Math.round(at),
+      attempt: {
+        id: attemptId(id),
+        orderId: orderId(`order_${sequence.toString(36).padStart(9, "0")}`),
+        customer: customerRef(customerAt(rng.int(poolSize))),
+        amount,
+        slice: profile.slice,
+        status: failed ? "failed" : "captured",
+        failure: failed ? drawFailure(rng, profile.slice.method, fromDegradation) : null,
+        at: Math.round(at),
+      },
+      fromDegradation,
+      retry: autonomous ? "autonomous" : "requires-customer",
     };
   }
 }

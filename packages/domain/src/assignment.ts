@@ -22,6 +22,17 @@ function fnv1a(text: string): number {
 const UINT32 = 4_294_967_296;
 
 /**
+ * A stable 32-bit value derived from a set of identifiers.
+ *
+ * The same hash {@link stableDraw} uses, exposed raw for callers that need to seed a generator
+ * rather than make one decision — a simulator drawing a casualty's whole fate, for instance. One
+ * implementation rather than two, because two would eventually disagree.
+ */
+export function stableSeed(...parts: readonly string[]): number {
+  return fnv1a(parts.join(" "));
+}
+
+/**
  * A stable number in `[0, 1)` derived from a set of identifiers.
  *
  * Lives in `domain` rather than in whichever package first needed it because both arms of the
