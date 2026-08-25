@@ -437,9 +437,18 @@ Three properties, all present, which is why an `if` statement is not sufficient:
      `"aapka payment fail ho gaya"` is one segment and `"आपका पेमेंट फेल हो गया"` is three. *The
      model's choice of script sets the price, and you learn it after generation.*
    - **Gateway fees** on a retry, resolved when the attempt does.
-3. **Utilisation matters.** Reserving the worst case for every action sterilises the budget, so the
-   system stops chasing recoverable money it could afford. Safety that costs all your utilisation is
-   not safety, it is a different failure.
+3. **Utilisation matters** — though less than this section originally claimed. The worry was that
+   reserving the worst case for every action sterilises the budget, so the system stops chasing
+   recoverable money it could afford, and that safety costing all your utilisation is not safety but
+   a different failure. The worry is sound in general and mostly wrong here, for a reason that only
+   showed up once it was measured: **a reservation is released at settlement, not consumed.** An
+   over-sized reservation holds authority for the duration of one action and hands back whatever the
+   action did not use, so on a lifetime budget that runs to exhaustion it costs nothing at all. What
+   remains is a tail effect — near the end, the budget can hold less than a worst-case reservation
+   but more than the action would really have cost — and that is bounded by
+   `maxInFlight x (reservation - actual)`. Measured, reserving the worst case runs at 100%
+   utilisation and gives up between 0% and 6.3% of messages against any cleverer scheme. §14 and
+   MEASUREMENT.md carry the numbers.
 
 ### The pattern: reserve → execute → reconcile
 
@@ -453,45 +462,90 @@ Three properties, all present, which is why an `if` statement is not sufficient:
   reconcile(reservation, actualCost) ─► settle the difference; release or overrun
 ```
 
-This is commitment accounting, and it is exactly what `throttlekit`'s TALE engine implements — the
-overshoot bound depends on metering granularity, not on the size of the cap, and it holds regardless
-of how many workers meter concurrently.
+This is commitment accounting. The bound it produces, derived in
+[ADR 0001](decisions/0001-commitment-accounting-over-throttlekits-store.md) and measured in
+[MEASUREMENT.md](MEASUREMENT.md):
+
+```text
+  final settled  <=  budget  +  maxInFlight x (maxActionCost - reservation)
+```
+
+Both terms are mandate fields. Neither is the worker count, which is the whole point: adding machines
+cannot move it. A naive check-then-spend overshoots by `workers x maxActionCost` instead, and that is
+an absolute quantity, so it is a rounding error on a large campaign and a catastrophe on a small one.
+Reserving the worst case drives the residual to exactly zero, at a cost in utilisation that turns out
+to be small enough to measure.
 
 ### Mapping onto ThrottleKit
 
+**Corrected after implementation.** This table originally named `distributedTokenBudget` as the
+campaign-budget mechanism, on the strength of its fleet-size-independent overshoot bound. That bound
+is real and it does not apply here: the token budget is a *post-hoc meter* built for costs that
+accrue continuously, so nothing is held across the interval between deciding to send a message and
+learning what it cost — which is the exact interval Terminus exists to close. ADR 0001 records the
+reasoning and what replaced it.
+
 | Concern | Mechanism | Guarantee |
 |---|---|---|
-| Campaign ₹ budget | `distributedTokenBudget` over the shared store, denominated in paise | Atomic debit; overshoot ≤ one debit, independent of worker count |
-| Global action rate | `twoTier` leased, `windowCoupled: true` | Fleet-size-independent bound — scaling workers cannot raise the ceiling |
-| Per-customer contact cap | `quota`, rolling window | 3 contacts / 7 days, provable |
-| Razorpay API pressure | `adaptiveConcurrency` | Backs off on 429/5xx rather than hammering a partner |
-| Multi-campaign sharing | `weightedFairEscrow` | Weighted-fair split with idle surplus reclaimed |
-| Reservation sizing | `learnedReservation` (newsvendor critical fractile) | Learns hold-vs-overrun trade-off online |
+| Campaign ₹ budget | `Store.apply` running a pure ledger transform | Atomic reserve → settle; authority is *held* across the interval where cost is unknown |
+| Per-customer contact cap | `quota`, rolling window | 3 contacts / 7 days, provable; a denied request never consumes |
+| Reservation sizing | `learnedReservation`, `predictiveReservation` | Newsvendor critical fractile, learned online — measured, and not the default |
+| ~~Global action rate~~ | ~~`twoTier`~~ | Deferred to Phase 4. The in-flight cap covers blast radius; a fleet-wide *rate* belongs with the adapter making the calls |
+| ~~Razorpay API pressure~~ | ~~`adaptiveConcurrency`~~ | Deferred to the Razorpay adapter |
+| ~~Multi-campaign sharing~~ | ~~`weightedFairEscrow`~~ | Deferred. One mandate per campaign; nothing shares a budget yet |
 
-**On `learnedReservation` specifically:** this is the component most at risk of being machinery for
-its own sake. The trade-off is real — over-reserve and the budget sterilises, under-reserve and sends
-abort mid-flight — but we do not get to assert that it matters. §14 measures fixed reservation against
-learned on the same batch, and if the gap is negligible we cut it and say so in the write-up. Applying
-the project's own honesty standard to its most flattering component is the point.
+What ThrottleKit contributes is `Store` — one atomic read-modify-write over a single key, proven
+bit-identical across in-memory, Redis and Postgres. That is the hard part and it is the part worth
+taking. Everything above it is a pure function of the prior state, which is why the same ledger code
+is correct in a unit test and in a fleet.
+
+**On `learnedReservation` specifically:** flagged here as the component most at risk of being
+machinery for its own sake, with a commitment to measure it against fixed reservation and cut it if
+the gap was negligible. **Measured, and it does not earn its place.** Across a budget sweep and a
+cost-mix sweep it buys between 0% and 6.3% more messages, and gives up the only overspend bound that
+is exactly zero. On the mixes where more than a fifth of messages cost the ceiling it converges to
+reserving the worst case and buys nothing at all — which is the learner working correctly and finding
+that there was nothing to find. It stays behind the `Sizer` interface so the measurement stays
+reproducible; the kernel defaults to reserving the worst case. Numbers in §14 and MEASUREMENT.md.
 
 ### Mandates
 
 ```ts
 type Mandate = {
   id: MandateId
-  scope: { merchantId, campaignId }
-  budgetPaise: Paise
-  contactCaps: { perCustomer: { n: number; windowMs: number } }
-  quietHours: { startMin: number; endMin: number; tz: string }
+  merchantId: string; campaignId: string
+  budgetPaise: Paise            // a lifetime ceiling, not a rate
+  maxActionCostPaise: Paise     // an adapter that cannot cap its own cost cannot be admitted
+  maxInFlight: number           // blast radius, and the other term in the overspend bound
+  reservationTtlMs: number      // must exceed the worst-case duration of an action
+  contactCap: { limit: number; windowMs: number }
+  quietHours: { startMinute; endMinute; offsetMinutes } | null
   allowedActions: ActionKind[]
   validFrom: number; validUntil: number
   killSwitch: boolean
-  signature: string        // HMAC over the canonical encoding
+  signature: string             // HMAC-SHA256 over the canonical encoding of every field above
 }
 ```
 
-Signed so that provenance is auditable and a tampered mandate is detectable. The kill switch lives in
-the shared store, not in process memory, so flipping it propagates fleet-wide within one admission.
+`maxActionCostPaise` and `maxInFlight` are the two terms of the overspend bound, which is why they
+are mandate fields rather than deployment configuration: the limit is something the merchant grants,
+not something an operator can raise by editing a YAML file and restarting.
+
+Quiet hours take a **fixed UTC offset**, not an IANA zone. India is UTC+5:30 with no daylight saving,
+so the offset is exact for the target market, and it is the only calendar arithmetic reproducible
+bit-for-bit inside a Redis Lua script — which is what keeps the bound identical whether it is
+evaluated in process or in the shared store. Zones that observe DST are out of scope rather than
+quietly approximated.
+
+Signed so that provenance is auditable and a tampered mandate is detectable; the canonical projection
+is written field by field rather than spread, because the failure mode of the convenient version is a
+limit that is silently unsigned, and the test suite asserts that perturbing any field changes the
+signature.
+
+There are **two kill switches and either one stops everything**. The signed flag cannot be cleared by
+anyone who cannot sign. The store-backed switch propagates fleet-wide within one admission with no
+redeploy and no re-signing. A switch that cannot be *read* counts as engaged — P2 applied to the stop
+itself, because not knowing whether we have been told to stop is being told to stop.
 
 ### Crash safety and idempotency
 
@@ -649,6 +703,8 @@ contact-everyone-immediately.
 | Calibration curve | Predicted p(recover) against actual. Almost nobody publishes this |
 | False-positive cost, in ₹ | Unnecessary contacts, retries on dead cases, ₹ spent per ₹ recovered |
 | Budget utilisation | Authority refused that was actually affordable — safety's own cost |
+| **Overspend against fleet size** | Measured against the stated bound, swept over worker count. The naive baseline's grows with the fleet; the kernel's must not |
+| **Contact-cap violations, measured from what was delivered** | Not from the counter that races. A check-then-act cap cannot report its own failure: two workers that read zero both write one |
 | Throughput and p50/p99 decision latency | Track bar: throughput *and* accuracy |
 | Compliance assertions | Zero cap violations, zero quiet-hour contacts, zero post-opt-out contacts — asserted over the full ledger |
 | **Honest exception list** | Cases unhandled, and cases where Kairos lost to baseline |
@@ -713,7 +769,7 @@ shown.
 |---|---|
 | **0 · Foundation** | Repo, CI, `domain` types, `ledger` with chain verification |
 | **1 · Detection** | Simulator, CUSUM detector, baselines, hysteresis — and the latency/FAR curve |
-| **2 · Terminus** | Mandates, reserve/reconcile over ThrottleKit, stopping rules, audit integration |
+| **2 · Terminus** | Mandates, commitment accounting, stopping rules, audit integration — and the overspend bound, measured against fleet size |
 | **3 · Prevention** | Steering policy, holdout, `sentry`, demo checkout — first live steering |
 | **4 · Recovery** | Classification, EV gate, scheduling, Razorpay actions, `recover-worker` |
 | **5 · Proof** | Harness, baselines, scorecard, calibration, `bench.yml` regression gate |
@@ -731,21 +787,37 @@ confidence.
    alarms an hour, because three failures in quick succession are enough to trip the most aggressive
    shift hypothesis at a 2% baseline. Calibrating against simulated traffic rather than an asymptotic
    approximation is what caught it.
-2. **Is `learnedReservation` earning its place?** §8 commits to measuring it and cutting it if not.
+2. ~~**Is `learnedReservation` earning its place?**~~ **Answered in Phase 2. No.** Measured against
+   reserving the worst case across a budget sweep and a cost-mix sweep, it buys between 0% and 6.3%
+   more messages and gives up the only overspend bound that is exactly zero. Where more than a fifth
+   of messages cost the ceiling it converges to reserving the worst case and buys nothing — the
+   learner working correctly and finding nothing to find. Kept behind the `Sizer` interface so the
+   measurement stays reproducible; not the default.
 3. **Holdout size versus incident length.** Short incidents may not accumulate enough control-arm
    volume for a tight interval. We may need to pool across incidents and report confidence intervals
    rather than point estimates — which is more honest anyway.
-4. **Checkout method configuration limits.** Exactly how far Razorpay Checkout permits programmatic
+4. **What should a budget refusal say when the money is merely held?** Admission distinguishes a
+   transient budget refusal (authority is committed to actions in flight, and returns when they
+   reconcile) from a terminal one (the money is spent), and reports the reservation TTL as the retry
+   time in the first case. That is an upper bound rather than an estimate, so a caller that waits for
+   it waits far too long, and one that retries immediately can spin. A signal derived from the
+   earliest live reservation's expiry would be tighter, and is not yet built.
+5. **Reservation TTL against real action durations.** A TTL shorter than the action it covers turns a
+   bounded reservation into an unaccounted spend — the ledger counts these as orphan settlements and
+   the harness asserts zero, but only against simulated action durations. The real distribution of
+   SMS and gateway latencies is unknown until Phase 4, and the TTL must be set from its tail rather
+   than its median.
+6. **Checkout method configuration limits.** Exactly how far Razorpay Checkout permits programmatic
    method ordering and suppression needs verification against the live SDK in Phase 3, and the
    steering vocabulary must be built to what it actually supports.
-5. **Very-low-volume slices are undetectable, and probably always will be.** A slice at ~4 attempts a
+7. **Very-low-volume slices are undetectable, and probably always will be.** A slice at ~4 attempts a
    minute cannot carry enough evidence to separate a broken rail from an unlucky run. Parent-slice
    coverage and the recovery arm bound the damage; whether that is sufficient is a question for a
    real merchant's traffic rather than the simulator.
-6. **Incident altitude can be too fine on slow degradations.** A child slice sometimes alarms before
+8. **Incident altitude can be too fine on slow degradations.** A child slice sometimes alarms before
    its parent has accumulated enough evidence, so an issuer-wide problem is briefly reported as an
    app-specific one and only rolled up afterwards. A grace delay before emitting a child alarm would
    fix it; whether the added latency is worth the precision is unmeasured.
-7. **Recovery attribution.** If a customer would have retried unprompted, our contact did not recover
+9. **Recovery attribution.** If a customer would have retried unprompted, our contact did not recover
    that money. The holdout handles this for prevention; recovery needs its own control arm, and it
    costs us recovered revenue to run one. We run it anyway.

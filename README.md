@@ -46,6 +46,28 @@ The scorecard reports detection latency against false-alarm rate, calibration of
 predictions, false-positive cost in rupees, budget utilisation, throughput, compliance assertions over
 the full audit log — and an honest list of the cases where Kairos lost to the baseline.
 
+## Measured so far
+
+Every number here is produced by a seeded experiment in this repo, reproducible with one command, and
+reported alongside what it cost and where it fails. Full results and caveats in
+**[docs/MEASUREMENT.md](docs/MEASUREMENT.md)**.
+
+**Detection** — at the chosen operating point, **0.21 false alarms an hour, 83% of degradations
+caught, 93s median latency**, and an issuer collapse caught in **5 seconds**. A degradation confined
+to a slice seeing four attempts a minute is **not detected at all**, which is a limit of the available
+evidence rather than a bug, and is documented as such.
+
+**Spend** — a naive check-then-spend worker overruns a ₹500 budget by **₹100 at 64 workers**, and
+delivers **271 messages past a three-per-week contact cap**. Through the kernel, at every fleet size
+from 1 to 64: **₹0 over, 0 violations, ≥99.6% of the budget still spent.** The bound is
+`maxInFlight × (maxActionCost − reservation)` — both terms are mandate fields, neither is the worker
+count.
+
+Two design claims did not survive contact with measurement, and both corrections are recorded rather
+than quietly applied: the detector's threshold was wrong by a wide margin, and the ThrottleKit
+mechanism named for the campaign budget turned out to be the wrong one
+([ADR 0001](docs/decisions/0001-commitment-accounting-over-throttlekits-store.md)).
+
 ## Status
 
 Under active development. See **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** for the full design:

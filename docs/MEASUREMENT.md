@@ -7,8 +7,10 @@ Reproduce with:
 
 ```sh
 pnpm build
-pnpm bench:detect          # full sweep, ~11s
+pnpm bench:detect          # detection curve, ~11s
 pnpm bench:detect:quick    # reduced sweep for CI
+pnpm bench:spend           # overspend under concurrency, ~3s
+pnpm bench:spend:quick     # reduced sweep for CI
 ```
 
 ---
@@ -132,8 +134,152 @@ These bind every number above.
 
 ---
 
-## Phase 2 onward
+## Phase 2 — Terminus
 
-Not yet measured. Terminus bound-holding under concurrency, recovery rate against baselines,
-calibration of `p(recover)`, false-positive cost in rupees, and the compliance assertions over the
-ledger all land with their phases.
+### What was measured
+
+A recovery campaign draining 4,000 casualties across 300 customers against a ₹500 budget, run twice
+over: once through a naive check-the-budget-then-spend worker, once through the admission kernel. The
+independent variable is **worker count**, swept from 1 to 64, because that is the number a deployment
+changes without thinking about it.
+
+Both arms are genuinely concurrent and both are deterministic. The microtask queue is FIFO, so a
+fixed number of yields between the decision and the settlement fixes the interleaving; same seed, same
+numbers, every time.
+
+**Costs are revealed after commitment.** A message estimated at one GSM-7 segment costs three when the
+model writes it in Devanagari, because UCS-2 fits 70 characters to a segment rather than 160. 35% of
+messages land on the expensive script. The estimate never changes.
+
+### Overspend against fleet size
+
+| workers | naive spend | naive over | kernel spend | kernel over |
+|---:|---:|---:|---:|---:|
+| 1 | ₹500 | — | ₹499 | — |
+| 2 | ₹501 | ₹1 | ₹499 | — |
+| 4 | ₹505 | ₹5 | ₹498 | — |
+| 8 | ₹511 | ₹11 | ₹498 | — |
+| 16 | ₹524 | ₹24 | ₹498 | — |
+| 32 | ₹545 | ₹45 | ₹498 | — |
+| **64** | **₹600** | **₹100** | **₹498** | **—** |
+
+The kernel column is the same number seven times. That is the entire claim: the overspend bound is
+`maxInFlight × (maxActionCost − reservation)`, and neither term is the worker count, so the fleet can
+grow by 64× without moving it. Reserving the worst case makes the residual exactly zero, and it is
+observed to be exactly zero.
+
+**Utilisation is not the price.** Every kernel row spends ≥99.6% of its budget. This contradicts what
+§8 originally asserted — that reserving the worst case sterilises the budget — and the reason is worth
+stating because it only became obvious once measured: **a reservation is released at settlement, not
+consumed.** Holding ₹3 for an action that costs ₹1 returns ₹2 immediately. On a lifetime budget that
+runs to exhaustion, over-reserving costs nothing except at the very tail.
+
+### The other failure mode, which is worse
+
+| workers | naive contacts past cap | kernel |
+|---:|---:|---:|
+| 1 | 0 | 0 |
+| 2 | 138 | 0 |
+| 8 | 224 | 0 |
+| **64** | **271 of 346 sent** | **0** |
+
+At 64 workers the naive arm delivers **271 messages past the three-per-seven-days cap** — 78% of
+everything it sends. The money bug costs a merchant ₹100. This one is a regulatory complaint, and it
+appears at *two* workers, long before the budget race is visible at all.
+
+It is also nearly invisible if measured carelessly. The naive arm's own contact counter is corrupted
+by the same race it is meant to catch: two workers that both read `seen = 0` also both write `1`, so
+the map ends up claiming one contact for a customer who received several. Counting violations from
+that structure reports zero for a run full of them. The harness counts what was actually delivered
+instead, in a separate tally with no await between the send and the increment.
+
+### Two bugs, not one
+
+Check-then-spend fails in two independent ways, and only one of them is about concurrency.
+
+**Cost uncertainty** breaks it single-threaded: the check prices the action at its estimate and the
+spend books the actual, so the last message through the gate overspends by up to
+`maxActionCost − estimate`. One worker, ₹2 over. No amount of locking fixes this one.
+
+**The race** is what turns ₹2 into ₹100. And the overshoot is roughly `workers × maxActionCost`, which
+is an *absolute* quantity — so it is a 20% breach on a ₹500 campaign and a **185% breach on a ₹60
+one**, with the same 64 workers. Small campaigns are where it is fatal, and small campaigns are what a
+merchant runs first.
+
+### Does learning the reservation earn its place?
+
+§8 flagged `learnedReservation` as the component most at risk of being machinery for its own sake and
+committed to cutting it if the gap was negligible. Two sweeps, both searching for the configuration
+where a smaller reservation gets more work done.
+
+Budget tightened toward the in-flight reservation total (8 in flight × ₹3 = ₹24 held at once):
+
+| budget | worst-case | estimate | learned | predictive |
+|---:|---:|---:|---:|---:|
+| ₹30 | — | +12.5% *(₹2 over)* | **+6.3%** | **+6.3%** |
+| ₹60 | — | +6.3% *(₹2 over)* | +0.0% | +0.0% |
+| ₹125 | — | +0.0% | +1.4% | +1.4% |
+| ₹250 | — | +0.7% *(₹3 over)* | +0.0% | +0.0% |
+| ₹500 | — | +0.4% *(₹1 over)* | +0.0% | +0.0% |
+
+Cost mix swept across the point where the newsvendor optimum leaves the ceiling:
+
+| share at ceiling | learned lift | learned's smallest reservation |
+|---:|---:|---:|
+| 2% | +1.9% | ₹0.92 |
+| 5% | +1.9% | ₹0.92 |
+| 10% | +4.1% | ₹0.92 |
+| 20% | +2.3% | ₹1.05 |
+| 35% | +0.0% | ₹1.51 |
+| 60% | +0.0% | ₹1.51 |
+
+**The verdict is no.** The learner buys between 0% and 6.3% more messages, and gives up the only
+overspend bound that is exactly zero — ₹11.92 against ₹0 at the measured configuration. For a kernel
+whose entire claim is a provable ceiling, that is a poor trade.
+
+The reason it wins so little is the more interesting half. With an overrun priced at four times a
+needless hold, the newsvendor optimum sits at the 80th percentile of realised cost. When more than a
+fifth of messages cost the ceiling, the 80th percentile *is* the ceiling — so the learner's correct
+answer is to reserve the worst case, and it converges there. The two rows of `+0.0%` at 35% and 60%
+are not the learner failing. They are the learner working, and finding that there was nothing to find.
+
+It stays behind the `Sizer` interface, because deleting it would make this table unreproducible, and
+because that interface is what made the comparison a one-line swap rather than an argument. The kernel
+defaults to reserving the worst case.
+
+Note also what the `estimate` column is doing: it buys its lift by **overspending**, in four cells out
+of five. Trusting your own quote is not a cheaper form of safety, it is the absence of it.
+
+### Compliance, asserted over the ledger
+
+Across all 28 kernel runs: **28/28 audit chains verify**, **0 orphaned reservations**, **0 contact-cap
+violations**, **0 refusals on the `audit` axis**. Every admission — allowed or refused — carries a
+named binding axis, so the ledger answers "why did nothing happen for this customer?" directly rather
+than by inference from an absence of activity.
+
+### Caveats
+
+1. **The concurrency is cooperative, not parallel.** Workers interleave on one thread at await
+   points. That is a faithful model of Node's actual execution and of the interval between deciding
+   and settling, but it is not multi-process contention against Redis. The atomicity the bound rests
+   on is ThrottleKit's, proven bit-identical across backends; what is *not* yet measured is this same
+   experiment against a real shared store.
+2. **Costs are drawn from a two-point distribution**, one segment or three. Real SMS pricing has more
+   mass in between and gateway fees have their own shape. The bound does not depend on the
+   distribution, but the utilisation and lift numbers do.
+3. **The naive arm is a fair implementation, not a strawman** — it checks the budget, respects a
+   contact cap, and stops when the budget is spent. It is what careful code looks like before anyone
+   has thought about the interval between the check and the spend. It is not, however, the *best*
+   naive implementation: a single-process worker behind a mutex would fix the race and still lose to
+   cost uncertainty.
+4. **Reservation TTL is never exercised.** No action in this experiment outruns its 60-second
+   reservation, so the orphan-settlement path — where money moves after its authority has lapsed — is
+   covered by unit tests but not by the sweep. It needs real action durations, which arrive in
+   Phase 4.
+
+---
+
+## Phase 3 onward
+
+Not yet measured. Recovery rate against baselines, calibration of `p(recover)`, false-positive cost in
+rupees, and the prevention arm's holdout-derived lift all land with their phases.
