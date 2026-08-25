@@ -10,3 +10,4 @@ export {
   type VerifyResult,
   verifyChain,
 } from "./chain.js";
+export { FailingLedger, MemoryLedger } from "./memory.js";
