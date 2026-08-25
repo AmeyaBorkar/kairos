@@ -3,11 +3,7 @@ export {
   checkoutAddressability,
   isSuppressible,
 } from "./addressability.js";
-export {
-  DEFAULT_STEERING_CONFIG,
-  maxSteeredFraction,
-  type SteeringConfig,
-} from "./config.js";
+export { DEFAULT_STEERING_CONFIG, type SteeringConfig } from "./config.js";
 export {
   type AffirmOutcome,
   type AffirmStatus,

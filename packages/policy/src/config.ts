@@ -64,8 +64,3 @@ export const DEFAULT_STEERING_CONFIG: SteeringConfig = {
   abandonmentOnSuppress: 0.08,
   minBenefitPerAttempt: 0.0005,
 };
-
-/** The complement of the holdout: the most traffic that may ever be treated. */
-export function maxSteeredFraction(config: SteeringConfig): number {
-  return 1 - config.holdoutFraction;
-}
