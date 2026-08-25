@@ -18,6 +18,17 @@ export {
   renderCheckout,
 } from "./checkout.js";
 export {
+  type CreateOrderRequest,
+  type CreatePaymentLinkRequest,
+  RazorpayClient,
+  type RazorpayClientOptions,
+  type RazorpayCredentials,
+  type RazorpayEntity,
+  RazorpayError,
+  type Transport,
+  type TransportResponse,
+} from "./client.js";
+export {
   bankCode,
   knownIssuers,
   networkCode,
@@ -40,3 +51,11 @@ export {
   smsCost,
   smsCostPaise,
 } from "./segments.js";
+export {
+  memorySeenEvents,
+  type SeenEvents,
+  verifyWebhook,
+  type WebhookOptions,
+  type WebhookRejection,
+  type WebhookVerdict,
+} from "./webhook.js";
