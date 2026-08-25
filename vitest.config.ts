@@ -15,6 +15,7 @@ export default defineConfig({
       "@kairos/domain": pkg("domain"),
       "@kairos/detect": pkg("detect"),
       "@kairos/ledger": pkg("ledger"),
+      "@kairos/policy": pkg("policy"),
       "@kairos/terminus": pkg("terminus"),
       "@kairos/simulator": adapter("simulator"),
     },
@@ -25,7 +26,7 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       include: ["packages/*/src/**", "adapters/*/src/**"],
-      exclude: ["**/index.ts", "**/*.test.ts"],
+      exclude: ["**/index.ts", "**/*.test.ts", "**/testing.ts"],
       reporter: ["text", "lcov"],
       thresholds: {
         lines: 85,
