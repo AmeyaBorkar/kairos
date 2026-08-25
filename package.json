@@ -21,6 +21,8 @@
     "bench:detect:quick": "pnpm --filter @kairos/bench run build && pnpm --filter @kairos/bench run detect-curve:quick",
     "bench:spend": "pnpm --filter @kairos/bench run build && pnpm --filter @kairos/bench run spend-bound",
     "bench:spend:quick": "pnpm --filter @kairos/bench run build && pnpm --filter @kairos/bench run spend-bound:quick",
+    "bench:prevent": "pnpm --filter @kairos/bench run build && pnpm --filter @kairos/bench run prevent",
+    "bench:prevent:quick": "pnpm --filter @kairos/bench run build && pnpm --filter @kairos/bench run prevent:quick",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "format": "biome format --write .",
