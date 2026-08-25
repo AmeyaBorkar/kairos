@@ -66,6 +66,22 @@ importers:
         specifier: ^22.10.0
         version: 22.20.1
 
+  packages/terminus:
+    dependencies:
+      '@kairos/domain':
+        specifier: workspace:*
+        version: link:../domain
+      '@kairos/ledger':
+        specifier: workspace:*
+        version: link:../ledger
+      throttlekit:
+        specifier: ^1.7.0
+        version: 1.7.0
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.0
+        version: 22.20.1
+
 packages:
 
   '@babel/code-frame@7.29.7':
@@ -884,6 +900,34 @@ packages:
     resolution: {integrity: sha512-qpCAvRl9stuOHveKsn7HncJRvv501qIacKzQlO/+Lwxc9+0q2wLyv4Dfvt80/DPn2pqOBsJdDiogXGR9+OvwRw==}
     engines: {node: '>=8'}
 
+  throttlekit@1.7.0:
+    resolution: {integrity: sha512-/mLik1HzbMhC2tlvEF+cpsfFNCdWkbCSl6Ry2sH5JE05cn94w2Aagq8dJWfzDVXeLD1jvcFjfSkY8URkZ3CKig==}
+    engines: {node: '>=18'}
+    hasBin: true
+    peerDependencies:
+      '@opentelemetry/api': '>=1.7.0'
+      express: '>=4'
+      fastify: '>=4'
+      hono: '>=4'
+      ioredis: '>=5'
+      koa: '>=2'
+      pg: '>=8'
+    peerDependenciesMeta:
+      '@opentelemetry/api':
+        optional: true
+      express:
+        optional: true
+      fastify:
+        optional: true
+      hono:
+        optional: true
+      ioredis:
+        optional: true
+      koa:
+        optional: true
+      pg:
+        optional: true
+
   tinybench@2.9.0:
     resolution: {integrity: sha512-0+DUvqWMValLmha6lr4kD8iAMK1HzV0/aKnCtWb9v9641TnP/MFb7Pc2bxoxQjTXAErryXVgUOfv2YqNllqGeg==}
 
@@ -1677,6 +1721,8 @@ snapshots:
   supports-color@7.2.0:
     dependencies:
       has-flag: 4.0.0
+
+  throttlekit@1.7.0: {}
 
   tinybench@2.9.0: {}
 

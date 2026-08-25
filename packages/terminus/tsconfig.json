@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "paths": {
+      "@kairos/domain": ["../domain/src/index.ts"],
+      "@kairos/ledger": ["../ledger/src/index.ts"]
+    },
+    "types": ["node"]
+  },
+  "include": ["src/**/*"]
+}

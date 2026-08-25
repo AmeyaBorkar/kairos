@@ -1,0 +1,31 @@
+{
+  "name": "@kairos/terminus",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The governance kernel. Signed mandates, commitment accounting, stopping rules \u2014 one admission gate with no path around it.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@kairos/domain": "workspace:*",
+    "@kairos/ledger": "workspace:*",
+    "throttlekit": "^1.7.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0"
+  }
+}

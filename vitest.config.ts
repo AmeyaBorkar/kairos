@@ -15,6 +15,7 @@ export default defineConfig({
       "@kairos/domain": pkg("domain"),
       "@kairos/detect": pkg("detect"),
       "@kairos/ledger": pkg("ledger"),
+      "@kairos/terminus": pkg("terminus"),
       "@kairos/simulator": adapter("simulator"),
     },
   },
