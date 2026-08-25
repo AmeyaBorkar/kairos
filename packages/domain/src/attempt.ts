@@ -71,6 +71,29 @@ export type RecoverabilityClass =
   | "timed"
   /** Expired card, invalid VPA, revoked mandate. Retrying is pointless; the customer must act. */
   | "customer-action"
+  /**
+   * Nothing is broken and nothing needs fixing — the customer simply has to try again.
+   *
+   * Not in the original design's five classes, and added because building the rule table showed
+   * that none of them fit a bucket this large. A cancelled collect request, an abandoned bank page,
+   * a mistyped UPI PIN and a wrong OTP are together the majority of failures on a *healthy* rail —
+   * 38% of netbanking failures and 34% of UPI failures in the modelled mix — and every existing
+   * class describes them wrongly. `transient` and `timed` invite a retry that cannot work, because
+   * nothing was broken and nothing will change on its own. `customer-action` sends a message
+   * telling someone to fix a card that is fine. `dead` refuses to chase them at all, which
+   * contradicts treating an abandoned checkout as a casualty in the first place.
+   *
+   * `unknown` happens to prescribe the right treatment and the wrong reason, and that is not a
+   * naming quibble: the two would share a calibration cell, pooling a customer who nearly paid with
+   * a residual nobody could classify.
+   *
+   * The pairing with `customer-action` is the point. Both need the customer; they differ in whether
+   * the customer has anything to *change* first, and that difference sets the ladder. Someone who
+   * must fetch a new card can reasonably be reminded more than once. Someone who decided not to pay
+   * should be asked exactly once. See
+   * {@link https://github.com/AmeyaBorkar/kairos/blob/main/docs/decisions/0003-a-sixth-recoverability-class-for-the-customer-who-must-simply-try-again.md | ADR 0003}.
+   */
+  | "customer-retry"
   /** Stolen or blocked card, fraud flag, method not permitted. Stop. Do not chase. */
   | "dead"
   /** Unmapped. One low-cost contact, then stop. */
@@ -80,11 +103,23 @@ export const RECOVERABILITY_CLASSES: readonly RecoverabilityClass[] = [
   "transient",
   "timed",
   "customer-action",
+  "customer-retry",
   "dead",
   "unknown",
 ];
 
-/** Classes for which a bare retry can ever succeed. */
+export function isRecoverabilityClass(value: string): value is RecoverabilityClass {
+  return (RECOVERABILITY_CLASSES as readonly string[]).includes(value);
+}
+
+/**
+ * Classes for which charging the same instrument again can ever succeed.
+ *
+ * Necessary and not sufficient: a class that permits a retry says only that the *failure* could
+ * come out differently. Whether Kairos can actually perform one depends on whether the customer has
+ * to be present, which is a property of the payment rather than of the error, and is carried by a
+ * casualty's `retry` capability instead.
+ */
 export function isRetryable(c: RecoverabilityClass): boolean {
   return c === "transient" || c === "timed";
 }

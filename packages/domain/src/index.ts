@@ -21,12 +21,31 @@ export {
   type AttemptStatus,
   type FailureDetail,
   isFailure,
+  isRecoverabilityClass,
   isResolved,
   isRetryable,
   RECOVERABILITY_CLASSES,
   type RecoverabilityClass,
 } from "./attempt.js";
 export { type Brand, DomainError } from "./brand.js";
+export {
+  applyOutcome,
+  CASUALTY_KINDS,
+  type Casualty,
+  type CasualtyKind,
+  contactsSent,
+  hasTried,
+  lastActedAt,
+  markDisputed,
+  markOptedOut,
+  markRecovered,
+  openCasualty,
+  RECOVERY_OUTCOMES,
+  type RecoveryAttempt,
+  type RecoveryOutcome,
+  type RetryCapability,
+  retriesMade,
+} from "./casualty.js";
 
 export {
   type AttemptId,
