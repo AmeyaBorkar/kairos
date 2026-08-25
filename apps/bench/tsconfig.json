@@ -6,7 +6,9 @@
     "paths": {
       "@kairos/domain": ["../../packages/domain/src/index.ts"],
       "@kairos/detect": ["../../packages/detect/src/index.ts"],
-      "@kairos/simulator": ["../../adapters/simulator/src/index.ts"]
+      "@kairos/simulator": ["../../adapters/simulator/src/index.ts"],
+      "@kairos/ledger": ["../../packages/ledger/src/index.ts"],
+      "@kairos/terminus": ["../../packages/terminus/src/index.ts"]
     }
   },
   "include": ["src/**/*"]

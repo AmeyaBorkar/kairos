@@ -1,7 +1,14 @@
+import { formatINR, paise } from "@kairos/domain";
 import type { CurveResult, ThresholdResult } from "./experiment.js";
+import type { ArmResult, MixRow, SpendSweep, TailRow, TerminusArmResult } from "./spend.js";
 
 function seconds(ms: number | null): string {
   return ms === null ? "—" : `${(ms / 1000).toFixed(0)}s`;
+}
+
+/** Render a plain paise count as rupees, revalidating the integer invariant on the way through. */
+function inr(amount: number): string {
+  return formatINR(paise(amount));
 }
 
 function percent(fraction: number): string {
@@ -75,4 +82,92 @@ export function recommend(
     if (best.overallDetectionRate > t.overallDetectionRate + 0.05) return best;
     return latency < bestLatency ? t : best;
   });
+}
+
+/**
+ * Overspend against worker count — the table the kernel exists to produce.
+ *
+ * Worker count is the independent variable because it is the one a deployment changes without
+ * thinking about it. Read down the naive column and the overspend grows with the fleet; read down
+ * the kernel's and it does not, because the only term that multiplies the residual is the in-flight
+ * cap, which is a mandate field rather than a deployment detail.
+ */
+export function formatSpendSweep(sweep: SpendSweep): string {
+  const rows: string[][] = [];
+
+  for (const workers of sweep.workerCounts) {
+    const naive = sweep.naive.find((r) => r.workers === workers);
+    if (naive !== undefined) rows.push(spendRow(naive));
+    for (const result of sweep.terminus.filter((r) => r.workers === workers)) {
+      rows.push(spendRow(result));
+    }
+  }
+
+  return table(["workers  arm", "spent", "over", "bound", "sent", "used", "over cap"], rows);
+}
+
+function spendRow(result: ArmResult): string[] {
+  return [
+    `${result.workers.toString().padStart(3)}  ${result.arm}`,
+    inr(result.spentPaise),
+    result.overspendPaise === 0 ? "—" : inr(result.overspendPaise),
+    result.boundPaise === null ? "unbounded" : inr(result.boundPaise),
+    `${result.actionsTaken}`,
+    percent(result.utilisation),
+    `${result.capViolations}`,
+  ];
+}
+
+/** What each reservation strategy bought and what it cost, at one worker count. */
+export function formatSizers(results: readonly TerminusArmResult[]): string {
+  const rows = results.map((r) => [
+    r.sizer,
+    inr(r.minReservationPaise),
+    inr(r.spentPaise),
+    `${r.actionsTaken}`,
+    percent(r.utilisation),
+    r.overspendPaise === 0 ? "—" : inr(r.overspendPaise),
+    r.boundPaise === null ? "unbounded" : inr(r.boundPaise),
+  ]);
+
+  return table(["sizer", "min reserve", "spent", "sent", "used", "over", "bound"], rows);
+}
+
+/**
+ * The tail comparison: does a smaller reservation get more work done as the budget tightens?
+ *
+ * This is the table that settles whether learning the reservation earns its place. The honest way
+ * to read it is down the `lift` column — anything that rounds to zero means the machinery is
+ * buying nothing that reserving the worst case did not already provide.
+ */
+export function formatTail(rows: readonly TailRow[]): string {
+  const formatted = rows.map((r) => [
+    inr(r.budgetPaise),
+    r.sizer,
+    `${r.actionsTaken}`,
+    inr(r.spentPaise),
+    r.overspendPaise === 0 ? "—" : inr(r.overspendPaise),
+    `${r.liftOverWorstCase >= 0 ? "+" : ""}${(r.liftOverWorstCase * 100).toFixed(1)}%`,
+  ]);
+
+  return table(["budget", "sizer", "sent", "spent", "over", "lift"], formatted);
+}
+
+/**
+ * Lift against the share of messages that cost the ceiling.
+ *
+ * Read this together with `formatTail`. If the learner never pulls meaningfully ahead of reserving
+ * the worst case in either table, it is machinery for its own sake and the write-up should say so.
+ */
+export function formatMix(rows: readonly MixRow[]): string {
+  const formatted = rows.map((r) => [
+    percent(r.devanagariShare),
+    r.sizer,
+    inr(r.minReservationPaise),
+    `${r.actionsTaken}`,
+    r.overspendPaise === 0 ? "—" : inr(r.overspendPaise),
+    `${r.liftOverWorstCase >= 0 ? "+" : ""}${(r.liftOverWorstCase * 100).toFixed(1)}%`,
+  ]);
+
+  return table(["3-seg share", "sizer", "min reserve", "sent", "over", "lift"], formatted);
 }

@@ -44,9 +44,18 @@ importers:
       '@kairos/domain':
         specifier: workspace:*
         version: link:../../packages/domain
+      '@kairos/ledger':
+        specifier: workspace:*
+        version: link:../../packages/ledger
       '@kairos/simulator':
         specifier: workspace:*
         version: link:../../adapters/simulator
+      '@kairos/terminus':
+        specifier: workspace:*
+        version: link:../../packages/terminus
+      throttlekit:
+        specifier: ^1.7.0
+        version: 1.7.0
     devDependencies:
       '@types/node':
         specifier: ^22.10.0

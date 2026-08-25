@@ -318,7 +318,17 @@ export class Terminus {
         reserved.axis === "budget"
           ? `${amountPaise} paise exceeds the ${reserved.availablePaise} paise still available`
           : `${reserved.inFlight} actions already in flight, cap ${m.maxInFlight}`;
-      return this.#refuse(action, reserved.axis, reason, null, now, {
+
+      // A budget refusal is not always terminal, and the difference matters to the caller. What is
+      // available is the budget less what is *spent* and what is merely *held*, so a refusal while
+      // other actions are in flight clears as soon as they reconcile. Only a refusal with nothing
+      // in flight means the money is genuinely gone. Reporting both the same way makes a worker
+      // either give up on a campaign that could still run, or retry one that never will — and the
+      // first of those looks exactly like the kernel refusing work it would happily have done.
+      const mayClear = reserved.inFlight > 0;
+      const retryAfterMs = reserved.axis === "concurrency" || mayClear ? m.reservationTtlMs : null;
+
+      return this.#refuse(action, reserved.axis, reason, retryAfterMs, now, {
         availablePaise: reserved.availablePaise,
         inFlight: reserved.inFlight,
       });
