@@ -1,0 +1,27 @@
+{
+  "name": "@kairos/sentry",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Ingests payment outcomes, runs detection, and publishes the current steering plan. Stateless and horizontally scalable.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json",
+    "start": "node dist/main.js"
+  },
+  "dependencies": {
+    "@kairos/detect": "workspace:*",
+    "@kairos/domain": "workspace:*",
+    "@kairos/ledger": "workspace:*",
+    "@kairos/policy": "workspace:*",
+    "@kairos/razorpay": "workspace:*",
+    "@kairos/terminus": "workspace:*",
+    "fastify": "^5.2.0",
+    "throttlekit": "^1.7.0",
+    "zod": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0"
+  }
+}

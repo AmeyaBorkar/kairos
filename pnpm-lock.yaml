@@ -80,6 +80,40 @@ importers:
         specifier: ^22.10.0
         version: 22.20.1
 
+  apps/sentry:
+    dependencies:
+      '@kairos/detect':
+        specifier: workspace:*
+        version: link:../../packages/detect
+      '@kairos/domain':
+        specifier: workspace:*
+        version: link:../../packages/domain
+      '@kairos/ledger':
+        specifier: workspace:*
+        version: link:../../packages/ledger
+      '@kairos/policy':
+        specifier: workspace:*
+        version: link:../../packages/policy
+      '@kairos/razorpay':
+        specifier: workspace:*
+        version: link:../../adapters/razorpay
+      '@kairos/terminus':
+        specifier: workspace:*
+        version: link:../../packages/terminus
+      fastify:
+        specifier: ^5.2.0
+        version: 5.12.1
+      throttlekit:
+        specifier: ^1.7.0
+        version: 1.7.0(fastify@5.12.1)
+      zod:
+        specifier: ^4.1.0
+        version: 4.4.3
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.0
+        version: 22.20.1
+
   packages/detect:
     dependencies:
       '@kairos/domain':
@@ -1246,6 +1280,9 @@ packages:
     resolution: {integrity: sha512-2rAgRKu54VsHkqI0/tYkmluGXHD4KW7yZoycuqDQ15QOTnc2VVfy0nN/1eMhnQLO00A+dwtK20xuCnc1YGeUyg==}
     engines: {node: ^20.19.0 || ^22.12.0 || >=23}
 
+  zod@4.4.3:
+    resolution: {integrity: sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==}
+
 snapshots:
 
   '@babel/code-frame@7.29.7':
@@ -1428,29 +1465,23 @@ snapshots:
       ajv: 8.20.0
       ajv-formats: 3.0.1(ajv@8.20.0)
       fast-uri: 4.1.3
-    optional: true
 
-  '@fastify/error@4.2.0':
-    optional: true
+  '@fastify/error@4.2.0': {}
 
   '@fastify/fast-json-stringify-compiler@5.1.0':
     dependencies:
       fast-json-stringify: 7.0.1
-    optional: true
 
-  '@fastify/forwarded@3.0.2':
-    optional: true
+  '@fastify/forwarded@3.0.2': {}
 
   '@fastify/merge-json-schemas@0.2.1':
     dependencies:
       dequal: 2.0.3
-    optional: true
 
   '@fastify/proxy-addr@5.1.0':
     dependencies:
       '@fastify/forwarded': 3.0.2
       ipaddr.js: 2.5.0
-    optional: true
 
   '@jridgewell/resolve-uri@3.1.2': {}
 
@@ -1463,8 +1494,7 @@ snapshots:
 
   '@oxc-project/types@0.146.0': {}
 
-  '@pinojs/redact@0.4.0':
-    optional: true
+  '@pinojs/redact@0.4.0': {}
 
   '@rolldown/binding-android-arm-eabi@1.2.5':
     optional: true
@@ -1649,13 +1679,11 @@ snapshots:
       convert-source-map: 2.0.0
       tinyrainbow: 3.1.1
 
-  abstract-logging@2.0.1:
-    optional: true
+  abstract-logging@2.0.1: {}
 
   ajv-formats@3.0.1(ajv@8.20.0):
     optionalDependencies:
       ajv: 8.20.0
-    optional: true
 
   ajv@8.20.0:
     dependencies:
@@ -1680,14 +1708,12 @@ snapshots:
       estree-walker: 3.0.3
       js-tokens: 10.0.0
 
-  atomic-sleep@1.0.0:
-    optional: true
+  atomic-sleep@1.0.0: {}
 
   avvio@9.3.0:
     dependencies:
       '@fastify/error': 4.2.0
       fastq: 1.20.1
-    optional: true
 
   callsites@3.1.0: {}
 
@@ -1714,8 +1740,7 @@ snapshots:
 
   convert-source-map@2.0.0: {}
 
-  cookie@1.1.1:
-    optional: true
+  cookie@1.1.1: {}
 
   cosmiconfig-typescript-loader@6.3.0(@types/node@22.20.1)(cosmiconfig@9.0.2(typescript@7.0.2))(typescript@7.0.2):
     dependencies:
@@ -1733,8 +1758,7 @@ snapshots:
     optionalDependencies:
       typescript: 7.0.2
 
-  dequal@2.0.3:
-    optional: true
+  dequal@2.0.3: {}
 
   detect-libc@2.1.2: {}
 
@@ -1758,8 +1782,7 @@ snapshots:
 
   expect-type@1.4.0: {}
 
-  fast-decode-uri-component@1.0.1:
-    optional: true
+  fast-decode-uri-component@1.0.1: {}
 
   fast-deep-equal@3.1.3: {}
 
@@ -1771,17 +1794,14 @@ snapshots:
       fast-uri: 4.1.3
       json-schema-ref-resolver: 3.0.0
       rfdc: 1.4.1
-    optional: true
 
   fast-querystring@1.1.2:
     dependencies:
       fast-decode-uri-component: 1.0.1
-    optional: true
 
   fast-uri@3.1.6: {}
 
-  fast-uri@4.1.3:
-    optional: true
+  fast-uri@4.1.3: {}
 
   fastify@5.12.1:
     dependencies:
@@ -1800,12 +1820,10 @@ snapshots:
       secure-json-parse: 4.1.0
       semver: 7.8.5
       toad-cache: 3.7.4
-    optional: true
 
   fastq@1.20.1:
     dependencies:
       reusify: 1.1.0
-    optional: true
 
   fdir@6.5.0(picomatch@4.0.5):
     optionalDependencies:
@@ -1816,7 +1834,6 @@ snapshots:
       fast-deep-equal: 3.1.3
       fast-querystring: 1.1.2
       safe-regex2: 5.1.1
-    optional: true
 
   fsevents@2.3.3:
     optional: true
@@ -1840,8 +1857,7 @@ snapshots:
 
   ini@6.0.0: {}
 
-  ipaddr.js@2.5.0:
-    optional: true
+  ipaddr.js@2.5.0: {}
 
   is-arrayish@0.2.1: {}
 
@@ -1875,7 +1891,6 @@ snapshots:
   json-schema-ref-resolver@3.0.0:
     dependencies:
       dequal: 2.0.3
-    optional: true
 
   json-schema-traverse@1.0.0: {}
 
@@ -1884,7 +1899,6 @@ snapshots:
       cookie: 1.1.1
       process-warning: 4.0.1
       set-cookie-parser: 2.7.2
-    optional: true
 
   lightningcss-android-arm64@1.33.0:
     optional: true
@@ -1955,8 +1969,7 @@ snapshots:
 
   obug@2.1.4: {}
 
-  on-exit-leak-free@2.1.2:
-    optional: true
+  on-exit-leak-free@2.1.2: {}
 
   parent-module@1.0.1:
     dependencies:
@@ -1978,10 +1991,8 @@ snapshots:
   pino-abstract-transport@3.0.0:
     dependencies:
       split2: 4.2.0
-    optional: true
 
-  pino-std-serializers@7.1.0:
-    optional: true
+  pino-std-serializers@7.1.0: {}
 
   pino@10.3.1:
     dependencies:
@@ -1996,7 +2007,6 @@ snapshots:
       safe-stable-stringify: 2.5.0
       sonic-boom: 4.2.1
       thread-stream: 4.2.0
-    optional: true
 
   postcss@8.5.26:
     dependencies:
@@ -2004,20 +2014,15 @@ snapshots:
       picocolors: 1.1.1
       source-map-js: 1.2.1
 
-  process-warning@4.0.1:
-    optional: true
+  process-warning@4.0.1: {}
 
-  process-warning@5.1.0:
-    optional: true
+  process-warning@5.1.0: {}
 
-  quick-format-unescaped@4.0.4:
-    optional: true
+  quick-format-unescaped@4.0.4: {}
 
-  real-require@0.2.0:
-    optional: true
+  real-require@0.2.0: {}
 
-  real-require@1.0.0:
-    optional: true
+  real-require@1.0.0: {}
 
   require-from-string@2.0.2: {}
 
@@ -2025,14 +2030,11 @@ snapshots:
 
   resolve-from@5.0.0: {}
 
-  ret@0.5.0:
-    optional: true
+  ret@0.5.0: {}
 
-  reusify@1.1.0:
-    optional: true
+  reusify@1.1.0: {}
 
-  rfdc@1.4.1:
-    optional: true
+  rfdc@1.4.1: {}
 
   rolldown@1.2.5:
     dependencies:
@@ -2058,30 +2060,24 @@ snapshots:
   safe-regex2@5.1.1:
     dependencies:
       ret: 0.5.0
-    optional: true
 
-  safe-stable-stringify@2.5.0:
-    optional: true
+  safe-stable-stringify@2.5.0: {}
 
-  secure-json-parse@4.1.0:
-    optional: true
+  secure-json-parse@4.1.0: {}
 
   semver@7.8.5: {}
 
-  set-cookie-parser@2.7.2:
-    optional: true
+  set-cookie-parser@2.7.2: {}
 
   siginfo@2.0.0: {}
 
   sonic-boom@4.2.1:
     dependencies:
       atomic-sleep: 1.0.0
-    optional: true
 
   source-map-js@1.2.1: {}
 
-  split2@4.2.0:
-    optional: true
+  split2@4.2.0: {}
 
   stackback@0.0.2: {}
 
@@ -2109,7 +2105,6 @@ snapshots:
   thread-stream@4.2.0:
     dependencies:
       real-require: 1.0.0
-    optional: true
 
   throttlekit@1.7.0(fastify@5.12.1):
     optionalDependencies:
@@ -2126,8 +2121,7 @@ snapshots:
 
   tinyrainbow@3.1.1: {}
 
-  toad-cache@3.7.4:
-    optional: true
+  toad-cache@3.7.4: {}
 
   typescript@7.0.2:
     optionalDependencies:
@@ -2217,3 +2211,5 @@ snapshots:
       string-width: 8.2.2
       y18n: 5.0.8
       yargs-parser: 22.0.0
+
+  zod@4.4.3: {}
