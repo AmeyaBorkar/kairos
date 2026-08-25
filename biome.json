@@ -26,7 +26,8 @@
         "noNonNullAssertion": "error"
       },
       "complexity": {
-        "noForEach": "off"
+        "noForEach": "off",
+        "useLiteralKeys": "off"
       }
     }
   },

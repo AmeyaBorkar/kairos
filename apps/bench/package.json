@@ -15,5 +15,8 @@
     "@kairos/detect": "workspace:*",
     "@kairos/domain": "workspace:*",
     "@kairos/simulator": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0"
   }
 }

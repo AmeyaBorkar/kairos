@@ -20,3 +20,6 @@ pnpm-debug.log*
 # Harness output: reproducible from a seed, never committed
 bench-out/
 *.scorecard.json
+
+# Stray package tarballs from local inspection.
+*.tgz

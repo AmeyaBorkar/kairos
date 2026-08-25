@@ -47,6 +47,10 @@ importers:
       '@kairos/simulator':
         specifier: workspace:*
         version: link:../../adapters/simulator
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.0
+        version: 22.20.1
 
   packages/detect:
     dependencies:
@@ -56,7 +60,11 @@ importers:
 
   packages/domain: {}
 
-  packages/ledger: {}
+  packages/ledger:
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.0
+        version: 22.20.1
 
 packages:
 
