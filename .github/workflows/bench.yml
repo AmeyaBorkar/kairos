@@ -1,0 +1,68 @@
+name: Bench
+
+# The regression gate. `ci.yml` proves the code does what its tests say; this proves it still does
+# what the project claims — that spend stays inside the mandate, that the chain verifies, that
+# steering still helps the people it is supposed to help and leaves alone the people it is not.
+#
+# It runs the `quick` profile of the scorecard against the committed baseline in
+# `docs/results/baseline-quick.json`. Roughly fifteen seconds of simulation, which is not the
+# smallest it could be: every size in that profile was raised until the seed study said the headline
+# numbers could be told apart from noise. See `docs/results/variance-quick.txt`.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: bench-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CI: "true"
+
+jobs:
+  gate:
+    name: scorecard regression gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+
+      # Pinned to one major, deliberately, and not part of `ci.yml`'s 22/24 matrix.
+      #
+      # These benchmarks are seeded and reproduce bit-for-bit on a fixed runtime, but V8 is entitled
+      # to change the last place of a transcendental between releases, and a long simulation can
+      # amplify that into a visibly different number. Comparing a run on one engine against a
+      # baseline blessed on another would produce regressions nobody caused. The baseline records
+      # the version it was blessed on and the gate prints an advisory when they differ, so a
+      # mismatch reads as a mismatch rather than as a bug.
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      - name: Gate the scorecard against the committed baseline
+        run: pnpm --filter @kairos/bench run gate
+
+      # Uploaded pass or fail. A red build has to be diffable against the committed baseline without
+      # anybody re-running the job and hoping.
+      - name: Upload the observed scorecard
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: observed-scorecard
+          path: apps/bench/bench-out/observed-quick.json
+          retention-days: 14
+          if-no-files-found: warn

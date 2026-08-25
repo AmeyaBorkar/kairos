@@ -1,0 +1,470 @@
+{
+  "provenance": {
+    "profile": "quick",
+    "configHash": "c34c67874919f42d",
+    "codeRevision": "28ffd73-dirty",
+    "node": "v24.13.1",
+    "config": {
+      "profile": "quick",
+      "seed": 20260825,
+      "detect": {
+        "thresholds": [
+          8,
+          12,
+          17
+        ],
+        "operatingThreshold": 12,
+        "seedsPerCell": 6,
+        "healthySeeds": 16,
+        "seedBase": 0,
+        "attemptsPerMinute": 400,
+        "warmupMs": 900000,
+        "observeMs": 1500000,
+        "scenarios": [
+          "issuer-collapse",
+          "issuer-moderate",
+          "slow-bleed",
+          "single-app",
+          "thin-slice",
+          "card-network"
+        ]
+      },
+      "spend": {
+        "workerCounts": [
+          1,
+          8,
+          64
+        ],
+        "budgetPaise": 50000,
+        "maxInFlight": 8,
+        "contactCapLimit": 3,
+        "jobs": 2400,
+        "customers": 240,
+        "devanagariShare": 0.35
+      },
+      "prevent": {
+        "attemptsPerMinute": 700,
+        "warmupMs": 1200000,
+        "observeMs": 1800000,
+        "tickMs": 15000,
+        "customerPool": 20000,
+        "choice": {
+          "switchElasticity": 0.35,
+          "abandonmentOnSuppress": 0.08
+        },
+        "scenarios": [
+          {
+            "name": "netbanking-hdfc",
+            "shouldSteer": true,
+            "peakFailureRate": 0.45,
+            "holdMs": 1800000,
+            "rampMs": 30000
+          },
+          {
+            "name": "upi-hdfc-severe",
+            "shouldSteer": true,
+            "peakFailureRate": 0.55,
+            "holdMs": 1800000,
+            "rampMs": 30000
+          },
+          {
+            "name": "upi-hdfc-moderate",
+            "shouldSteer": false,
+            "peakFailureRate": 0.14,
+            "holdMs": 1800000,
+            "rampMs": 60000
+          }
+        ]
+      },
+      "recover": {
+        "durationMs": 10800000,
+        "attemptsPerMinute": 240,
+        "customerPool": 12000,
+        "tailMs": 2160000000,
+        "degradations": [
+          {
+            "slice": "netbanking/hdfc",
+            "peakFailureRate": 0.55,
+            "holdMs": 2100000
+          },
+          {
+            "slice": "upi/sbi",
+            "peakFailureRate": 0.42,
+            "holdMs": 3600000
+          }
+        ],
+        "mandate": {
+          "budgetPaise": 5000000,
+          "maxActionCostPaise": 60,
+          "maxInFlight": 64,
+          "contactCapLimit": 3
+        },
+        "economics": {
+          "marginRate": 0.3,
+          "optOutCostPaise": 20000,
+          "controlFraction": 0.1,
+          "explorationRate": 0.08
+        }
+      },
+      "detector": {
+        "threshold": 12,
+        "rollup": true
+      }
+    }
+  },
+  "blessedAt": "2026-08-25",
+  "metrics": [
+    {
+      "id": "detect.falseAlarmsPerHour",
+      "label": "alarms raised per hour of healthy traffic at h=12",
+      "value": 0.09375000000000003,
+      "direction": "lower-is-better",
+      "unit": "rate",
+      "tolerance": 0.25,
+      "sd": 0.0662913,
+      "seeds": 8,
+      "note": "the false-alarm budget the detection report already declares, rather than a standard deviation. The project has said what it will tolerate, and a second number invented for the gate would only be a second opinion. It sits at 3.8 sd here, so it is not tighter than the noise either."
+    },
+    {
+      "id": "detect.detectionRate",
+      "label": "share of injected degradations the detector opened an incident for",
+      "value": 0.8333333333333334,
+      "direction": "higher-is-better",
+      "unit": "ratio",
+      "tolerance": 0.056,
+      "sd": null,
+      "seeds": 8,
+      "note": "one trial out of the eighteen the gate profile runs. The spread across 8 seeds was exactly zero \u2014 the same three trials miss every time \u2014 so a band from the standard deviation would be zero and would fire the first time any scenario went the other way. One trial is the quantum of a rate measured over eighteen of them."
+    },
+    {
+      "id": "detect.medianLatencyMs",
+      "label": "median time from a rail actually breaking to an incident opening",
+      "value": 113634,
+      "direction": "lower-is-better",
+      "unit": "ms",
+      "tolerance": 30000,
+      "sd": 8887.01,
+      "seeds": 8,
+      "note": "3.0 sd over 8 seeds, rounded up"
+    },
+    {
+      "id": "detect.rightAltitudeRate",
+      "label": "share of incidents reported at the degraded slice rather than above or below it",
+      "value": 0.6111111111111112,
+      "direction": "higher-is-better",
+      "unit": "ratio",
+      "tolerance": 0.3,
+      "sd": 0.0770623,
+      "seeds": 8,
+      "note": "3.0 sd over 8 seeds, rounded up"
+    },
+    {
+      "id": "spend.adaptiveOverspendPaise",
+      "label": "worst residual an under-reserving sizer ran up \u2014 bounded by construction, and worth watching because the bound is what it is allowed rather than what it should cost",
+      "value": 800,
+      "direction": "lower-is-better",
+      "unit": "paise",
+      "tolerance": 700,
+      "sd": 205.287,
+      "seeds": 8,
+      "note": "3.0 sd over 8 seeds, rounded up"
+    },
+    {
+      "id": "spend.actionsUnderContention",
+      "label": "actions the kernel admitted at the highest worker count \u2014 safety bought by refusing everything is not safety",
+      "value": 290,
+      "direction": "higher-is-better",
+      "unit": "count",
+      "tolerance": 50,
+      "sd": 13.9489,
+      "seeds": 8,
+      "note": "3.0 sd over 8 seeds, rounded up"
+    },
+    {
+      "id": "prevent.netbanking-hdfc.lossRateDelta",
+      "label": "loss rate avoided on netbanking-hdfc, among customers whose own rail was the failing one",
+      "value": 0.25393094504781977,
+      "direction": "higher-is-better",
+      "unit": "ratio",
+      "tolerance": 0.2,
+      "sd": 0.0624679,
+      "seeds": 8,
+      "note": "3.0 sd over 8 seeds, rounded up"
+    },
+    {
+      "id": "prevent.netbanking-hdfc.savedPaise",
+      "label": "payment value that did not fail on netbanking-hdfc because traffic was steered",
+      "value": 8737891,
+      "direction": "higher-is-better",
+      "unit": "paise",
+      "tolerance": 7000000,
+      "sd": 2148030,
+      "seeds": 8,
+      "note": "3.0 sd over 8 seeds, rounded up"
+    },
+    {
+      "id": "prevent.netbanking-hdfc.leverChanges",
+      "label": "times the lever or target changed mid-steer on netbanking-hdfc",
+      "value": 0,
+      "direction": "lower-is-better",
+      "unit": "count",
+      "tolerance": 3,
+      "sd": 0.0,
+      "seeds": 8,
+      "note": "hand-set, not derived. All eight seeds returned zero at gate size, so the spread offers no band at all \u2014 and zero is the wrong claim: the full profile returns three, because over forty-five minutes an incident ramps, peaks and recovers, and the lever that suits a rail at 20% is not the one that suits it at 45%. Three changes is evolution; more than three in a twenty-minute window is flapping, which is the failure mode worth catching."
+    },
+    {
+      "id": "prevent.netbanking-hdfc.collateralDelta",
+      "label": "what happened to customers on netbanking-hdfc whose own rail was fine and who were moved anyway \u2014 negative is the cost of the lever, not a bug",
+      "value": -0.05228267667292057,
+      "direction": "neutral",
+      "unit": "ratio",
+      "tolerance": 0.1,
+      "sd": 0.0259414,
+      "seeds": 8,
+      "note": "3.0 sd over 8 seeds, rounded up"
+    },
+    {
+      "id": "prevent.upi-hdfc-severe.lossRateDelta",
+      "label": "loss rate avoided on upi-hdfc-severe, among customers whose own rail was the failing one",
+      "value": 0.1804102953707365,
+      "direction": "higher-is-better",
+      "unit": "ratio",
+      "tolerance": 0.07,
+      "sd": 0.0211916,
+      "seeds": 8,
+      "note": "3.0 sd over 8 seeds, rounded up"
+    },
+    {
+      "id": "prevent.upi-hdfc-severe.savedPaise",
+      "label": "payment value that did not fail on upi-hdfc-severe because traffic was steered",
+      "value": 64557876,
+      "direction": "higher-is-better",
+      "unit": "paise",
+      "tolerance": 20000000,
+      "sd": 6594690,
+      "seeds": 8,
+      "note": "3.0 sd over 8 seeds, rounded up"
+    },
+    {
+      "id": "prevent.upi-hdfc-severe.leverChanges",
+      "label": "times the lever or target changed mid-steer on upi-hdfc-severe",
+      "value": 0,
+      "direction": "lower-is-better",
+      "unit": "count",
+      "tolerance": 3,
+      "sd": 0.0,
+      "seeds": 8,
+      "note": "hand-set, not derived. All eight seeds returned zero at gate size, so the spread offers no band at all \u2014 and zero is the wrong claim: the full profile returns three, because over forty-five minutes an incident ramps, peaks and recovers, and the lever that suits a rail at 20% is not the one that suits it at 45%. Three changes is evolution; more than three in a twenty-minute window is flapping, which is the failure mode worth catching."
+    },
+    {
+      "id": "prevent.upi-hdfc-severe.collateralDelta",
+      "label": "what happened to customers on upi-hdfc-severe whose own rail was fine and who were moved anyway \u2014 negative is the cost of the lever, not a bug",
+      "value": -0.03536836979944699,
+      "direction": "neutral",
+      "unit": "ratio",
+      "tolerance": 0.02,
+      "sd": 0.00572898,
+      "seeds": 8,
+      "note": "3.0 sd over 8 seeds, rounded up"
+    },
+    {
+      "id": "recover.incrementalPaise",
+      "label": "recovered because of the arm, over and above what came back unaided",
+      "value": 51049700,
+      "direction": "higher-is-better",
+      "unit": "paise",
+      "tolerance": 7000000,
+      "sd": 2131850,
+      "seeds": 8,
+      "note": "3.0 sd over 8 seeds, rounded up"
+    },
+    {
+      "id": "recover.trueCostPaise",
+      "label": "postage plus the priced value of every customer lost to an opt-out",
+      "value": 602287,
+      "direction": "lower-is-better",
+      "unit": "paise",
+      "tolerance": 500000,
+      "sd": 108151,
+      "seeds": 8,
+      "note": "3.0 sd over 8 seeds, rounded up"
+    },
+    {
+      "id": "recover.messages",
+      "label": "messages sent \u2014 the term the contact cap and the opt-out cost are both about",
+      "value": 4390,
+      "direction": "lower-is-better",
+      "unit": "count",
+      "tolerance": 700,
+      "sd": 203.547,
+      "seeds": 8,
+      "note": "3.0 sd over 8 seeds, rounded up"
+    },
+    {
+      "id": "recover.wastedActions",
+      "label": "actions that landed on somebody who was coming back anyway",
+      "value": 534,
+      "direction": "lower-is-better",
+      "unit": "count",
+      "tolerance": 150,
+      "sd": 36.5179,
+      "seeds": 8,
+      "note": "3.0 sd over 8 seeds, rounded up"
+    },
+    {
+      "id": "recover.calibrationError",
+      "label": "expected calibration error \u2014 whether a stated 30% means thirty per cent, which is what the gate multiplies by a rupee amount",
+      "value": 0.017281698800699064,
+      "direction": "lower-is-better",
+      "unit": "ratio",
+      "tolerance": 0.02,
+      "sd": 0.00511004,
+      "seeds": 8,
+      "note": "3.0 sd over 8 seeds, rounded up"
+    },
+    {
+      "id": "recover.calibrationSkill",
+      "label": "Brier skill over the base rate \u2014 a model that repeats the base rate for ever is perfectly calibrated and worth nothing",
+      "value": 0.20311644264804307,
+      "direction": "higher-is-better",
+      "unit": "rate",
+      "tolerance": 0.1,
+      "sd": 0.0276245,
+      "seeds": 8,
+      "note": "3.0 sd over 8 seeds, rounded up"
+    },
+    {
+      "id": "recover.autonomousShare",
+      "label": "share of casualties chargeable again without the customer present; a property of the merchant's mix rather than of Kairos",
+      "value": 0.13699360341151387,
+      "direction": "neutral",
+      "unit": "ratio",
+      "tolerance": 0.05,
+      "sd": 0.0117801,
+      "seeds": 8,
+      "note": "3.0 sd over 8 seeds, rounded up"
+    }
+  ],
+  "invariants": [
+    {
+      "id": "detect.trials",
+      "kind": "exact",
+      "value": 156,
+      "expected": 156,
+      "label": "the sweep ran the number of trials its configuration describes"
+    },
+    {
+      "id": "detect.healthyHours",
+      "kind": "positive",
+      "value": 10.666666666666664,
+      "expected": null,
+      "label": "healthy traffic was observed, so the false-alarm rate has a denominator"
+    },
+    {
+      "id": "spend.worstCaseOverspendPaise",
+      "kind": "zero",
+      "value": 0,
+      "expected": null,
+      "label": "reserving the worst case never authorised a rupee past the budget, at any worker count"
+    },
+    {
+      "id": "spend.boundHeld",
+      "kind": "true",
+      "value": true,
+      "expected": null,
+      "label": "every sizer, including the ones that under-reserve on purpose, stayed inside the residual its own reservations permit"
+    },
+    {
+      "id": "spend.orphans",
+      "kind": "zero",
+      "value": 0,
+      "expected": null,
+      "label": "no reservation was held for an action that never reported its cost"
+    },
+    {
+      "id": "spend.ledgerVerified",
+      "kind": "true",
+      "value": true,
+      "expected": null,
+      "label": "the audit chain hashes end to end for every arm"
+    },
+    {
+      "id": "spend.naiveOverspendPaise",
+      "kind": "positive",
+      "value": 10000,
+      "expected": null,
+      "label": "the unguarded arm really does overspend, so the kernel has something to prevent"
+    },
+    {
+      "id": "prevent.ledgerVerified",
+      "kind": "true",
+      "value": true,
+      "expected": null,
+      "label": "every steering decision, taken or refused, is on a chain that still hashes"
+    },
+    {
+      "id": "prevent.detectionHeld",
+      "kind": "true",
+      "value": true,
+      "expected": null,
+      "label": "the detector kept each incident open for the whole degradation it was steering against"
+    },
+    {
+      "id": "prevent.controlAttempts",
+      "kind": "positive",
+      "value": 504,
+      "expected": null,
+      "label": "customers were held out of steering, so the comparison has a control"
+    },
+    {
+      "id": "prevent.upi-hdfc-moderate.steersIssued",
+      "kind": "zero",
+      "value": 0,
+      "expected": null,
+      "label": "steering declined on upi-hdfc-moderate, where the rail is degraded but not enough to be worth moving"
+    },
+    {
+      "id": "recover.beatsDoNothing",
+      "kind": "positive",
+      "value": 51049700,
+      "expected": null,
+      "label": "the recovery arm collected more than the customers would have returned with unaided"
+    },
+    {
+      "id": "recover.unclassified",
+      "kind": "zero",
+      "value": 0,
+      "expected": null,
+      "label": "no failure in our own traffic model fell through to `unknown` \u2014 a classifier that cannot name them would be measuring its fallback"
+    },
+    {
+      "id": "recover.holdoutCasualties",
+      "kind": "positive",
+      "value": 1429,
+      "expected": null,
+      "label": "casualties were held out of treatment entirely, which is the only reason any recovery figure has a denominator"
+    },
+    {
+      "id": "recover.calibrationPredictions",
+      "kind": "positive",
+      "value": 4573,
+      "expected": null,
+      "label": "the probability model made predictions there were outcomes for"
+    },
+    {
+      "id": "recover.ledgerVerified",
+      "kind": "true",
+      "value": true,
+      "expected": null,
+      "label": "the recovery arm's audit chain hashes end to end"
+    },
+    {
+      "id": "recover.refusals",
+      "kind": "zero",
+      "value": 0,
+      "expected": null,
+      "label": "nothing was proposed that the kernel then had to decline; the worker checks the schedule before it asks"
+    }
+  ]
+}
