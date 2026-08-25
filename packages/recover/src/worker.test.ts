@@ -9,7 +9,7 @@ import {
   paise,
   slice,
 } from "@kairos/domain";
-import { MemoryLedger } from "@kairos/ledger";
+import { FailingLedger, MemoryLedger } from "@kairos/ledger";
 import { ManualClock, sealMandate, Terminus } from "@kairos/terminus";
 import { MemoryStore } from "throttlekit";
 import { describe, expect, it } from "vitest";
@@ -137,6 +137,23 @@ interface Harness {
   readonly clock: ManualClock;
   readonly ledger: MemoryLedger;
   readonly executed: ExecuteRequest[];
+}
+
+/** An audit sink that starts working and then stops. */
+class FlakyLedger {
+  readonly inner = new FailingLedger(false);
+  #appends = 0;
+  failFrom = Number.POSITIVE_INFINITY;
+
+  append(record: Parameters<FailingLedger["append"]>[0]): Promise<void> {
+    this.#appends++;
+    this.inner.failing = this.#appends >= this.failFrom;
+    return this.inner.append(record);
+  }
+
+  get appends(): number {
+    return this.#appends;
+  }
 }
 
 function harness(
@@ -490,5 +507,57 @@ describe("the recovery control arm", () => {
     // And never becomes due again — a control that gets chased tomorrow is not a control.
     h.clock.set(AT + 30 * DAY);
     expect((await h.worker.drain()).considered).toBe(0);
+  });
+});
+
+describe("when the money moves and the record does not", () => {
+  it("books the spend once, finishes the pass, and strands nothing", async () => {
+    // Settlement throws when the money has already moved and the ledger write failed — the one
+    // place in the system that fails loud rather than closed, because a spend nobody can explain is
+    // exactly the state the ledger exists to prevent. What must not happen is that one unrecorded
+    // settlement takes down the pass: every other casualty in the batch is unaffected, and
+    // re-settling would book the money twice.
+    const clock = new ManualClock(AT);
+    const flaky = new FlakyLedger();
+    const terminus = new Terminus({
+      mandate: mandate(),
+      secret: SECRET,
+      store: new MemoryStore(),
+      audit: flaky,
+      actor: "recover-worker/test",
+      clock,
+    });
+    const store = new MemoryCasualtyStore();
+    const worker = new RecoverWorker({
+      terminus,
+      store,
+      directory,
+      gauge: gauge(),
+      model: trained(0.4),
+      executor: executor(() => delivered(20)),
+      clock,
+      config: { ...DEFAULT_RECOVERY_CONFIG, controlFraction: 0, explorationRate: 0 },
+    });
+
+    for (let i = 0; i < 4; i++) await store.save(casualty(i), AT);
+
+    // The first casualty's admission is recorded; its settlement record is the one that fails.
+    flaky.failFrom = 2;
+    const report = await worker.drain();
+    flaky.failFrom = Number.POSITIVE_INFINITY;
+
+    // The pass ran to the end of the batch rather than aborting on the throw, and the money that
+    // moved was booked exactly once — re-settling would have booked it twice.
+    expect(report.claimed).toBe(4);
+    expect(report.acted).toBe(1);
+    const snapshot = await terminus.snapshot();
+    expect(snapshot.settledPaise).toBe(20);
+    expect(snapshot.committedPaise).toBe(0);
+    expect(snapshot.inFlight).toBe(0);
+
+    // The ledger stayed down, so every later casualty was refused before acting. That is the other
+    // half of P8 and the opposite disposition: settlement fails loud because the money has already
+    // moved, admission fails closed because it has not.
+    expect(report.refusalsByAxis["audit"]).toBe(3);
   });
 });
