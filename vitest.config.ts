@@ -4,6 +4,9 @@ import { defineConfig } from "vitest/config";
 const pkg = (name: string): string =>
   fileURLToPath(new URL(`./packages/${name}/src/index.ts`, import.meta.url));
 
+const adapter = (name: string): string =>
+  fileURLToPath(new URL(`./adapters/${name}/src/index.ts`, import.meta.url));
+
 export default defineConfig({
   resolve: {
     // Tests run against source, so a clean checkout needs no build step.
@@ -12,6 +15,7 @@ export default defineConfig({
       "@kairos/domain": pkg("domain"),
       "@kairos/detect": pkg("detect"),
       "@kairos/ledger": pkg("ledger"),
+      "@kairos/simulator": adapter("simulator"),
     },
   },
   test: {
