@@ -648,7 +648,7 @@ Every run pins seed, config hash, and git revision. The scorecard regenerates in
 
 ## 15. Stack and repository layout
 
-TypeScript · Node ≥ 20 · pnpm workspaces · Postgres (Redis optional) · Fastify · Vitest · Biome ·
+TypeScript · Node ≥ 22 · pnpm workspaces · Postgres (Redis optional) · Fastify · Vitest · Biome ·
 Zod at every boundary · OpenTelemetry.
 
 Biome rather than ESLint+Prettier, for consistency with ThrottleKit and because one tool with one
