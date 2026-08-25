@@ -1,0 +1,30 @@
+{
+  "name": "@kairos/razorpay",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Razorpay vocabulary: checkout display configuration, bank codes, and the error taxonomy.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@kairos/domain": "workspace:*",
+    "@kairos/policy": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0"
+  }
+}

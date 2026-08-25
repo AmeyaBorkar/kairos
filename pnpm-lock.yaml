@@ -30,6 +30,19 @@ importers:
         specifier: ^4.1.11
         version: 4.1.11(@types/node@22.20.1)(@vitest/coverage-v8@4.1.11)(vite@8.2.2(@types/node@22.20.1)(jiti@2.6.1))
 
+  adapters/razorpay:
+    dependencies:
+      '@kairos/domain':
+        specifier: workspace:*
+        version: link:../../packages/domain
+      '@kairos/policy':
+        specifier: workspace:*
+        version: link:../../packages/policy
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.0
+        version: 22.20.1
+
   adapters/simulator:
     dependencies:
       '@kairos/domain':
