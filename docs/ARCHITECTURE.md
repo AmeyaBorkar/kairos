@@ -172,6 +172,7 @@ Hexagonal. Three rings: a pure core, a set of ports, and adapters that satisfy t
 | `@kairos/recover` | Classification, expected-value gating, action selection, next-action scheduling, and the calibrated recovery-probability model. Also owns the drain loop, which takes every side effect as a port. |
 | `@kairos/terminus` | The governance kernel. Mandates, reservation/reconcile, stopping rules, admission. Wraps `throttlekit`. |
 | `@kairos/ledger` | Hash-chained append and verification. |
+| `@kairos/proof` | Measurement as a commitment. Metrics with bands, invariants without, provenance over the experiment's configuration, and the comparison that decides whether a run still proves what the project claims. Knows nothing about payments — the benchmarks feed it. |
 
 The core has **zero runtime dependencies** other than `throttlekit` (in `terminus`) and `zod` for
 schema definitions. Anything that needs a network lives outside it.
@@ -208,7 +209,7 @@ what lets the entire system run offline in CI.
 | `recover-worker` | Drains the casualty queue. **Deliberately multi-instance** — this is where a naive budget check would race, and where Terminus earns its place. Ships in dry-run delivery: every decision real, no message sent. |
 | `checkout` | Demo storefront on Razorpay Checkout whose method configuration is driven by `sentry`. |
 | `console` | Operator view: live rail health, active incidents, which bound is binding, the audit trail. |
-| `bench` | The measurement harness. Runs experiments on fixed seeds, emits the scorecard. |
+| `bench` | The measurement harness. Four experiments on pinned seeds, a consolidated scorecard, the seed study its regression bands are derived from, and the gate CI runs on every change. |
 
 ---
 
@@ -690,6 +691,12 @@ Core tables: `slices` · `slice_state` · `incidents` · `steering_decisions` ·
 `steering_decisions` records the holdout arm at decision time. `experiments` pins the seed, config
 hash, and code revision for every harness run, so a scorecard is reproducible from the row.
 
+That row exists ahead of the table. Every scorecard in `docs/results/` carries a `provenance` block
+holding exactly those three fields plus the Node version, and the config hash is load-bearing rather
+than decorative: it is what stops the regression gate from comparing two different experiments and
+calling the difference a regression. The configuration it hashes is written by hand and redacted, so
+that publishing a scorecard cannot publish a mandate signing secret. See §12.
+
 ---
 
 ## 11. Razorpay surface and the simulation boundary
@@ -864,7 +871,7 @@ shown.
 | **2 · Terminus** | Mandates, commitment accounting, stopping rules, audit integration — and the overspend bound, measured against fleet size |
 | **3 · Prevention** | Steering policy, holdout, `sentry` — and the lift measured against a control group |
 | **4 · Recovery** | Classification, EV gate, scheduling, `recover-worker` — and the incremental recovery measured against a control arm and three baselines |
-| **5 · Proof** | Harness, baselines, scorecard, calibration, `bench.yml` regression gate |
+| **5 · Proof** | ✅ Consolidated scorecard, seed study, provenance, `bench.yml` regression gate — bands derived from measured spread rather than guessed |
 | **6 · Demonstration** | Console, chaos scenarios, pitch materials |
 
 ---
@@ -952,3 +959,14 @@ confidence.
    implementation and an atomic lease, which is what makes a fleet safe — Terminus's idempotent
    authority prevents double-*spending* but not double-*sending*. The Postgres implementation is not
    built, so `recover-worker` today is a single instance holding its own queue.
+16. **Nothing gates the full profile.** The regression gate runs the `quick` scorecard, because that
+   is what fits in a pull request; the `full` numbers are the ones published in
+   [MEASUREMENT.md](MEASUREMENT.md) and nothing re-checks them. The two profiles have different
+   config hashes and are correctly refused as comparable, so this is a gap rather than a hazard — but
+   a change could move a published figure while staying inside every band that is enforced. A
+   nightly full run against its own baseline is the obvious fix and is not built.
+17. **The reproducibility argument is pinned rather than proven.** These benchmarks reproduce
+   bit-for-bit on a fixed runtime, and the claim that they would differ across V8 releases is a
+   reason for caution rather than an observation: nobody has run the same seed on Node 22 and Node 24
+   and diffed the scorecards. The gate pins one major and prints an advisory on a mismatch, which
+   handles the risk without measuring it.

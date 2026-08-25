@@ -1,0 +1,360 @@
+{
+  "profile": "quick",
+  "seeds": [
+    20260825,
+    20261834,
+    20262843,
+    20263852,
+    20264861,
+    20265870,
+    20266879,
+    20267888
+  ],
+  "sigmas": 3,
+  "metrics": [
+    {
+      "id": "detect.detectionRate",
+      "unit": "ratio",
+      "direction": "higher-is-better",
+      "n": 8,
+      "mean": 0.8333333333333333,
+      "sd": 1.18687833744435e-16,
+      "min": 0.8333333333333334,
+      "max": 0.8333333333333334,
+      "coefficientOfVariation": 1.42425400493322e-16,
+      "degenerate": true,
+      "suggestedTolerance": null
+    },
+    {
+      "id": "detect.falseAlarmsPerHour",
+      "unit": "rate",
+      "direction": "lower-is-better",
+      "n": 8,
+      "mean": 0.07031250000000003,
+      "sd": 0.06629126073623885,
+      "min": 0,
+      "max": 0.18750000000000006,
+      "coefficientOfVariation": 0.9428090415820634,
+      "degenerate": false,
+      "suggestedTolerance": 0.2
+    },
+    {
+      "id": "detect.medianLatencyMs",
+      "unit": "ms",
+      "direction": "lower-is-better",
+      "n": 8,
+      "mean": 107267.25,
+      "sd": 8887.011304627187,
+      "min": 92616,
+      "max": 117293,
+      "coefficientOfVariation": 0.08284925086293521,
+      "degenerate": false,
+      "suggestedTolerance": 30000
+    },
+    {
+      "id": "detect.rightAltitudeRate",
+      "unit": "ratio",
+      "direction": "higher-is-better",
+      "n": 8,
+      "mean": 0.704861111111111,
+      "sd": 0.07706232732515259,
+      "min": 0.6111111111111112,
+      "max": 0.8333333333333334,
+      "coefficientOfVariation": 0.10932980428396033,
+      "degenerate": false,
+      "suggestedTolerance": 0.3
+    },
+    {
+      "id": "prevent.netbanking-hdfc.collateralDelta",
+      "unit": "ratio",
+      "direction": "neutral",
+      "n": 8,
+      "mean": -0.01988525159459776,
+      "sd": 0.02594138047779851,
+      "min": -0.05228267667292057,
+      "max": 0.011279428159223545,
+      "coefficientOfVariation": 1.3045537972899484,
+      "degenerate": false,
+      "suggestedTolerance": 0.1
+    },
+    {
+      "id": "prevent.netbanking-hdfc.lossRateDelta",
+      "unit": "ratio",
+      "direction": "higher-is-better",
+      "n": 8,
+      "mean": 0.31521987529298157,
+      "sd": 0.06246789590119238,
+      "min": 0.25393094504781977,
+      "max": 0.42608877721943045,
+      "coefficientOfVariation": 0.19817245293664146,
+      "degenerate": false,
+      "suggestedTolerance": 0.2
+    },
+    {
+      "id": "prevent.netbanking-hdfc.savedPaise",
+      "unit": "paise",
+      "direction": "higher-is-better",
+      "n": 8,
+      "mean": 10361542.25,
+      "sd": 2148030.3525570817,
+      "min": 8737891,
+      "max": 15369832,
+      "coefficientOfVariation": 0.2073079760454658,
+      "degenerate": false,
+      "suggestedTolerance": 7000000
+    },
+    {
+      "id": "prevent.upi-hdfc-severe.collateralDelta",
+      "unit": "ratio",
+      "direction": "neutral",
+      "n": 8,
+      "mean": -0.026892937976150624,
+      "sd": 0.005728984822214745,
+      "min": -0.03536836979944699,
+      "max": -0.018306676003511414,
+      "coefficientOfVariation": 0.2130293397952787,
+      "degenerate": false,
+      "suggestedTolerance": 0.02
+    },
+    {
+      "id": "prevent.upi-hdfc-severe.lossRateDelta",
+      "unit": "ratio",
+      "direction": "higher-is-better",
+      "n": 8,
+      "mean": 0.16347924223137725,
+      "sd": 0.02119157980890257,
+      "min": 0.13347956231427766,
+      "max": 0.19851981793994694,
+      "coefficientOfVariation": 0.12962856641401277,
+      "degenerate": false,
+      "suggestedTolerance": 0.07
+    },
+    {
+      "id": "prevent.upi-hdfc-severe.savedPaise",
+      "unit": "paise",
+      "direction": "higher-is-better",
+      "n": 8,
+      "mean": 56933529,
+      "sd": 6594685.861899369,
+      "min": 47126308,
+      "max": 65055858,
+      "coefficientOfVariation": 0.11583132080042621,
+      "degenerate": false,
+      "suggestedTolerance": 20000000
+    },
+    {
+      "id": "recover.autonomousShare",
+      "unit": "ratio",
+      "direction": "neutral",
+      "n": 8,
+      "mean": 0.14595424400280083,
+      "sd": 0.011780087898694823,
+      "min": 0.13655287260616153,
+      "max": 0.1669048299514147,
+      "coefficientOfVariation": 0.08071082810355804,
+      "degenerate": false,
+      "suggestedTolerance": 0.05
+    },
+    {
+      "id": "recover.calibrationError",
+      "unit": "ratio",
+      "direction": "lower-is-better",
+      "n": 8,
+      "mean": 0.018921113551816374,
+      "sd": 0.005110042400013423,
+      "min": 0.011593661154674263,
+      "max": 0.029719419248838034,
+      "coefficientOfVariation": 0.2700709123709515,
+      "degenerate": false,
+      "suggestedTolerance": 0.02
+    },
+    {
+      "id": "recover.calibrationSkill",
+      "unit": "rate",
+      "direction": "higher-is-better",
+      "n": 8,
+      "mean": 0.2665115599670017,
+      "sd": 0.02762453605774825,
+      "min": 0.20311644264804307,
+      "max": 0.28325216854533564,
+      "coefficientOfVariation": 0.10365229958943843,
+      "degenerate": false,
+      "suggestedTolerance": 0.1
+    },
+    {
+      "id": "recover.incrementalPaise",
+      "unit": "paise",
+      "direction": "higher-is-better",
+      "n": 8,
+      "mean": 51049362.5,
+      "sd": 2131848.263119185,
+      "min": 48166400,
+      "max": 54092300,
+      "coefficientOfVariation": 0.04176052664945982,
+      "degenerate": false,
+      "suggestedTolerance": 7000000
+    },
+    {
+      "id": "recover.messages",
+      "unit": "count",
+      "direction": "lower-is-better",
+      "n": 8,
+      "mean": 3922.25,
+      "sd": 203.54694088307284,
+      "min": 3737,
+      "max": 4390,
+      "coefficientOfVariation": 0.05189545309020915,
+      "degenerate": false,
+      "suggestedTolerance": 700
+    },
+    {
+      "id": "recover.trueCostPaise",
+      "unit": "paise",
+      "direction": "lower-is-better",
+      "n": 8,
+      "mean": 622411,
+      "sd": 108151.33517569589,
+      "min": 497779,
+      "max": 792539,
+      "coefficientOfVariation": 0.17376192769037804,
+      "degenerate": false,
+      "suggestedTolerance": 500000
+    },
+    {
+      "id": "recover.wastedActions",
+      "unit": "count",
+      "direction": "lower-is-better",
+      "n": 8,
+      "mean": 471.125,
+      "sd": 36.51785277680728,
+      "min": 429,
+      "max": 534,
+      "coefficientOfVariation": 0.07751202499720304,
+      "degenerate": false,
+      "suggestedTolerance": 150
+    },
+    {
+      "id": "spend.actionsUnderContention",
+      "unit": "count",
+      "direction": "higher-is-better",
+      "n": 8,
+      "mean": 296,
+      "sd": 13.948886284267592,
+      "min": 276,
+      "max": 321,
+      "coefficientOfVariation": 0.04712461582522835,
+      "degenerate": false,
+      "suggestedTolerance": 50
+    },
+    {
+      "id": "spend.adaptiveOverspendPaise",
+      "unit": "paise",
+      "direction": "lower-is-better",
+      "n": 8,
+      "mean": 525,
+      "sd": 205.2872551885702,
+      "min": 200,
+      "max": 800,
+      "coefficientOfVariation": 0.3910233432163242,
+      "degenerate": false,
+      "suggestedTolerance": 700
+    }
+  ],
+  "invariants": [
+    {
+      "id": "detect.trials",
+      "held": 8,
+      "broke": 0
+    },
+    {
+      "id": "detect.healthyHours",
+      "held": 8,
+      "broke": 0
+    },
+    {
+      "id": "spend.worstCaseOverspendPaise",
+      "held": 8,
+      "broke": 0
+    },
+    {
+      "id": "spend.boundHeld",
+      "held": 8,
+      "broke": 0
+    },
+    {
+      "id": "spend.orphans",
+      "held": 8,
+      "broke": 0
+    },
+    {
+      "id": "spend.ledgerVerified",
+      "held": 8,
+      "broke": 0
+    },
+    {
+      "id": "spend.naiveOverspendPaise",
+      "held": 8,
+      "broke": 0
+    },
+    {
+      "id": "prevent.ledgerVerified",
+      "held": 8,
+      "broke": 0
+    },
+    {
+      "id": "prevent.detectionHeld",
+      "held": 8,
+      "broke": 0
+    },
+    {
+      "id": "prevent.controlAttempts",
+      "held": 8,
+      "broke": 0
+    },
+    {
+      "id": "prevent.upi-hdfc-moderate.steersIssued",
+      "held": 8,
+      "broke": 0
+    },
+    {
+      "id": "prevent.netbanking-hdfc.leverChanges",
+      "held": 8,
+      "broke": 0
+    },
+    {
+      "id": "prevent.upi-hdfc-severe.leverChanges",
+      "held": 8,
+      "broke": 0
+    },
+    {
+      "id": "recover.beatsDoNothing",
+      "held": 8,
+      "broke": 0
+    },
+    {
+      "id": "recover.unclassified",
+      "held": 8,
+      "broke": 0
+    },
+    {
+      "id": "recover.holdoutCasualties",
+      "held": 8,
+      "broke": 0
+    },
+    {
+      "id": "recover.calibrationPredictions",
+      "held": 8,
+      "broke": 0
+    },
+    {
+      "id": "recover.ledgerVerified",
+      "held": 8,
+      "broke": 0
+    },
+    {
+      "id": "recover.refusals",
+      "held": 8,
+      "broke": 0
+    }
+  ]
+}

@@ -15,6 +15,11 @@ pnpm bench:prevent         # steering lift against a holdout
 pnpm bench:prevent:quick   # reduced sweep for CI
 pnpm bench:recover         # recovery against a control arm and three baselines, ~25s
 pnpm bench:recover:quick   # reduced sweep for CI
+
+pnpm bench:scorecard       # all four arms, consolidated, ~29s
+pnpm bench:gate            # the same at gate size, judged against the committed baseline, ~15s
+pnpm bench:variance        # how far each number moves when only the seed changes, ~2min
+pnpm bench:bless           # rewrite the baseline. Never widens a band.
 ```
 
 ---
@@ -584,7 +589,113 @@ wasted pass. The bounds themselves are measured under contention in Phase 2, not
 
 ---
 
-## Phase 5 onward
+## Phase 5 — Proof
 
-Not yet measured. The consolidated scorecard, the regression gate, and the chaos demonstrations land
-with their phases.
+### What is measured, and what kind of thing it is
+
+Every claim in this document is now one of two things, and the difference decides how it is checked.
+
+An **invariant** has no sampling distribution. Spend either exceeded the budget or it did not; the
+chain either hashes or it does not. There are seventeen, they are checked exactly, and none of them
+has a tolerance — putting one on "the kernel did not overspend" would be saying it may overspend a
+little.
+
+A **metric** is an estimate and carries a band. There are twenty-one. The band is not a judgement
+call: `pnpm bench:variance` holds the code still, varies only the seed, and measures how far each
+number wanders. That spread is the size of a *meaningless* change — because a code change that
+consumes randomness differently has, for a seeded benchmark, done exactly what changing the seed
+does — so three standard deviations of it lets an innocent refactor through and stops a real
+regression.
+
+Two bands are not derived and say so in the file. The false-alarm rate takes the 0.25-an-hour budget
+the detection report already declares, because the project has said what it will tolerate and a
+second number invented for the gate would be a second opinion. The detection rate takes one trial
+out of the eighteen the gate runs, because its spread across eight seeds was exactly zero and a band
+of zero would fire the first time any scenario went the other way.
+
+The reasoning is in
+[ADR 0005](decisions/0005-a-benchmark-that-reproduces-exactly-still-needs-a-band.md).
+
+### The full scorecard
+
+`docs/results/scorecard-full.{txt,json}`, config `2f9911374bc4681d`, 28.7s.
+
+| | Full profile |
+|---|---:|
+| Detection latency, median, at `h=12` | **1.5 min** |
+| False alarms per hour of healthy traffic | **0.143** |
+| Degradations detected | 83.3% |
+| Incidents reported at the right slice | 79.2% |
+| Overspend, reserving the worst case | **₹0** |
+| Overspend, adaptive sizers, bounded | ₹7 |
+| Loss rate avoided, suppressible incident | **35.5%** |
+| Loss rate avoided, demotable incident | 11.0% |
+| Recovered above what came back unaided | **₹6,96,678** |
+| True cost of recovering it | ₹9,242 |
+| Calibration error | **1.58%** |
+| Brier skill over the base rate | 0.236 |
+
+### How much the gate is actually worth
+
+**Eight of twenty-one bands are wider than the value they guard**, and the gate prints which. Those
+catch a claim breaking, not a claim degrading, and a reader who sees PASSED is owed that distinction
+rather than left to assume the sheet is uniform. The tight ones are the ones worth trusting:
+recovery's incremental total is gated at ±14% of itself, messages at ±16%, actions under contention
+at ±17%.
+
+The gate profile is deliberately not the smallest one that runs. Every size in it was raised until
+the seed study said the headline numbers could be told apart from noise — the recovery total's
+spread fell from 12% of its mean to 4%, and calibration error from 5.7% to 1.9%, which is where the
+full profile lands. That cost about fifteen seconds of CI, which is a low price for bands that mean
+something.
+
+### What measuring it found
+
+The point of a study like this is the things it says that you did not already believe. There were
+five, and each changed the code rather than the write-up.
+
+1. **The overspend claim was wrong.** The scorecard first asserted that the kernel never spends past
+   the budget. It spends ₹8 past it. Reserving the worst case cannot overspend — that is gated at
+   exactly zero — but the adaptive sizers deliberately reserve *less* in order to fit more actions
+   into the same budget, and what they buy is a bounded residual, not the absence of one. Gating
+   them at zero would have been a lie or a ban on the feature. They are two claims now.
+2. **The prevention scenarios existed in two places.** Onsets transcribed ten minutes late pushed a
+   degradation's peak past the end of the gate's window, and `detectionHeld` went false for a reason
+   that had nothing to do with the detector. They live in one file now.
+3. **A budget was being checked against a measurement that could not resolve it.** The gate observed
+   fifty minutes of healthy traffic, in which a single false alarm reads as 1.2 an hour — five times
+   the declared budget. The answer to a rate you cannot resolve is more denominator rather than a
+   wider band, so the healthy arm got its own sample-size knob and now runs nearly seven hours per
+   threshold.
+4. **A scenario was dropped for being unmeasurable, and then rescued.** HDFC netbanking's steering
+   window saw single-digit treated attempts and its lift varied across seeds by almost its own mean.
+   A band honestly derived from that is a hundred percentage points, which no regression could
+   cross. The gate profile was made large enough to resolve it instead — spread fell from 97% of the
+   mean to 20%.
+5. **An invariant was true by luck.** Lever changes were zero on all eight seeds, so they were
+   promoted to a claim: the steering lever never changes mid-incident. Then the full profile returned
+   three, and was right to — over forty-five minutes an incident ramps, peaks and recovers, and the
+   lever that suits a rail failing at 20% is not the one that suits it at 45%. A study run at one
+   size cannot tell you that. It is a metric again, and its band guards what was worth guarding,
+   which is flapping rather than change.
+
+### Caveats
+
+1. **The gate runs one seed.** It has to: a gate that re-rolls its own dice is not reproducible. The
+   bands make it survive a re-roll, which is not the same as measuring across many.
+2. **The bands are as good as eight seeds make them.** A standard deviation from eight samples is
+   itself uncertain by roughly a quarter of its size, which is why `suggestTolerance` rounds up
+   rather than to nearest, and why `seeds` sits beside every `tolerance` in the baseline.
+3. **Node is pinned rather than proven.** These runs reproduce bit-for-bit on a fixed runtime, but
+   V8 may change the last place of a transcendental between releases and a long simulation can
+   amplify it. The bench job pins one major, the baseline records what it was blessed on, and a
+   mismatch is printed as an advisory rather than mistaken for a regression.
+4. **The seed study is not automatic, and must not be.** Nothing in CI runs it, because a gate that
+   recalibrates itself is not a gate. When the harness changes shape, somebody runs it, reads it, and
+   edits the bands by hand.
+
+---
+
+## Phase 6 onward
+
+Not yet measured. The console and the chaos demonstrations land with their phase.

@@ -1,0 +1,1760 @@
+{
+  "scorecard": {
+    "provenance": {
+      "profile": "full",
+      "configHash": "2f9911374bc4681d",
+      "codeRevision": "28ffd73-dirty",
+      "node": "v24.13.1",
+      "config": {
+        "profile": "full",
+        "seed": 20260825,
+        "detect": {
+          "thresholds": [
+            6,
+            8,
+            10,
+            12,
+            14,
+            17,
+            21
+          ],
+          "operatingThreshold": 12,
+          "seedsPerCell": 4,
+          "healthySeeds": 12,
+          "seedBase": 0,
+          "attemptsPerMinute": 400,
+          "warmupMs": 1500000,
+          "observeMs": 2700000,
+          "scenarios": [
+            "issuer-collapse",
+            "issuer-moderate",
+            "slow-bleed",
+            "single-app",
+            "thin-slice",
+            "card-network"
+          ]
+        },
+        "spend": {
+          "workerCounts": [
+            1,
+            2,
+            8,
+            32,
+            64
+          ],
+          "budgetPaise": 50000,
+          "maxInFlight": 8,
+          "contactCapLimit": 3,
+          "jobs": 4000,
+          "customers": 300,
+          "devanagariShare": 0.35
+        },
+        "prevent": {
+          "attemptsPerMinute": 400,
+          "warmupMs": 1200000,
+          "observeMs": 2700000,
+          "tickMs": 15000,
+          "customerPool": 20000,
+          "choice": {
+            "switchElasticity": 0.35,
+            "abandonmentOnSuppress": 0.08
+          },
+          "scenarios": [
+            {
+              "name": "netbanking-hdfc",
+              "shouldSteer": true,
+              "peakFailureRate": 0.45,
+              "holdMs": 1800000,
+              "rampMs": 30000
+            },
+            {
+              "name": "upi-hdfc-severe",
+              "shouldSteer": true,
+              "peakFailureRate": 0.55,
+              "holdMs": 1800000,
+              "rampMs": 30000
+            },
+            {
+              "name": "upi-hdfc-moderate",
+              "shouldSteer": false,
+              "peakFailureRate": 0.14,
+              "holdMs": 1800000,
+              "rampMs": 60000
+            }
+          ]
+        },
+        "recover": {
+          "durationMs": 14400000,
+          "attemptsPerMinute": 300,
+          "customerPool": 12000,
+          "tailMs": 3456000000,
+          "degradations": [
+            {
+              "slice": "netbanking/hdfc",
+              "peakFailureRate": 0.55,
+              "holdMs": 2100000
+            },
+            {
+              "slice": "upi/sbi",
+              "peakFailureRate": 0.42,
+              "holdMs": 3600000
+            }
+          ],
+          "mandate": {
+            "budgetPaise": 5000000,
+            "maxActionCostPaise": 60,
+            "maxInFlight": 64,
+            "contactCapLimit": 3
+          },
+          "economics": {
+            "marginRate": 0.3,
+            "optOutCostPaise": 20000,
+            "controlFraction": 0.1,
+            "explorationRate": 0.08
+          }
+        },
+        "detector": {
+          "threshold": 12,
+          "rollup": true
+        }
+      }
+    },
+    "metrics": [
+      {
+        "id": "detect.falseAlarmsPerHour",
+        "label": "alarms raised per hour of healthy traffic at h=12",
+        "value": 0.14285714285714288,
+        "direction": "lower-is-better",
+        "unit": "rate"
+      },
+      {
+        "id": "detect.detectionRate",
+        "label": "share of injected degradations the detector opened an incident for",
+        "value": 0.8333333333333334,
+        "direction": "higher-is-better",
+        "unit": "ratio"
+      },
+      {
+        "id": "detect.medianLatencyMs",
+        "label": "median time from a rail actually breaking to an incident opening",
+        "value": 92783,
+        "direction": "lower-is-better",
+        "unit": "ms"
+      },
+      {
+        "id": "detect.rightAltitudeRate",
+        "label": "share of incidents reported at the degraded slice rather than above or below it",
+        "value": 0.7916666666666666,
+        "direction": "higher-is-better",
+        "unit": "ratio"
+      },
+      {
+        "id": "spend.adaptiveOverspendPaise",
+        "label": "worst residual an under-reserving sizer ran up — bounded by construction, and worth watching because the bound is what it is allowed rather than what it should cost",
+        "value": 700,
+        "direction": "lower-is-better",
+        "unit": "paise"
+      },
+      {
+        "id": "spend.actionsUnderContention",
+        "label": "actions the kernel admitted at the highest worker count — safety bought by refusing everything is not safety",
+        "value": 292,
+        "direction": "higher-is-better",
+        "unit": "count"
+      },
+      {
+        "id": "prevent.netbanking-hdfc.lossRateDelta",
+        "label": "loss rate avoided on netbanking-hdfc, among customers whose own rail was the failing one",
+        "value": 0.35456314878892736,
+        "direction": "higher-is-better",
+        "unit": "ratio"
+      },
+      {
+        "id": "prevent.netbanking-hdfc.savedPaise",
+        "label": "payment value that did not fail on netbanking-hdfc because traffic was steered",
+        "value": 9356106,
+        "direction": "higher-is-better",
+        "unit": "paise"
+      },
+      {
+        "id": "prevent.netbanking-hdfc.leverChanges",
+        "label": "times the lever or target changed mid-steer on netbanking-hdfc",
+        "value": 3,
+        "direction": "lower-is-better",
+        "unit": "count"
+      },
+      {
+        "id": "prevent.netbanking-hdfc.collateralDelta",
+        "label": "what happened to customers on netbanking-hdfc whose own rail was fine and who were moved anyway — negative is the cost of the lever, not a bug",
+        "value": 0.07085561497326204,
+        "direction": "neutral",
+        "unit": "ratio"
+      },
+      {
+        "id": "prevent.upi-hdfc-severe.lossRateDelta",
+        "label": "loss rate avoided on upi-hdfc-severe, among customers whose own rail was the failing one",
+        "value": 0.11015194363226766,
+        "direction": "higher-is-better",
+        "unit": "ratio"
+      },
+      {
+        "id": "prevent.upi-hdfc-severe.savedPaise",
+        "label": "payment value that did not fail on upi-hdfc-severe because traffic was steered",
+        "value": 25291977,
+        "direction": "higher-is-better",
+        "unit": "paise"
+      },
+      {
+        "id": "prevent.upi-hdfc-severe.leverChanges",
+        "label": "times the lever or target changed mid-steer on upi-hdfc-severe",
+        "value": 0,
+        "direction": "lower-is-better",
+        "unit": "count"
+      },
+      {
+        "id": "prevent.upi-hdfc-severe.collateralDelta",
+        "label": "what happened to customers on upi-hdfc-severe whose own rail was fine and who were moved anyway — negative is the cost of the lever, not a bug",
+        "value": -0.02718313997934501,
+        "direction": "neutral",
+        "unit": "ratio"
+      },
+      {
+        "id": "recover.incrementalPaise",
+        "label": "recovered because of the arm, over and above what came back unaided",
+        "value": 69667800,
+        "direction": "higher-is-better",
+        "unit": "paise"
+      },
+      {
+        "id": "recover.trueCostPaise",
+        "label": "postage plus the priced value of every customer lost to an opt-out",
+        "value": 924173,
+        "direction": "lower-is-better",
+        "unit": "paise"
+      },
+      {
+        "id": "recover.messages",
+        "label": "messages sent — the term the contact cap and the opt-out cost are both about",
+        "value": 5719,
+        "direction": "lower-is-better",
+        "unit": "count"
+      },
+      {
+        "id": "recover.wastedActions",
+        "label": "actions that landed on somebody who was coming back anyway",
+        "value": 730,
+        "direction": "lower-is-better",
+        "unit": "count"
+      },
+      {
+        "id": "recover.calibrationError",
+        "label": "expected calibration error — whether a stated 30% means thirty per cent, which is what the gate multiplies by a rupee amount",
+        "value": 0.015773644734216892,
+        "direction": "lower-is-better",
+        "unit": "ratio"
+      },
+      {
+        "id": "recover.calibrationSkill",
+        "label": "Brier skill over the base rate — a model that repeats the base rate for ever is perfectly calibrated and worth nothing",
+        "value": 0.23570126020341664,
+        "direction": "higher-is-better",
+        "unit": "rate"
+      },
+      {
+        "id": "recover.autonomousShare",
+        "label": "share of casualties chargeable again without the customer present; a property of the merchant's mix rather than of Kairos",
+        "value": 0.12005039596832254,
+        "direction": "neutral",
+        "unit": "ratio"
+      }
+    ],
+    "invariants": [
+      {
+        "id": "detect.trials",
+        "kind": "exact",
+        "value": 252,
+        "expected": 252,
+        "label": "the sweep ran the number of trials its configuration describes"
+      },
+      {
+        "id": "detect.healthyHours",
+        "kind": "positive",
+        "value": 13.999999999999998,
+        "expected": null,
+        "label": "healthy traffic was observed, so the false-alarm rate has a denominator"
+      },
+      {
+        "id": "spend.worstCaseOverspendPaise",
+        "kind": "zero",
+        "value": 0,
+        "expected": null,
+        "label": "reserving the worst case never authorised a rupee past the budget, at any worker count"
+      },
+      {
+        "id": "spend.boundHeld",
+        "kind": "true",
+        "value": true,
+        "expected": null,
+        "label": "every sizer, including the ones that under-reserve on purpose, stayed inside the residual its own reservations permit"
+      },
+      {
+        "id": "spend.orphans",
+        "kind": "zero",
+        "value": 0,
+        "expected": null,
+        "label": "no reservation was held for an action that never reported its cost"
+      },
+      {
+        "id": "spend.ledgerVerified",
+        "kind": "true",
+        "value": true,
+        "expected": null,
+        "label": "the audit chain hashes end to end for every arm"
+      },
+      {
+        "id": "spend.naiveOverspendPaise",
+        "kind": "positive",
+        "value": 10000,
+        "expected": null,
+        "label": "the unguarded arm really does overspend, so the kernel has something to prevent"
+      },
+      {
+        "id": "prevent.ledgerVerified",
+        "kind": "true",
+        "value": true,
+        "expected": null,
+        "label": "every steering decision, taken or refused, is on a chain that still hashes"
+      },
+      {
+        "id": "prevent.detectionHeld",
+        "kind": "true",
+        "value": true,
+        "expected": null,
+        "label": "the detector kept each incident open for the whole degradation it was steering against"
+      },
+      {
+        "id": "prevent.controlAttempts",
+        "kind": "positive",
+        "value": 342,
+        "expected": null,
+        "label": "customers were held out of steering, so the comparison has a control"
+      },
+      {
+        "id": "prevent.upi-hdfc-moderate.steersIssued",
+        "kind": "zero",
+        "value": 0,
+        "expected": null,
+        "label": "steering declined on upi-hdfc-moderate, where the rail is degraded but not enough to be worth moving"
+      },
+      {
+        "id": "recover.beatsDoNothing",
+        "kind": "positive",
+        "value": 69667800,
+        "expected": null,
+        "label": "the recovery arm collected more than the customers would have returned with unaided"
+      },
+      {
+        "id": "recover.unclassified",
+        "kind": "zero",
+        "value": 0,
+        "expected": null,
+        "label": "no failure in our own traffic model fell through to `unknown` — a classifier that cannot name them would be measuring its fallback"
+      },
+      {
+        "id": "recover.holdoutCasualties",
+        "kind": "positive",
+        "value": 2343,
+        "expected": null,
+        "label": "casualties were held out of treatment entirely, which is the only reason any recovery figure has a denominator"
+      },
+      {
+        "id": "recover.calibrationPredictions",
+        "kind": "positive",
+        "value": 5968,
+        "expected": null,
+        "label": "the probability model made predictions there were outcomes for"
+      },
+      {
+        "id": "recover.ledgerVerified",
+        "kind": "true",
+        "value": true,
+        "expected": null,
+        "label": "the recovery arm's audit chain hashes end to end"
+      },
+      {
+        "id": "recover.refusals",
+        "kind": "zero",
+        "value": 0,
+        "expected": null,
+        "label": "nothing was proposed that the kernel then had to decline; the worker checks the schedule before it asks"
+      }
+    ],
+    "elapsedMs": 28729.1205
+  },
+  "detail": {
+    "detect": {
+      "threshold": 12,
+      "falseAlarmsPerHour": 0.14285714285714288,
+      "healthyHours": 13.999999999999998,
+      "totalFalseAlarms": 2,
+      "overallDetectionRate": 0.8333333333333334,
+      "overallMedianLatencyMs": 92783,
+      "scenarios": [
+        {
+          "scenario": "issuer-collapse",
+          "description": "HDFC UPI drops to 55% failure instantly — the easy case",
+          "trials": 4,
+          "detected": 4,
+          "detectionRate": 1,
+          "medianLatencyMs": 5293,
+          "p90LatencyMs": 5593,
+          "medianOnsetErrorMs": 975,
+          "rightAltitudeRate": 1
+        },
+        {
+          "scenario": "issuer-moderate",
+          "description": "SBI UPI degrades to 22% over two minutes",
+          "trials": 4,
+          "detected": 4,
+          "detectionRate": 1,
+          "medianLatencyMs": 109935,
+          "p90LatencyMs": 155000,
+          "medianOnsetErrorMs": 38084,
+          "rightAltitudeRate": 1
+        },
+        {
+          "scenario": "slow-bleed",
+          "description": "ICICI UPI creeps to 14% over fifteen minutes — the hard case",
+          "trials": 4,
+          "detected": 4,
+          "detectionRate": 1,
+          "medianLatencyMs": 412878,
+          "p90LatencyMs": 479868,
+          "medianOnsetErrorMs": 203442,
+          "rightAltitudeRate": 1
+        },
+        {
+          "scenario": "single-app",
+          "description": "Only PhonePe-on-HDFC breaks, at 45% — a narrow slice inside a healthy issuer",
+          "trials": 4,
+          "detected": 4,
+          "detectionRate": 1,
+          "medianLatencyMs": 43850,
+          "p90LatencyMs": 48221,
+          "medianOnsetErrorMs": 21124,
+          "rightAltitudeRate": 1
+        },
+        {
+          "scenario": "thin-slice",
+          "description": "Canara-on-Paytm at 50%, on roughly four attempts a minute — barely any evidence",
+          "trials": 4,
+          "detected": 0,
+          "detectionRate": 0,
+          "medianLatencyMs": null,
+          "p90LatencyMs": null,
+          "medianOnsetErrorMs": null,
+          "rightAltitudeRate": 0
+        },
+        {
+          "scenario": "card-network",
+          "description": "HDFC Visa from 11% to 34% — a rail whose baseline is already high",
+          "trials": 4,
+          "detected": 4,
+          "detectionRate": 1,
+          "medianLatencyMs": 236462,
+          "p90LatencyMs": 422776,
+          "medianOnsetErrorMs": 18839,
+          "rightAltitudeRate": 0.75
+        }
+      ]
+    },
+    "spend": {
+      "options": {
+        "workers": 16,
+        "budgetPaise": 50000,
+        "maxInFlight": 8,
+        "contactCapLimit": 3,
+        "jobs": 4000,
+        "customers": 300,
+        "devanagariShare": 0.35,
+        "seed": 20260825
+      },
+      "workerCounts": [
+        1,
+        2,
+        8,
+        32,
+        64
+      ],
+      "naive": [
+        {
+          "arm": "naive check-then-spend",
+          "workers": 1,
+          "budgetPaise": 50000,
+          "spentPaise": 50000,
+          "overspendPaise": 0,
+          "boundPaise": null,
+          "actionsTaken": 286,
+          "utilisation": 1,
+          "capViolations": 0,
+          "maxContactsToOneCustomer": 3
+        },
+        {
+          "arm": "naive check-then-spend",
+          "workers": 2,
+          "budgetPaise": 50000,
+          "spentPaise": 50100,
+          "overspendPaise": 100,
+          "boundPaise": null,
+          "actionsTaken": 295,
+          "utilisation": 1.002,
+          "capViolations": 138,
+          "maxContactsToOneCustomer": 6
+        },
+        {
+          "arm": "naive check-then-spend",
+          "workers": 8,
+          "budgetPaise": 50000,
+          "spentPaise": 51100,
+          "overspendPaise": 1100,
+          "boundPaise": null,
+          "actionsTaken": 287,
+          "utilisation": 1.022,
+          "capViolations": 224,
+          "maxContactsToOneCustomer": 14
+        },
+        {
+          "arm": "naive check-then-spend",
+          "workers": 32,
+          "budgetPaise": 50000,
+          "spentPaise": 54500,
+          "overspendPaise": 4500,
+          "boundPaise": null,
+          "actionsTaken": 313,
+          "utilisation": 1.09,
+          "capViolations": 244,
+          "maxContactsToOneCustomer": 14
+        },
+        {
+          "arm": "naive check-then-spend",
+          "workers": 64,
+          "budgetPaise": 50000,
+          "spentPaise": 60000,
+          "overspendPaise": 10000,
+          "boundPaise": null,
+          "actionsTaken": 346,
+          "utilisation": 1.2,
+          "capViolations": 271,
+          "maxContactsToOneCustomer": 14
+        }
+      ],
+      "terminus": [
+        {
+          "arm": "terminus (worst-case)",
+          "sizer": "worst-case",
+          "minReservationPaise": 300,
+          "workers": 1,
+          "budgetPaise": 50000,
+          "spentPaise": 49900,
+          "overspendPaise": 0,
+          "boundPaise": 0,
+          "actionsTaken": 285,
+          "utilisation": 0.998,
+          "capViolations": 0,
+          "maxContactsToOneCustomer": 3,
+          "orphans": 0,
+          "ledgerVerified": true,
+          "refusalsByAxis": {
+            "contact-cap": 1045,
+            "budget": 1
+          }
+        },
+        {
+          "arm": "terminus (estimate)",
+          "sizer": "estimate",
+          "minReservationPaise": 100,
+          "workers": 1,
+          "budgetPaise": 50000,
+          "spentPaise": 50000,
+          "overspendPaise": 0,
+          "boundPaise": 1600,
+          "actionsTaken": 286,
+          "utilisation": 1,
+          "capViolations": 0,
+          "maxContactsToOneCustomer": 3,
+          "orphans": 0,
+          "ledgerVerified": true,
+          "refusalsByAxis": {
+            "contact-cap": 1045,
+            "budget": 1
+          }
+        },
+        {
+          "arm": "terminus (learned)",
+          "sizer": "learned",
+          "minReservationPaise": 151,
+          "workers": 1,
+          "budgetPaise": 50000,
+          "spentPaise": 49900,
+          "overspendPaise": 0,
+          "boundPaise": 1192,
+          "actionsTaken": 285,
+          "utilisation": 0.998,
+          "capViolations": 0,
+          "maxContactsToOneCustomer": 3,
+          "orphans": 0,
+          "ledgerVerified": true,
+          "refusalsByAxis": {
+            "contact-cap": 1045,
+            "budget": 1
+          }
+        },
+        {
+          "arm": "terminus (predictive)",
+          "sizer": "predictive",
+          "minReservationPaise": 126,
+          "workers": 1,
+          "budgetPaise": 50000,
+          "spentPaise": 49900,
+          "overspendPaise": 0,
+          "boundPaise": 1392,
+          "actionsTaken": 285,
+          "utilisation": 0.998,
+          "capViolations": 0,
+          "maxContactsToOneCustomer": 3,
+          "orphans": 0,
+          "ledgerVerified": true,
+          "refusalsByAxis": {
+            "contact-cap": 1045,
+            "budget": 1
+          }
+        },
+        {
+          "arm": "terminus (worst-case)",
+          "sizer": "worst-case",
+          "minReservationPaise": 300,
+          "workers": 2,
+          "budgetPaise": 50000,
+          "spentPaise": 49900,
+          "overspendPaise": 0,
+          "boundPaise": 0,
+          "actionsTaken": 285,
+          "utilisation": 0.998,
+          "capViolations": 0,
+          "maxContactsToOneCustomer": 3,
+          "orphans": 0,
+          "ledgerVerified": true,
+          "refusalsByAxis": {
+            "contact-cap": 1045,
+            "budget": 3
+          }
+        },
+        {
+          "arm": "terminus (estimate)",
+          "sizer": "estimate",
+          "minReservationPaise": 100,
+          "workers": 2,
+          "budgetPaise": 50000,
+          "spentPaise": 50000,
+          "overspendPaise": 0,
+          "boundPaise": 1600,
+          "actionsTaken": 286,
+          "utilisation": 1,
+          "capViolations": 0,
+          "maxContactsToOneCustomer": 3,
+          "orphans": 0,
+          "ledgerVerified": true,
+          "refusalsByAxis": {
+            "contact-cap": 1045,
+            "budget": 3
+          }
+        },
+        {
+          "arm": "terminus (learned)",
+          "sizer": "learned",
+          "minReservationPaise": 151,
+          "workers": 2,
+          "budgetPaise": 50000,
+          "spentPaise": 49900,
+          "overspendPaise": 0,
+          "boundPaise": 1192,
+          "actionsTaken": 285,
+          "utilisation": 0.998,
+          "capViolations": 0,
+          "maxContactsToOneCustomer": 3,
+          "orphans": 0,
+          "ledgerVerified": true,
+          "refusalsByAxis": {
+            "contact-cap": 1045,
+            "budget": 3
+          }
+        },
+        {
+          "arm": "terminus (predictive)",
+          "sizer": "predictive",
+          "minReservationPaise": 105,
+          "workers": 2,
+          "budgetPaise": 50000,
+          "spentPaise": 49900,
+          "overspendPaise": 0,
+          "boundPaise": 1560,
+          "actionsTaken": 285,
+          "utilisation": 0.998,
+          "capViolations": 0,
+          "maxContactsToOneCustomer": 3,
+          "orphans": 0,
+          "ledgerVerified": true,
+          "refusalsByAxis": {
+            "contact-cap": 1045,
+            "budget": 3
+          }
+        },
+        {
+          "arm": "terminus (worst-case)",
+          "sizer": "worst-case",
+          "minReservationPaise": 300,
+          "workers": 8,
+          "budgetPaise": 50000,
+          "spentPaise": 49900,
+          "overspendPaise": 0,
+          "boundPaise": 0,
+          "actionsTaken": 285,
+          "utilisation": 0.998,
+          "capViolations": 0,
+          "maxContactsToOneCustomer": 3,
+          "orphans": 0,
+          "ledgerVerified": true,
+          "refusalsByAxis": {
+            "contact-cap": 1045,
+            "budget": 23
+          }
+        },
+        {
+          "arm": "terminus (estimate)",
+          "sizer": "estimate",
+          "minReservationPaise": 100,
+          "workers": 8,
+          "budgetPaise": 50000,
+          "spentPaise": 50000,
+          "overspendPaise": 0,
+          "boundPaise": 1600,
+          "actionsTaken": 286,
+          "utilisation": 1,
+          "capViolations": 0,
+          "maxContactsToOneCustomer": 3,
+          "orphans": 0,
+          "ledgerVerified": true,
+          "refusalsByAxis": {
+            "contact-cap": 1045,
+            "budget": 13
+          }
+        },
+        {
+          "arm": "terminus (learned)",
+          "sizer": "learned",
+          "minReservationPaise": 151,
+          "workers": 8,
+          "budgetPaise": 50000,
+          "spentPaise": 49900,
+          "overspendPaise": 0,
+          "boundPaise": 1192,
+          "actionsTaken": 285,
+          "utilisation": 0.998,
+          "capViolations": 0,
+          "maxContactsToOneCustomer": 3,
+          "orphans": 0,
+          "ledgerVerified": true,
+          "refusalsByAxis": {
+            "contact-cap": 1045,
+            "budget": 23
+          }
+        },
+        {
+          "arm": "terminus (predictive)",
+          "sizer": "predictive",
+          "minReservationPaise": 126,
+          "workers": 8,
+          "budgetPaise": 50000,
+          "spentPaise": 49900,
+          "overspendPaise": 0,
+          "boundPaise": 1392,
+          "actionsTaken": 285,
+          "utilisation": 0.998,
+          "capViolations": 0,
+          "maxContactsToOneCustomer": 3,
+          "orphans": 0,
+          "ledgerVerified": true,
+          "refusalsByAxis": {
+            "contact-cap": 1045,
+            "budget": 23
+          }
+        },
+        {
+          "arm": "terminus (worst-case)",
+          "sizer": "worst-case",
+          "minReservationPaise": 300,
+          "workers": 32,
+          "budgetPaise": 50000,
+          "spentPaise": 49800,
+          "overspendPaise": 0,
+          "boundPaise": 0,
+          "actionsTaken": 282,
+          "utilisation": 0.996,
+          "capViolations": 0,
+          "maxContactsToOneCustomer": 3,
+          "orphans": 0,
+          "ledgerVerified": true,
+          "refusalsByAxis": {
+            "concurrency": 419,
+            "contact-cap": 1034,
+            "budget": 95
+          }
+        },
+        {
+          "arm": "terminus (estimate)",
+          "sizer": "estimate",
+          "minReservationPaise": 100,
+          "workers": 32,
+          "budgetPaise": 50000,
+          "spentPaise": 50700,
+          "overspendPaise": 700,
+          "boundPaise": 1600,
+          "actionsTaken": 285,
+          "utilisation": 1.014,
+          "capViolations": 0,
+          "maxContactsToOneCustomer": 3,
+          "orphans": 0,
+          "ledgerVerified": true,
+          "refusalsByAxis": {
+            "concurrency": 426,
+            "contact-cap": 1045,
+            "budget": 46
+          }
+        },
+        {
+          "arm": "terminus (learned)",
+          "sizer": "learned",
+          "minReservationPaise": 147,
+          "workers": 32,
+          "budgetPaise": 50000,
+          "spentPaise": 49800,
+          "overspendPaise": 0,
+          "boundPaise": 1224,
+          "actionsTaken": 282,
+          "utilisation": 0.996,
+          "capViolations": 0,
+          "maxContactsToOneCustomer": 3,
+          "orphans": 0,
+          "ledgerVerified": true,
+          "refusalsByAxis": {
+            "concurrency": 419,
+            "contact-cap": 1034,
+            "budget": 95
+          }
+        },
+        {
+          "arm": "terminus (predictive)",
+          "sizer": "predictive",
+          "minReservationPaise": 110,
+          "workers": 32,
+          "budgetPaise": 50000,
+          "spentPaise": 49800,
+          "overspendPaise": 0,
+          "boundPaise": 1520,
+          "actionsTaken": 282,
+          "utilisation": 0.996,
+          "capViolations": 0,
+          "maxContactsToOneCustomer": 3,
+          "orphans": 0,
+          "ledgerVerified": true,
+          "refusalsByAxis": {
+            "concurrency": 419,
+            "contact-cap": 1034,
+            "budget": 95
+          }
+        },
+        {
+          "arm": "terminus (worst-case)",
+          "sizer": "worst-case",
+          "minReservationPaise": 300,
+          "workers": 64,
+          "budgetPaise": 50000,
+          "spentPaise": 49800,
+          "overspendPaise": 0,
+          "boundPaise": 0,
+          "actionsTaken": 286,
+          "utilisation": 0.996,
+          "capViolations": 0,
+          "maxContactsToOneCustomer": 3,
+          "orphans": 0,
+          "ledgerVerified": true,
+          "refusalsByAxis": {
+            "concurrency": 1093,
+            "contact-cap": 1034,
+            "budget": 140
+          }
+        },
+        {
+          "arm": "terminus (estimate)",
+          "sizer": "estimate",
+          "minReservationPaise": 100,
+          "workers": 64,
+          "budgetPaise": 50000,
+          "spentPaise": 50600,
+          "overspendPaise": 600,
+          "boundPaise": 1600,
+          "actionsTaken": 292,
+          "utilisation": 1.012,
+          "capViolations": 0,
+          "maxContactsToOneCustomer": 3,
+          "orphans": 0,
+          "ledgerVerified": true,
+          "refusalsByAxis": {
+            "concurrency": 1129,
+            "contact-cap": 1067,
+            "budget": 102
+          }
+        },
+        {
+          "arm": "terminus (learned)",
+          "sizer": "learned",
+          "minReservationPaise": 151,
+          "workers": 64,
+          "budgetPaise": 50000,
+          "spentPaise": 49800,
+          "overspendPaise": 0,
+          "boundPaise": 1192,
+          "actionsTaken": 286,
+          "utilisation": 0.996,
+          "capViolations": 0,
+          "maxContactsToOneCustomer": 3,
+          "orphans": 0,
+          "ledgerVerified": true,
+          "refusalsByAxis": {
+            "concurrency": 1093,
+            "contact-cap": 1034,
+            "budget": 140
+          }
+        },
+        {
+          "arm": "terminus (predictive)",
+          "sizer": "predictive",
+          "minReservationPaise": 126,
+          "workers": 64,
+          "budgetPaise": 50000,
+          "spentPaise": 49800,
+          "overspendPaise": 0,
+          "boundPaise": 1392,
+          "actionsTaken": 286,
+          "utilisation": 0.996,
+          "capViolations": 0,
+          "maxContactsToOneCustomer": 3,
+          "orphans": 0,
+          "ledgerVerified": true,
+          "refusalsByAxis": {
+            "concurrency": 1093,
+            "contact-cap": 1034,
+            "budget": 140
+          }
+        }
+      ],
+      "tail": [
+        {
+          "budgetPaise": 3000,
+          "sizer": "worst-case",
+          "actionsTaken": 16,
+          "spentPaise": 2800,
+          "overspendPaise": 0,
+          "liftOverWorstCase": 0
+        },
+        {
+          "budgetPaise": 3000,
+          "sizer": "estimate",
+          "actionsTaken": 18,
+          "spentPaise": 3200,
+          "overspendPaise": 200,
+          "liftOverWorstCase": 0.125
+        },
+        {
+          "budgetPaise": 3000,
+          "sizer": "learned",
+          "actionsTaken": 17,
+          "spentPaise": 2900,
+          "overspendPaise": 0,
+          "liftOverWorstCase": 0.0625
+        },
+        {
+          "budgetPaise": 3000,
+          "sizer": "predictive",
+          "actionsTaken": 17,
+          "spentPaise": 2900,
+          "overspendPaise": 0,
+          "liftOverWorstCase": 0.0625
+        },
+        {
+          "budgetPaise": 6000,
+          "sizer": "worst-case",
+          "actionsTaken": 32,
+          "spentPaise": 5800,
+          "overspendPaise": 0,
+          "liftOverWorstCase": 0
+        },
+        {
+          "budgetPaise": 6000,
+          "sizer": "estimate",
+          "actionsTaken": 34,
+          "spentPaise": 6200,
+          "overspendPaise": 200,
+          "liftOverWorstCase": 0.0625
+        },
+        {
+          "budgetPaise": 6000,
+          "sizer": "learned",
+          "actionsTaken": 32,
+          "spentPaise": 5800,
+          "overspendPaise": 0,
+          "liftOverWorstCase": 0
+        },
+        {
+          "budgetPaise": 6000,
+          "sizer": "predictive",
+          "actionsTaken": 32,
+          "spentPaise": 5800,
+          "overspendPaise": 0,
+          "liftOverWorstCase": 0
+        },
+        {
+          "budgetPaise": 12500,
+          "sizer": "worst-case",
+          "actionsTaken": 73,
+          "spentPaise": 12300,
+          "overspendPaise": 0,
+          "liftOverWorstCase": 0
+        },
+        {
+          "budgetPaise": 12500,
+          "sizer": "estimate",
+          "actionsTaken": 73,
+          "spentPaise": 12500,
+          "overspendPaise": 0,
+          "liftOverWorstCase": 0
+        },
+        {
+          "budgetPaise": 12500,
+          "sizer": "learned",
+          "actionsTaken": 74,
+          "spentPaise": 12400,
+          "overspendPaise": 0,
+          "liftOverWorstCase": 0.0136986301369863
+        },
+        {
+          "budgetPaise": 12500,
+          "sizer": "predictive",
+          "actionsTaken": 74,
+          "spentPaise": 12400,
+          "overspendPaise": 0,
+          "liftOverWorstCase": 0.0136986301369863
+        },
+        {
+          "budgetPaise": 25000,
+          "sizer": "worst-case",
+          "actionsTaken": 146,
+          "spentPaise": 25000,
+          "overspendPaise": 0,
+          "liftOverWorstCase": 0
+        },
+        {
+          "budgetPaise": 25000,
+          "sizer": "estimate",
+          "actionsTaken": 147,
+          "spentPaise": 25300,
+          "overspendPaise": 300,
+          "liftOverWorstCase": 0.00684931506849315
+        },
+        {
+          "budgetPaise": 25000,
+          "sizer": "learned",
+          "actionsTaken": 146,
+          "spentPaise": 25000,
+          "overspendPaise": 0,
+          "liftOverWorstCase": 0
+        },
+        {
+          "budgetPaise": 25000,
+          "sizer": "predictive",
+          "actionsTaken": 146,
+          "spentPaise": 25000,
+          "overspendPaise": 0,
+          "liftOverWorstCase": 0
+        },
+        {
+          "budgetPaise": 50000,
+          "sizer": "worst-case",
+          "actionsTaken": 284,
+          "spentPaise": 49800,
+          "overspendPaise": 0,
+          "liftOverWorstCase": 0
+        },
+        {
+          "budgetPaise": 50000,
+          "sizer": "estimate",
+          "actionsTaken": 285,
+          "spentPaise": 50100,
+          "overspendPaise": 100,
+          "liftOverWorstCase": 0.0035211267605633804
+        },
+        {
+          "budgetPaise": 50000,
+          "sizer": "learned",
+          "actionsTaken": 284,
+          "spentPaise": 49800,
+          "overspendPaise": 0,
+          "liftOverWorstCase": 0
+        },
+        {
+          "budgetPaise": 50000,
+          "sizer": "predictive",
+          "actionsTaken": 284,
+          "spentPaise": 49800,
+          "overspendPaise": 0,
+          "liftOverWorstCase": 0
+        }
+      ],
+      "mix": [
+        {
+          "devanagariShare": 0.02,
+          "sizer": "worst-case",
+          "minReservationPaise": 300,
+          "actionsTaken": 52,
+          "spentPaise": 5800,
+          "overspendPaise": 0,
+          "liftOverWorstCase": 0
+        },
+        {
+          "devanagariShare": 0.02,
+          "sizer": "estimate",
+          "minReservationPaise": 100,
+          "actionsTaken": 54,
+          "spentPaise": 6000,
+          "overspendPaise": 0,
+          "liftOverWorstCase": 0.038461538461538464
+        },
+        {
+          "devanagariShare": 0.02,
+          "sizer": "learned",
+          "minReservationPaise": 92,
+          "actionsTaken": 53,
+          "spentPaise": 5900,
+          "overspendPaise": 0,
+          "liftOverWorstCase": 0.019230769230769232
+        },
+        {
+          "devanagariShare": 0.02,
+          "sizer": "predictive",
+          "minReservationPaise": 100,
+          "actionsTaken": 54,
+          "spentPaise": 6000,
+          "overspendPaise": 0,
+          "liftOverWorstCase": 0.038461538461538464
+        },
+        {
+          "devanagariShare": 0.05,
+          "sizer": "worst-case",
+          "minReservationPaise": 300,
+          "actionsTaken": 52,
+          "spentPaise": 5800,
+          "overspendPaise": 0,
+          "liftOverWorstCase": 0
+        },
+        {
+          "devanagariShare": 0.05,
+          "sizer": "estimate",
+          "minReservationPaise": 100,
+          "actionsTaken": 54,
+          "spentPaise": 6000,
+          "overspendPaise": 0,
+          "liftOverWorstCase": 0.038461538461538464
+        },
+        {
+          "devanagariShare": 0.05,
+          "sizer": "learned",
+          "minReservationPaise": 92,
+          "actionsTaken": 53,
+          "spentPaise": 5900,
+          "overspendPaise": 0,
+          "liftOverWorstCase": 0.019230769230769232
+        },
+        {
+          "devanagariShare": 0.05,
+          "sizer": "predictive",
+          "minReservationPaise": 100,
+          "actionsTaken": 54,
+          "spentPaise": 6000,
+          "overspendPaise": 0,
+          "liftOverWorstCase": 0.038461538461538464
+        },
+        {
+          "devanagariShare": 0.1,
+          "sizer": "worst-case",
+          "minReservationPaise": 300,
+          "actionsTaken": 49,
+          "spentPaise": 5900,
+          "overspendPaise": 0,
+          "liftOverWorstCase": 0
+        },
+        {
+          "devanagariShare": 0.1,
+          "sizer": "estimate",
+          "minReservationPaise": 100,
+          "actionsTaken": 52,
+          "spentPaise": 6200,
+          "overspendPaise": 200,
+          "liftOverWorstCase": 0.061224489795918366
+        },
+        {
+          "devanagariShare": 0.1,
+          "sizer": "learned",
+          "minReservationPaise": 92,
+          "actionsTaken": 51,
+          "spentPaise": 5900,
+          "overspendPaise": 0,
+          "liftOverWorstCase": 0.04081632653061224
+        },
+        {
+          "devanagariShare": 0.1,
+          "sizer": "predictive",
+          "minReservationPaise": 100,
+          "actionsTaken": 52,
+          "spentPaise": 6200,
+          "overspendPaise": 200,
+          "liftOverWorstCase": 0.061224489795918366
+        },
+        {
+          "devanagariShare": 0.2,
+          "sizer": "worst-case",
+          "minReservationPaise": 300,
+          "actionsTaken": 44,
+          "spentPaise": 5800,
+          "overspendPaise": 0,
+          "liftOverWorstCase": 0
+        },
+        {
+          "devanagariShare": 0.2,
+          "sizer": "estimate",
+          "minReservationPaise": 100,
+          "actionsTaken": 46,
+          "spentPaise": 6000,
+          "overspendPaise": 0,
+          "liftOverWorstCase": 0.045454545454545456
+        },
+        {
+          "devanagariShare": 0.2,
+          "sizer": "learned",
+          "minReservationPaise": 105,
+          "actionsTaken": 45,
+          "spentPaise": 5900,
+          "overspendPaise": 0,
+          "liftOverWorstCase": 0.022727272727272728
+        },
+        {
+          "devanagariShare": 0.2,
+          "sizer": "predictive",
+          "minReservationPaise": 100,
+          "actionsTaken": 46,
+          "spentPaise": 6000,
+          "overspendPaise": 0,
+          "liftOverWorstCase": 0.045454545454545456
+        },
+        {
+          "devanagariShare": 0.35,
+          "sizer": "worst-case",
+          "minReservationPaise": 300,
+          "actionsTaken": 32,
+          "spentPaise": 5800,
+          "overspendPaise": 0,
+          "liftOverWorstCase": 0
+        },
+        {
+          "devanagariShare": 0.35,
+          "sizer": "estimate",
+          "minReservationPaise": 100,
+          "actionsTaken": 34,
+          "spentPaise": 6200,
+          "overspendPaise": 200,
+          "liftOverWorstCase": 0.0625
+        },
+        {
+          "devanagariShare": 0.35,
+          "sizer": "learned",
+          "minReservationPaise": 151,
+          "actionsTaken": 32,
+          "spentPaise": 5800,
+          "overspendPaise": 0,
+          "liftOverWorstCase": 0
+        },
+        {
+          "devanagariShare": 0.35,
+          "sizer": "predictive",
+          "minReservationPaise": 126,
+          "actionsTaken": 32,
+          "spentPaise": 5800,
+          "overspendPaise": 0,
+          "liftOverWorstCase": 0
+        },
+        {
+          "devanagariShare": 0.6,
+          "sizer": "worst-case",
+          "minReservationPaise": 300,
+          "actionsTaken": 27,
+          "spentPaise": 5900,
+          "overspendPaise": 0,
+          "liftOverWorstCase": 0
+        },
+        {
+          "devanagariShare": 0.6,
+          "sizer": "estimate",
+          "minReservationPaise": 100,
+          "actionsTaken": 30,
+          "spentPaise": 6400,
+          "overspendPaise": 400,
+          "liftOverWorstCase": 0.1111111111111111
+        },
+        {
+          "devanagariShare": 0.6,
+          "sizer": "learned",
+          "minReservationPaise": 151,
+          "actionsTaken": 27,
+          "spentPaise": 5900,
+          "overspendPaise": 0,
+          "liftOverWorstCase": 0
+        },
+        {
+          "devanagariShare": 0.6,
+          "sizer": "predictive",
+          "minReservationPaise": 126,
+          "actionsTaken": 27,
+          "spentPaise": 5900,
+          "overspendPaise": 0,
+          "liftOverWorstCase": 0
+        }
+      ]
+    },
+    "prevent": [
+      {
+        "scenario": "netbanking-hdfc",
+        "options": {
+          "seed": 20260825,
+          "attemptsPerMinute": 400,
+          "warmupMs": 1200000,
+          "observeMs": 2700000,
+          "tickMs": 15000,
+          "customerPool": 20000,
+          "steering": {
+            "holdoutFraction": 0.1,
+            "methodFloor": 2,
+            "maxIncidentDurationMs": 1800000,
+            "minEvidenceWindows": 2,
+            "maxConcurrentSteers": 3,
+            "switchElasticity": 0.35,
+            "abandonmentOnSuppress": 0.08,
+            "minBenefitPerAttempt": 0.0005
+          },
+          "choice": {
+            "switchElasticity": 0.35,
+            "abandonmentOnSuppress": 0.08
+          }
+        },
+        "incidents": [
+          {
+            "incident": "inc_netbanking___mep1qvac",
+            "slice": "netbanking||",
+            "lever": "demote",
+            "steeredMs": 2130000,
+            "leverChanges": 3,
+            "affected": {
+              "treated": {
+                "attempts": 289,
+                "lost": 33,
+                "lossRate": 0.11418685121107267,
+                "abandoned": 22,
+                "lostPaise": 5029200,
+                "volumePaise": 26387700
+              },
+              "control": {
+                "attempts": 32,
+                "lost": 15,
+                "lossRate": 0.46875,
+                "abandoned": 0,
+                "lostPaise": 776200,
+                "volumePaise": 1868600
+              },
+              "lossRateDelta": 0.35456314878892736,
+              "confidenceHalfWidth": 0.17674784279871186,
+              "significant": true,
+              "savedPaise": 9356106
+            },
+            "collateral": {
+              "treated": {
+                "attempts": 561,
+                "lost": 51,
+                "lossRate": 0.09090909090909091,
+                "abandoned": 0,
+                "lostPaise": 5226700,
+                "volumePaise": 44473100
+              },
+              "control": {
+                "attempts": 68,
+                "lost": 11,
+                "lossRate": 0.16176470588235295,
+                "abandoned": 0,
+                "lostPaise": 1043500,
+                "volumePaise": 6350000
+              },
+              "lossRateDelta": 0.07085561497326204,
+              "confidenceHalfWidth": 0.09069927219331826,
+              "significant": false,
+              "savedPaise": 3151169
+            },
+            "overall": {
+              "treated": {
+                "attempts": 12848,
+                "lost": 666,
+                "lossRate": 0.05183686176836862,
+                "abandoned": 22,
+                "lostPaise": 63335100,
+                "volumePaise": 1113363300
+              },
+              "control": {
+                "attempts": 1453,
+                "lost": 95,
+                "lossRate": 0.0653819683413627,
+                "abandoned": 0,
+                "lostPaise": 8092900,
+                "volumePaise": 122116900
+              },
+              "lossRateDelta": 0.013545106572994084,
+              "confidenceHalfWidth": 0.013276210727621555,
+              "significant": true,
+              "savedPaise": 15080625
+            }
+          }
+        ],
+        "declines": {
+          "the expected improvement is too small to be worth moving customers for": 11
+        },
+        "steersIssued": 1,
+        "steersRefused": 0,
+        "detectionHeld": true,
+        "ledgerVerified": true,
+        "totalAttempts": 26064
+      },
+      {
+        "scenario": "upi-hdfc-severe",
+        "options": {
+          "seed": 20260825,
+          "attemptsPerMinute": 400,
+          "warmupMs": 1200000,
+          "observeMs": 2700000,
+          "tickMs": 15000,
+          "customerPool": 20000,
+          "steering": {
+            "holdoutFraction": 0.1,
+            "methodFloor": 2,
+            "maxIncidentDurationMs": 1800000,
+            "minEvidenceWindows": 2,
+            "maxConcurrentSteers": 3,
+            "switchElasticity": 0.35,
+            "abandonmentOnSuppress": 0.08,
+            "minBenefitPerAttempt": 0.0005
+          },
+          "choice": {
+            "switchElasticity": 0.35,
+            "abandonmentOnSuppress": 0.08
+          }
+        },
+        "incidents": [
+          {
+            "incident": "inc_upi___mep1sie3",
+            "slice": "upi||",
+            "lever": "demote",
+            "steeredMs": 1890000,
+            "leverChanges": 0,
+            "affected": {
+              "treated": {
+                "attempts": 2692,
+                "lost": 980,
+                "lossRate": 0.3640416047548291,
+                "abandoned": 0,
+                "lostPaise": 84198800,
+                "volumePaise": 229609900
+              },
+              "control": {
+                "attempts": 310,
+                "lost": 147,
+                "lossRate": 0.47419354838709676,
+                "abandoned": 0,
+                "lostPaise": 11304300,
+                "volumePaise": 24712900
+              },
+              "lossRateDelta": 0.11015194363226766,
+              "confidenceHalfWidth": 0.058482424178903494,
+              "significant": true,
+              "savedPaise": 25291977
+            },
+            "collateral": {
+              "treated": {
+                "attempts": 5447,
+                "lost": 342,
+                "lossRate": 0.06278685514962365,
+                "abandoned": 0,
+                "lostPaise": 28865300,
+                "volumePaise": 457029500
+              },
+              "control": {
+                "attempts": 646,
+                "lost": 23,
+                "lossRate": 0.03560371517027864,
+                "abandoned": 0,
+                "lostPaise": 1926700,
+                "volumePaise": 52245200
+              },
+              "lossRateDelta": -0.02718313997934501,
+              "confidenceHalfWidth": 0.015674483612376902,
+              "significant": true,
+              "savedPaise": -12423497
+            },
+            "overall": {
+              "treated": {
+                "attempts": 11372,
+                "lost": 1663,
+                "lossRate": 0.1462363700316567,
+                "abandoned": 0,
+                "lostPaise": 145531300,
+                "volumePaise": 964424700
+              },
+              "control": {
+                "attempts": 1301,
+                "lost": 203,
+                "lossRate": 0.15603382013835512,
+                "abandoned": 0,
+                "lostPaise": 15901000,
+                "volumePaise": 105553700
+              },
+              "lossRateDelta": 0.009797450106698413,
+              "confidenceHalfWidth": 0.020761097700560522,
+              "significant": false,
+              "savedPaise": 9448903
+            }
+          }
+        ],
+        "declines": {
+          "the failing rail is no worse than where its customers would be moved to": 45,
+          "the expected improvement is too small to be worth moving customers for": 1
+        },
+        "steersIssued": 1,
+        "steersRefused": 0,
+        "detectionHeld": true,
+        "ledgerVerified": true,
+        "totalAttempts": 25980
+      },
+      {
+        "scenario": "upi-hdfc-moderate",
+        "options": {
+          "seed": 20260825,
+          "attemptsPerMinute": 400,
+          "warmupMs": 1200000,
+          "observeMs": 2700000,
+          "tickMs": 15000,
+          "customerPool": 20000,
+          "steering": {
+            "holdoutFraction": 0.1,
+            "methodFloor": 2,
+            "maxIncidentDurationMs": 1800000,
+            "minEvidenceWindows": 2,
+            "maxConcurrentSteers": 3,
+            "switchElasticity": 0.35,
+            "abandonmentOnSuppress": 0.08,
+            "minBenefitPerAttempt": 0.0005
+          },
+          "choice": {
+            "switchElasticity": 0.35,
+            "abandonmentOnSuppress": 0.08
+          }
+        },
+        "incidents": [],
+        "declines": {
+          "the failing rail is no worse than where its customers would be moved to": 106,
+          "the destination rails are no better than the failing one": 24
+        },
+        "steersIssued": 0,
+        "steersRefused": 0,
+        "detectionHeld": true,
+        "ledgerVerified": true,
+        "totalAttempts": 26190
+      }
+    ],
+    "recover": {
+      "arms": [
+        {
+          "name": "do nothing",
+          "casualties": 5556,
+          "lostPaise": 480450400,
+          "recovered": 1267,
+          "recoveredPaise": 113992900,
+          "incrementalPaise": 0,
+          "spentPaise": 0,
+          "messages": 0,
+          "retries": 0,
+          "optOuts": 0,
+          "wastedActions": 0,
+          "wastedPaise": 0,
+          "refusals": {},
+          "ledgerVerified": true,
+          "auditRecords": 0
+        },
+        {
+          "name": "chronos ladder (+1h, +24h, +72h)",
+          "casualties": 5556,
+          "lostPaise": 480450400,
+          "recovered": 2144,
+          "recoveredPaise": 188202100,
+          "incrementalPaise": 74209200,
+          "spentPaise": 240220,
+          "messages": 12249,
+          "retries": 0,
+          "optOuts": 153,
+          "wastedActions": 749,
+          "wastedPaise": 14980,
+          "refusals": {},
+          "ledgerVerified": true,
+          "auditRecords": 24498
+        },
+        {
+          "name": "message everyone, immediately",
+          "casualties": 5556,
+          "lostPaise": 480450400,
+          "recovered": 1477,
+          "recoveredPaise": 130595800,
+          "incrementalPaise": 16602900,
+          "spentPaise": 108780,
+          "messages": 5556,
+          "retries": 0,
+          "optOuts": 67,
+          "wastedActions": 758,
+          "wastedPaise": 15160,
+          "refusals": {},
+          "ledgerVerified": true,
+          "auditRecords": 11112
+        },
+        {
+          "name": "kairos",
+          "casualties": 5556,
+          "lostPaise": 480450400,
+          "recovered": 2101,
+          "recoveredPaise": 183660700,
+          "incrementalPaise": 69667800,
+          "spentPaise": 64173,
+          "messages": 5719,
+          "retries": 249,
+          "optOuts": 43,
+          "wastedActions": 730,
+          "wastedPaise": 8110,
+          "refusals": {},
+          "ledgerVerified": true,
+          "auditRecords": 11936
+        }
+      ],
+      "windowSweep": [],
+      "holdout": {
+        "casualties": 2343,
+        "recoveredPaise": 58375300
+      },
+      "calibration": {
+        "bins": [
+          {
+            "lower": 0,
+            "upper": 0.1,
+            "count": 1418,
+            "predicted": 0.05778020907328361,
+            "observed": 0.04724964739069112
+          },
+          {
+            "lower": 0.1,
+            "upper": 0.2,
+            "count": 1594,
+            "predicted": 0.137398772490731,
+            "observed": 0.1191969887076537
+          },
+          {
+            "lower": 0.2,
+            "upper": 0.3,
+            "count": 818,
+            "predicted": 0.24704662373559014,
+            "observed": 0.23838630806845965
+          },
+          {
+            "lower": 0.3,
+            "upper": 0.4,
+            "count": 505,
+            "predicted": 0.3757340093590932,
+            "observed": 0.3782178217821782
+          },
+          {
+            "lower": 0.4,
+            "upper": 0.5,
+            "count": 1379,
+            "predicted": 0.4253671437523161,
+            "observed": 0.40609137055837563
+          },
+          {
+            "lower": 0.5,
+            "upper": 0.6,
+            "count": 18,
+            "predicted": 0.578611647155054,
+            "observed": 0.8333333333333334
+          },
+          {
+            "lower": 0.6,
+            "upper": 0.7,
+            "count": 9,
+            "predicted": 0.6413597301076681,
+            "observed": 0.6666666666666666
+          },
+          {
+            "lower": 0.7,
+            "upper": 0.8,
+            "count": 2,
+            "predicted": 0.7339185657567007,
+            "observed": 0.5
+          },
+          {
+            "lower": 0.8,
+            "upper": 0.9,
+            "count": 5,
+            "predicted": 0.8434865222830041,
+            "observed": 1
+          },
+          {
+            "lower": 0.9,
+            "upper": 1,
+            "count": 220,
+            "predicted": 0.9490535457567635,
+            "observed": 0.990909090909091
+          }
+        ],
+        "expectedError": 0.015773644734216892,
+        "brier": 0.14044701432716686,
+        "skill": 0.23570126020341664,
+        "predictions": 5968
+      },
+      "autonomousShare": 0.12005039596832254,
+      "classMix": {
+        "transient": 2684,
+        "customer-retry": 1158,
+        "timed": 1057,
+        "customer-action": 424,
+        "dead": 233
+      }
+    }
+  }
+}

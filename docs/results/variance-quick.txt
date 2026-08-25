@@ -1,0 +1,37 @@
+How far each number moves when only the seed changes
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+8 seeds, quick profile, 96s. Suggested tolerance is 3 sd, rounded up to a readable figure.
+
+A code change that consumes randomness differently re-rolls a fixed-seed benchmark, so it moves
+a metric by about one seed's worth. That is what these tolerances are sized to survive. They are
+a starting point for a human, not a value to paste in: `bench:bless` never sets them.
+
+metric                                           mean            sd         range        cv          3 sd →
+───────────────────────────────────────  ────────────  ────────────  ────────────  ────────  ──────────────
+detect.detectionRate                           83.33%             —             —      0.0%  make it an invariant
+detect.falseAlarmsPerHour                       0.070         0.066         0.188     94.3%           0.200
+detect.medianLatencyMs                         1.8min          8.9s         24.7s      8.3%           30.0s
+detect.rightAltitudeRate                       70.49%         7.71%        22.22%     10.9%          30.00%
+prevent.netbanking-hdfc.collateralDelta        -1.99%         2.59%         6.36%    130.5%          10.00%
+prevent.netbanking-hdfc.lossRateDelta          31.52%         6.25%        17.22%     19.8%          20.00%
+prevent.netbanking-hdfc.savedPaise       ₹1,03,615.42    ₹21,480.30    ₹66,319.41     20.7%      ₹70,000.00
+prevent.upi-hdfc-severe.collateralDelta        -2.69%         0.57%         1.71%     21.3%           2.00%
+prevent.upi-hdfc-severe.lossRateDelta          16.35%         2.12%         6.50%     13.0%           7.00%
+prevent.upi-hdfc-severe.savedPaise       ₹5,69,335.29    ₹65,946.86  ₹1,79,295.50     11.6%    ₹2,00,000.00
+recover.autonomousShare                        14.60%         1.18%         3.04%      8.1%           5.00%
+recover.calibrationError                        1.89%         0.51%         1.81%     27.0%           2.00%
+recover.calibrationSkill                        0.267         0.028         0.080     10.4%           0.100
+recover.incrementalPaise                 ₹5,10,493.63    ₹21,318.48    ₹59,259.00      4.2%      ₹70,000.00
+recover.messages                                3,922           204           653      5.2%             700
+recover.trueCostPaise                       ₹6,224.11     ₹1,081.51     ₹2,947.60     17.4%       ₹5,000.00
+recover.wastedActions                             471            37           105      7.8%             150
+spend.actionsUnderContention                      296            14            45      4.7%              50
+spend.adaptiveOverspendPaise                    ₹5.25         ₹2.05         ₹6.00     39.1%           ₹7.00
+
+1 metric(s) produced the same value on all 8 seeds: detect.detectionRate.
+That usually means the quantity is arithmetic on the configuration rather than an outcome of
+the simulation, and belongs in the baseline as an `exact` invariant instead.
+
+Invariants across seeds
+────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+All 19 held on every one of the 8 seeds.

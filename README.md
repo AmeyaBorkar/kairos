@@ -81,6 +81,16 @@ A tenth of casualties are held out of treatment entirely, so every recovery figu
 *incremental*: 24% of the lost money came back with no help at all, and a system reporting gross
 recovery would be reporting the customer's own behaviour and billing for it.
 
+**Proof** — all of the above is one artifact and one verdict, re-checked on every change.
+Seventeen claims are checked exactly, because they have no sampling distribution: spend either
+exceeded the mandate or it did not. Twenty-one are estimates and carry a band, and the band is
+measured rather than guessed — `bench:variance` holds the code still, varies only the seed, and
+reports how far each number wanders when nothing is wrong. That is the size of a meaningless change,
+which is what a gate has to survive. **Eight of the twenty-one bands are wider than the value they
+guard, and the gate says so**, because a reader who sees PASSED is owed the difference between a
+claim that cannot break and one that merely cannot be measured this cheaply
+([ADR 0005](docs/decisions/0005-a-benchmark-that-reproduces-exactly-still-needs-a-band.md)).
+
 Design claims that did not survive contact with measurement — each corrected in the open rather than
 quietly:
 
@@ -99,7 +109,12 @@ quietly:
   needs the customer to enter a PIN
   ([ADR 0004](docs/decisions/0004-a-retry-is-only-free-when-the-customer-is-not-needed.md));
 - waiting before spending was expected to trade recovery for restraint, and costs nothing at all —
-  it sends fewer messages, wastes far fewer of them, and recovers *more* (Phase 4).
+  it sends fewer messages, wastes far fewer of them, and recovers *more* (Phase 4);
+- "the kernel never overspends" was too strong: reserving the worst case cannot, but the adaptive
+  sizers under-reserve on purpose and buy a *bounded* residual rather than none — ₹8 of one
+  ([ADR 0005](docs/decisions/0005-a-benchmark-that-reproduces-exactly-still-needs-a-band.md));
+- "the steering lever never changes mid-incident" was true on eight seeds of a short run and false on
+  a long one, which is what a study at a single size cannot tell you (Phase 5).
 
 ## Status
 

@@ -1,0 +1,72 @@
+Kairos scorecard
+────────────────────────────────────────────────────────────────────────────────────────────
+profile        full
+config         2f9911374bc4681d
+revision       28ffd73-dirty
+node           v24.13.1
+elapsed        28.7s
+
+Claims that must hold exactly
+────────────────────────────────────────────────────────────────────────────────────────────
+  detect.trials                                    252   the sweep ran the number of trials its configuration describes
+  detect.healthyHours                               14   healthy traffic was observed, so the false-alarm rate has a denominator
+  spend.worstCaseOverspendPaise                      0   reserving the worst case never authorised a rupee past the budget, at any worker count
+  spend.boundHeld                                 true   every sizer, including the ones that under-reserve on purpose, stayed inside the residual its own reservations permit
+  spend.orphans                                      0   no reservation was held for an action that never reported its cost
+  spend.ledgerVerified                            true   the audit chain hashes end to end for every arm
+  spend.naiveOverspendPaise                     10,000   the unguarded arm really does overspend, so the kernel has something to prevent
+  prevent.ledgerVerified                          true   every steering decision, taken or refused, is on a chain that still hashes
+  prevent.detectionHeld                           true   the detector kept each incident open for the whole degradation it was steering against
+  prevent.controlAttempts                          342   customers were held out of steering, so the comparison has a control
+  prevent.upi-hdfc-moderate.steersIssued             0   steering declined on upi-hdfc-moderate, where the rail is degraded but not enough to be worth moving
+  recover.beatsDoNothing                   6,96,67,800   the recovery arm collected more than the customers would have returned with unaided
+  recover.unclassified                               0   no failure in our own traffic model fell through to `unknown` — a classifier that cannot name them would be measuring its fallback
+  recover.holdoutCasualties                      2,343   casualties were held out of treatment entirely, which is the only reason any recovery figure has a denominator
+  recover.calibrationPredictions                 5,968   the probability model made predictions there were outcomes for
+  recover.ledgerVerified                          true   the recovery arm's audit chain hashes end to end
+  recover.refusals                                   0   nothing was proposed that the kernel then had to decline; the worker checks the schedule before it asks
+
+Numbers that carry a band
+────────────────────────────────────────────────────────────────────────────────────────────
+  detect.falseAlarmsPerHour                         0.143
+                                                            alarms raised per hour of healthy traffic at h=12
+  detect.detectionRate                             83.33%
+                                                            share of injected degradations the detector opened an incident for
+  detect.medianLatencyMs                           1.5min
+                                                            median time from a rail actually breaking to an incident opening
+  detect.rightAltitudeRate                         79.17%
+                                                            share of incidents reported at the degraded slice rather than above or below it
+  spend.adaptiveOverspendPaise                      ₹7.00
+                                                            worst residual an under-reserving sizer ran up — bounded by construction, and worth watching because the bound is what it is allowed rather than what it should cost
+  spend.actionsUnderContention                        292
+                                                            actions the kernel admitted at the highest worker count — safety bought by refusing everything is not safety
+  prevent.netbanking-hdfc.lossRateDelta            35.46%
+                                                            loss rate avoided on netbanking-hdfc, among customers whose own rail was the failing one
+  prevent.netbanking-hdfc.savedPaise           ₹93,561.06
+                                                            payment value that did not fail on netbanking-hdfc because traffic was steered
+  prevent.netbanking-hdfc.leverChanges                  3
+                                                            times the lever or target changed mid-steer on netbanking-hdfc
+  prevent.netbanking-hdfc.collateralDelta           7.09%
+                                                            what happened to customers on netbanking-hdfc whose own rail was fine and who were moved anyway — negative is the cost of the lever, not a bug
+  prevent.upi-hdfc-severe.lossRateDelta            11.02%
+                                                            loss rate avoided on upi-hdfc-severe, among customers whose own rail was the failing one
+  prevent.upi-hdfc-severe.savedPaise         ₹2,52,919.77
+                                                            payment value that did not fail on upi-hdfc-severe because traffic was steered
+  prevent.upi-hdfc-severe.leverChanges                  0
+                                                            times the lever or target changed mid-steer on upi-hdfc-severe
+  prevent.upi-hdfc-severe.collateralDelta          -2.72%
+                                                            what happened to customers on upi-hdfc-severe whose own rail was fine and who were moved anyway — negative is the cost of the lever, not a bug
+  recover.incrementalPaise                   ₹6,96,678.00
+                                                            recovered because of the arm, over and above what came back unaided
+  recover.trueCostPaise                         ₹9,241.73
+                                                            postage plus the priced value of every customer lost to an opt-out
+  recover.messages                                  5,719
+                                                            messages sent — the term the contact cap and the opt-out cost are both about
+  recover.wastedActions                               730
+                                                            actions that landed on somebody who was coming back anyway
+  recover.calibrationError                          1.58%
+                                                            expected calibration error — whether a stated 30% means thirty per cent, which is what the gate multiplies by a rupee amount
+  recover.calibrationSkill                          0.236
+                                                            Brier skill over the base rate — a model that repeats the base rate for ever is perfectly calibrated and worth nothing
+  recover.autonomousShare                          12.01%
+                                                            share of casualties chargeable again without the customer present; a property of the merchant's mix rather than of Kairos
