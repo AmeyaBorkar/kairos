@@ -2,9 +2,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { DEFAULT_OPTIONS, type ExperimentOptions, runCurve } from "./experiment.js";
 import { formatCurve, formatScenarios, recommend } from "./format.js";
-
-/** A false alarm steers customers off a healthy rail, so the budget is deliberately tight. */
-const FALSE_ALARM_BUDGET_PER_HOUR = 0.25;
+import { FALSE_ALARM_BUDGET_PER_HOUR } from "./profiles.js";
 
 const RULE = "─".repeat(64);
 

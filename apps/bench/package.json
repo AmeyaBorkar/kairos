@@ -22,8 +22,9 @@
     "@kairos/domain": "workspace:*",
     "@kairos/ledger": "workspace:*",
     "@kairos/policy": "workspace:*",
-    "@kairos/recover": "workspace:*",
+    "@kairos/proof": "workspace:*",
     "@kairos/razorpay": "workspace:*",
+    "@kairos/recover": "workspace:*",
     "@kairos/simulator": "workspace:*",
     "@kairos/terminus": "workspace:*",
     "throttlekit": "^1.7.0"

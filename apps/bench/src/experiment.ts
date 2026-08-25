@@ -108,6 +108,14 @@ export interface ExperimentOptions {
   readonly thresholds: readonly number[];
   /** Independent runs per (threshold, scenario) cell, and per threshold for the healthy arm. */
   readonly seedsPerCell: number;
+  /**
+   * Shifts every seed in the sweep, so the whole curve can be re-drawn on fresh randomness.
+   *
+   * Zero for every run that is reported, which keeps published numbers reproducible. The seed study
+   * in `apps/bench/src/variance.ts` varies it to find out how far these numbers move when nothing
+   * is wrong, which is what the regression gate's tolerances are derived from.
+   */
+  readonly seedBase: number;
   readonly attemptsPerMinute: number;
   /** Quiet lead-in before the degradation, so baselines are established first. */
   readonly warmupMs: number;
@@ -118,6 +126,7 @@ export interface ExperimentOptions {
 export const DEFAULT_OPTIONS: ExperimentOptions = {
   thresholds: [6, 8, 10, 12, 14, 17, 21],
   seedsPerCell: 4,
+  seedBase: 0,
   attemptsPerMinute: 400,
   warmupMs: 25 * MINUTE,
   observeMs: 45 * MINUTE,
@@ -276,7 +285,7 @@ export function runCurve(
     let totalFalseAlarms = 0;
     let healthyHours = 0;
     for (let s = 0; s < options.seedsPerCell; s++) {
-      const trial = runHealthyTrial(threshold, 9000 + s * 17, options);
+      const trial = runHealthyTrial(threshold, options.seedBase + 9000 + s * 17, options);
       totalFalseAlarms += trial.alarms;
       healthyHours += trial.hours;
       onProgress?.(++done, total);
@@ -289,7 +298,9 @@ export function runCurve(
     const scenarios = options.scenarios.map((scenario) => {
       const outcomes: DetectionOutcome[] = [];
       for (let s = 0; s < options.seedsPerCell; s++) {
-        outcomes.push(runDetectionTrial(scenario, threshold, 1000 + s * 31, options));
+        outcomes.push(
+          runDetectionTrial(scenario, threshold, options.seedBase + 1000 + s * 31, options),
+        );
         onProgress?.(++done, total);
       }
 

@@ -63,6 +63,9 @@ importers:
       '@kairos/policy':
         specifier: workspace:*
         version: link:../../packages/policy
+      '@kairos/proof':
+        specifier: workspace:*
+        version: link:../../packages/proof
       '@kairos/razorpay':
         specifier: workspace:*
         version: link:../../adapters/razorpay

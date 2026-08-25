@@ -1,95 +1,17 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { formatINR, paise, slice } from "@kairos/domain";
+import { formatINR, paise } from "@kairos/domain";
 import { DEFAULT_STEERING_CONFIG } from "@kairos/policy";
-import type { Degradation } from "@kairos/simulator";
 import {
   DEFAULT_PREVENT_OPTIONS,
   type PreventOptions,
   type PreventResult,
   runPrevention,
 } from "./prevent.js";
+import { PREVENT_SCENARIOS as SCENARIOS } from "./profiles.js";
 
 const MINUTE = 60_000;
-const START = 1_756_000_000_000;
 const RULE = "─".repeat(88);
-
-interface Scenario {
-  readonly name: string;
-  readonly description: string;
-  readonly degradation: Degradation;
-}
-
-/**
- * One scenario per shape of the addressability problem.
- *
- * The set is chosen so the answers can differ. A netbanking outage is precisely suppressible; a UPI
- * issuer outage is not addressable at all and can only be responded to by demoting the whole
- * method; a moderate UPI issuer outage is one the policy should refuse outright. If every scenario
- * came out the same way the experiment would not be measuring anything.
- */
-const SCENARIOS: readonly Scenario[] = [
-  {
-    name: "netbanking-hdfc",
-    description: "HDFC netbanking to 45% — precisely suppressible",
-    degradation: {
-      slice: slice("netbanking", "hdfc"),
-      onsetAt: START + 20 * MINUTE,
-      rampMs: 30_000,
-      peakFailureRate: 0.45,
-      holdMs: 30 * MINUTE,
-      recoveryMs: 3 * MINUTE,
-    },
-  },
-  {
-    name: "card-hdfc-visa",
-    description: "HDFC Visa to 40% — precisely suppressible, on a rail already failing at 11%",
-    degradation: {
-      slice: slice("card", "hdfc", "visa"),
-      onsetAt: START + 20 * MINUTE,
-      rampMs: 30_000,
-      peakFailureRate: 0.4,
-      holdMs: 30 * MINUTE,
-      recoveryMs: 3 * MINUTE,
-    },
-  },
-  {
-    name: "upi-hdfc-severe",
-    description: "HDFC UPI collapses to 55% — not addressable, only demotable",
-    degradation: {
-      slice: slice("upi", "hdfc"),
-      onsetAt: START + 20 * MINUTE,
-      rampMs: 30_000,
-      peakFailureRate: 0.55,
-      holdMs: 30 * MINUTE,
-      recoveryMs: 3 * MINUTE,
-    },
-  },
-  {
-    name: "upi-hdfc-moderate",
-    description: "HDFC UPI to 14% — the case where steering should decline",
-    degradation: {
-      slice: slice("upi", "hdfc"),
-      onsetAt: START + 20 * MINUTE,
-      rampMs: 60_000,
-      peakFailureRate: 0.14,
-      holdMs: 30 * MINUTE,
-      recoveryMs: 3 * MINUTE,
-    },
-  },
-  {
-    name: "upi-wide",
-    description: "UPI as a whole to 30% — a PSP-level event, demotable with no collateral",
-    degradation: {
-      slice: slice("upi"),
-      onsetAt: START + 20 * MINUTE,
-      rampMs: 30_000,
-      peakFailureRate: 0.3,
-      holdMs: 30 * MINUTE,
-      recoveryMs: 3 * MINUTE,
-    },
-  },
-];
 
 function pad(text: string, width: number, align: "left" | "right" = "left"): string {
   return align === "left" ? text.padEnd(width) : text.padStart(width);
