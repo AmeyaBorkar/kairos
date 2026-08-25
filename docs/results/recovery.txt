@@ -2,27 +2,27 @@
 RECOVERY — what the casualty arm is worth, against three baselines
 ────────────────────────────────────────────────────────────────────────────────────────────
 
-5556 casualties worth ₹48,04,504.00 over 4.0h of traffic, worked for 40 days.
+643 casualties worth ₹5,48,242.00 over 1.5h of traffic, worked for 10 days.
 
 class            casualties  share
 ───────────────  ──────────  ─────
-transient              2684  48.3%
-customer-retry         1158  20.8%
-timed                  1057  19.0%
-customer-action         424   7.6%
-dead                    233   4.2%
+transient               194  30.2%
+timed                   176  27.4%
+customer-retry          174  27.1%
+customer-action          63   9.8%
+dead                     36   5.6%
 
-Only 12.0% of these payments can be charged again without the customer being present. For the rest, knowing the rail has healed is worth nothing on
+Only 16.2% of these payments can be charged again without the customer being present. For the rest, knowing the rail has healed is worth nothing on
 its own — the only lever left is a message. See ADR 0004.
 
 ────────────────────────────────────────────────────────────────────────────────────────────
 
-arm                                   recovered   incremental    postage  lost   true cost   msgs  retries  wasted  cost/₹
-────────────────────────────────  ─────────────  ────────────  ─────────  ────  ──────────  ─────  ───────  ──────  ──────
-do nothing                        ₹11,39,929.00             —      ₹0.00     0       ₹0.00      0        0       0       —
-chronos ladder (+1h, +24h, +72h)  ₹18,82,021.00  ₹7,42,092.00  ₹2,402.20   153  ₹33,002.20  12249        0     749  0.0445
-message everyone, immediately     ₹13,05,958.00  ₹1,66,029.00  ₹1,087.80    67  ₹14,487.80   5556        0     758  0.0873
-kairos                            ₹18,36,607.00  ₹6,96,678.00    ₹641.73    43   ₹9,241.73   5719      249     730  0.0133
+arm                                  recovered  incremental  postage  lost  true cost  msgs  retries  wasted  cost/₹
+────────────────────────────────  ────────────  ───────────  ───────  ────  ─────────  ────  ───────  ──────  ──────
+do nothing                        ₹1,40,429.00            —    ₹0.00     0      ₹0.00     0        0       0       —
+chronos ladder (+1h, +24h, +72h)  ₹1,97,053.00   ₹56,624.00  ₹271.80    14  ₹3,071.80  1387        0      63  0.0542
+message everyone, immediately     ₹1,81,075.00   ₹40,646.00  ₹126.20     4    ₹926.20   643        0     140  0.0228
+kairos                            ₹1,84,625.00   ₹44,196.00   ₹52.06     4    ₹852.06   497       30      44  0.0193
 
 `incremental` is recovery minus what the do-nothing arm collected. It is the column no dunning dashboard shows, and
 the gap between it and `recovered` is customers who were coming back regardless. `wasted` counts the actions that landed
@@ -34,13 +34,13 @@ budget, the same contact cap, and a message deferred rather than dropped when it
 get is Kairos's classification — a naive ladder has not classified anything, so it sends generic copy and earns none of
 the stopping rules that come from knowing what went wrong.
 
-Kairos recovered ₹18,36,607.00 gross, ₹6,96,678.00 of it incremental, for a true cost of ₹9,241.73.
-Against the fixed ladder: 6.1% less incremental recovery, 72.0% lower true cost, 53.3% fewer messages,
-and 110 fewer customers lost.
+Kairos recovered ₹1,84,625.00 gross, ₹44,196.00 of it incremental, for a true cost of ₹852.06.
+Against the fixed ladder: 21.9% less incremental recovery, 72.3% lower true cost, 64.2% fewer messages,
+and 10 fewer customers lost.
 
 The honest headline is not that Kairos recovers more. A ladder that messages every casualty three times recovers a
 little more money than one that thinks about it — brute force works. It works by sending twice the messages and
-costing 153 customers their consent rather than 43, and the merchant pays for that in a currency
+costing 14 customers their consent rather than 4, and the merchant pays for that in a currency
 that does not appear on the invoice.
 
 Refusals — chronos ladder (+1h, +24h, +72h):
@@ -54,23 +54,23 @@ Refusals — kairos:
 
 ────────────────────────────────────────────────────────────────────────────────────────────
 
-Held out of treatment entirely: 2343 casualties, of which ₹5,83,753.00 came back unaided.
+Held out of treatment entirely: 370 casualties, of which ₹1,14,941.00 came back unaided.
 That population costs real recovered revenue and is the only reason any number above has a denominator (open question 11).
 
 ────────────────────────────────────────────────────────────────────────────────────────────
 
 THE SPONTANEOUS WINDOW — how long to let a customer come back unaided
 
-window    incremental  msgs  retries  wasted  lost   true cost
-───────  ────────────  ────  ───────  ──────  ────  ──────────
-none     ₹6,78,411.00  6084      249    1074    56  ₹11,891.75
-5 min    ₹6,68,524.00  6021      249     993    69  ₹14,780.55
-15 min   ₹6,56,834.00  5914      249     900    61  ₹12,945.35
-45 min   ₹6,96,678.00  5719      249     730    43   ₹9,241.73
-120 min  ₹7,27,726.00  5404      249     537    56  ₹11,877.73
+window   incremental  msgs  retries  wasted  lost  true cost
+───────  ───────────  ────  ───────  ──────  ────  ─────────
+none      ₹48,372.00   537       30     101     4    ₹886.06
+5 min     ₹49,689.00   524       30      84     4    ₹886.50
+15 min    ₹41,872.00   519       30      68     4    ₹871.00
+45 min    ₹44,196.00   497       30      44     4    ₹852.06
+120 min   ₹63,321.00   474       30      32     3    ₹651.78
 
-Waiting 120 minutes instead of none sends 11.2% fewer messages, wastes 50.0% fewer of them on customers who were
-already returning, and recovers 7.3% more incremental revenue.
+Waiting 120 minutes instead of none sends 11.7% fewer messages, wastes 68.3% fewer of them on customers who were
+already returning, and recovers 30.9% more incremental revenue.
 
 The window went in on the argument that a nudge ninety seconds after a cancelled payment is mostly paid for by people who
 were already reaching for another card, and that waiting therefore trades recovery for restraint. The table says there is no
@@ -84,22 +84,22 @@ sweep are noisy enough that the cheapest row is not stable, so the default is le
 
 ────────────────────────────────────────────────────────────────────────────────────────────
 
-CALIBRATION — 5968 predictions
+CALIBRATION — 527 predictions
 
-predicted     n  mean p  actual    gap
-─────────  ────  ──────  ──────  ─────
-0–10%      1418    5.8%    4.7%   -1.1
-10–20%     1594   13.7%   11.9%   -1.8
-20–30%      818   24.7%   23.8%   -0.9
-30–40%      505   37.6%   37.8%   +0.2
-40–50%     1379   42.5%   40.6%   -1.9
-50–60%       18   57.9%   83.3%  +25.5
-60–70%        9   64.1%   66.7%   +2.5
-70–80%        2   73.4%   50.0%  -23.4
-80–90%        5   84.3%  100.0%  +15.7
-90–100%     220   94.9%   99.1%   +4.2
+predicted    n  mean p  actual    gap
+─────────  ───  ──────  ──────  ─────
+0–10%      138    5.5%    5.1%   -0.4
+10–20%     140   14.2%    9.3%   -5.0
+20–30%      98   25.3%   19.4%   -5.9
+30–40%      82   34.6%   20.7%  -13.9
+40–50%      33   43.5%   39.4%   -4.1
+50–60%       8   53.3%   37.5%  -15.8
+60–70%       6   65.2%   83.3%  +18.1
+70–80%       1   72.1%  100.0%  +27.9
+80–90%       2   89.1%  100.0%  +10.9
+90–100%     19   94.4%  100.0%   +5.6
 
-expected calibration error 1.6% · Brier 0.1404 · skill 0.236
+expected calibration error 5.7% · Brier 0.1168 · skill 0.234
 
 The gate multiplies this probability by a rupee amount, so what matters is whether 30% means thirty per cent. Skill is
 reported beside it because a model that repeats the base rate for ever is perfectly calibrated and worth nothing.

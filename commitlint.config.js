@@ -15,6 +15,7 @@ export default {
         "recover",
         "terminus",
         "ledger",
+        "proof",
         "ports",
         "razorpay",
         "simulator",
