@@ -171,10 +171,20 @@ export const PREVENT_SCENARIOS: readonly PreventScenario[] = [
 ];
 
 /**
- * The three the scorecard runs: one suppressible, one only demotable, one that must be left alone.
+ * The three the scorecard runs: one precisely suppressible, one only demotable, one that must be
+ * left alone.
  *
- * The other two are variations on the first three and belong in the report, where a reader is
- * looking for the shape of the effect rather than a pass or a fail.
+ * The third is not decoration. A controller that starts pulling levers on a rail failing at 14% is
+ * worse for a merchant than one that never pulls them, and no lift metric would notice it happening
+ * — the scenario earns its slot by being the one where the right answer is to do nothing.
+ *
+ * Which of these are gateable is a question about sample size, and it was answered by measurement
+ * rather than by judgement. At the first size tried, HDFC netbanking's steering window saw
+ * single-digit treated attempts and its lift varied across seeds by almost its own mean; a
+ * tolerance honestly derived from that is a hundred percentage points, which is a band no
+ * regression could cross. Rather than gate it dishonestly or drop the suppressible case, the gate
+ * profile was made large enough to resolve it, which took the spread from 97% of the mean to 20%.
+ * The cost was about ten seconds of CI. See `docs/results/variance-quick.txt`.
  */
 const SCORECARD_SCENARIOS = ["netbanking-hdfc", "upi-hdfc-severe", "upi-hdfc-moderate"];
 
@@ -232,6 +242,11 @@ export interface Profile {
  */
 export function profile(name: ProfileName, seed: number = PINNED_SEED): Profile {
   const quick = name === "quick";
+  // `quick` is not as small as it could be. Every size here was raised until the seed study said
+  // the headline numbers could be told apart from noise — the recovery total's spread fell from
+  // 12% of its mean to 4%, and calibration error from 5.7% to 1.9%, which is where the full profile
+  // lands. It costs about fifteen seconds, and a gate whose bands are wider than the effects it
+  // guards is a green light with nothing behind it.
 
   const detector: EngineConfig = {
     ...withThreshold(DEFAULT_DETECTOR_CONFIG, OPERATING_THRESHOLD),
@@ -241,8 +256,8 @@ export function profile(name: ProfileName, seed: number = PINNED_SEED): Profile 
   const simulator: SimulatorConfig = {
     seed,
     startAt: START,
-    durationMs: quick ? 90 * MINUTE : 4 * HOUR,
-    attemptsPerMinute: quick ? 120 : 300,
+    durationMs: quick ? 3 * HOUR : 4 * HOUR,
+    attemptsPerMinute: quick ? 240 : 300,
     profiles: INDIA_PROFILES,
     degradations: RECOVERY_DEGRADATIONS,
     customerPool: 12_000,
@@ -257,7 +272,11 @@ export function profile(name: ProfileName, seed: number = PINNED_SEED): Profile 
       ...DEFAULT_OPTIONS,
       // The operating point must be in the sweep or there is nothing to read out of it.
       thresholds: quick ? [8, OPERATING_THRESHOLD, 17] : DEFAULT_OPTIONS.thresholds,
-      seedsPerCell: quick ? 2 : DEFAULT_OPTIONS.seedsPerCell,
+      seedsPerCell: quick ? 6 : DEFAULT_OPTIONS.seedsPerCell,
+      // Sixteen healthy runs of 25 minutes is nearly seven hours of clean traffic per threshold, so
+      // one stray alarm reads as 0.15 an hour rather than 1.2, and the budget below is resolvable
+      // at all. Healthy trials inject no degradation and are the cheapest thing in the sweep.
+      healthySeeds: quick ? 16 : DEFAULT_OPTIONS.healthySeeds,
       warmupMs: quick ? 15 * MINUTE : DEFAULT_OPTIONS.warmupMs,
       observeMs: quick ? 25 * MINUTE : DEFAULT_OPTIONS.observeMs,
       seedBase: seed - PINNED_SEED,
@@ -267,7 +286,7 @@ export function profile(name: ProfileName, seed: number = PINNED_SEED): Profile 
       options: {
         ...DEFAULT_SPEND_OPTIONS,
         seed,
-        ...(quick ? { jobs: 1200, customers: 120 } : {}),
+        ...(quick ? { jobs: 2400, customers: 240 } : {}),
       },
       // One worker cannot race itself and sixty-four races constantly. The middle of the sweep is
       // interesting for the report and adds nothing to a pass/fail: the bound either holds at the
@@ -279,7 +298,7 @@ export function profile(name: ProfileName, seed: number = PINNED_SEED): Profile 
       options: {
         ...DEFAULT_PREVENT_OPTIONS,
         seed,
-        ...(quick ? { observeMs: 20 * MINUTE, attemptsPerMinute: 300 } : {}),
+        ...(quick ? { observeMs: 30 * MINUTE, attemptsPerMinute: 700 } : {}),
       },
       scenarios: PREVENT_SCENARIOS.filter((s) => SCORECARD_SCENARIOS.includes(s.name)),
     },
@@ -289,7 +308,7 @@ export function profile(name: ProfileName, seed: number = PINNED_SEED): Profile 
       detector,
       mandate: sealMandate(recoveryMandate(), SECRET),
       secret: SECRET,
-      tailMs: quick ? 10 * DAY : 40 * DAY,
+      tailMs: quick ? 25 * DAY : 40 * DAY,
       // No window sweep. It is a design question, answered once in the recovery report, not a
       // claim that needs re-checking on every commit.
     },
@@ -314,6 +333,7 @@ export function describe(p: Profile): JsonValue {
       thresholds: [...p.detect.thresholds],
       operatingThreshold: OPERATING_THRESHOLD,
       seedsPerCell: p.detect.seedsPerCell,
+      healthySeeds: p.detect.healthySeeds,
       seedBase: p.detect.seedBase,
       attemptsPerMinute: p.detect.attemptsPerMinute,
       warmupMs: p.detect.warmupMs,

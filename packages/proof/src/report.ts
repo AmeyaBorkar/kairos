@@ -124,6 +124,24 @@ export function renderVerdict(verdict: Verdict): string {
       out.push(`  ${row.id} — ${baseline?.label ?? ""}`);
       if (baseline?.note != null) out.push(`  tolerance chosen because: ${baseline.note}`);
     }
+
+    // A band wider than the number it guards will only ever catch the thing breaking, not the thing
+    // getting worse. That is a legitimate state for a gate to be in — some of these are measured on
+    // twenty minutes of simulated traffic — but a reader who sees PASSED deserves to know which
+    // half of the sheet is actually load-bearing.
+    const gated = verdict.metrics.filter((m) => m.baseline?.tolerance != null);
+    const loose = gated.filter((m) => {
+      const share = m.baseline === null ? null : toleranceShare(m.baseline);
+      return share !== null && share > 0.5;
+    });
+    if (loose.length > 0) {
+      out.push("");
+      out.push(
+        `note: ${loose.length} of ${gated.length} bands are wider than half the value they guard, ` +
+          "so they catch breakage rather than degradation: " +
+          `${loose.map((m) => m.id).join(", ")}.`,
+      );
+    }
   }
 
   for (const advisory of verdict.advisories) {

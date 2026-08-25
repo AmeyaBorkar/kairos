@@ -68,16 +68,34 @@ export function summarise(samples: readonly number[]): Spread {
   };
 }
 
+const LADDER = [1, 1.5, 2, 3, 5, 7] as const;
+
+/**
+ * Snap a ladder step back onto the number it is supposed to be.
+ *
+ * `3 * 0.1` is `0.30000000000000004`, and a committed baseline whose tolerances read like that
+ * invites a reader to wonder what precision they encode. Two significant figures is exactly enough
+ * for every rung of the ladder and no more.
+ */
+function round(value: number): number {
+  return Number(value.toPrecision(2));
+}
+
 /** Standard deviations of headroom. Three lets an innocent re-roll through 997 times in 1,000. */
 export const DEFAULT_SIGMAS = 3;
 
 /**
  * A tolerance a human would write down, from a standard deviation a machine measured.
  *
- * Rounded **up** to one, two or five times a power of ten. Up rather than to-nearest because the
- * standard deviation is itself estimated from a handful of seeds and rounding down would quietly
- * tighten a band that was already optimistic; to a round number because a tolerance of `1174.38` in
- * a committed file invites the reader to believe a precision that is not there.
+ * Rounded **up** to one of a ladder of round numbers. Up rather than to-nearest because the standard
+ * deviation is itself estimated from a handful of seeds, and rounding down would quietly tighten a
+ * band that was already optimistic; to a round number because a tolerance of `1174.38` in a
+ * committed file invites the reader to believe a precision that is not there.
+ *
+ * The ladder is 1, 1.5, 2, 3, 5, 7 rather than the usual 1, 2, 5. A coarser one lands badly: three
+ * standard deviations of 9.4 percentage points is 28.1, and the next 1-2-5 step above it is *fifty*
+ * percentage points — a band wider than most of the metrics it would guard, arrived at by rounding
+ * rather than by evidence.
  *
  * Returns `null` for a degenerate spread — every seed identical — because the answer there is not a
  * smaller tolerance, it is to make the thing an invariant.
@@ -89,8 +107,9 @@ export function suggestTolerance(spread: Spread, sigmas = DEFAULT_SIGMAS): numbe
   if (raw <= 0) return null;
 
   const magnitude = 10 ** Math.floor(Math.log10(raw));
-  for (const step of [1, 2, 5]) {
-    if (raw <= step * magnitude) return step * magnitude;
+  for (const step of LADDER) {
+    const candidate = step * magnitude;
+    if (raw <= candidate) return round(candidate);
   }
-  return 10 * magnitude;
+  return round(10 * magnitude);
 }

@@ -22,7 +22,12 @@ import { formatINR, paise } from "@kairos/domain";
 /** Which way is worse. Decides whether a move beyond tolerance fails the build. */
 export type Direction = "lower-is-better" | "higher-is-better" | "neutral";
 
-export type Unit = "paise" | "ms" | "ratio" | "count";
+/**
+ * `ratio` is a proportion and prints as a percentage; `rate` is a bare number that happens to be
+ * small — false alarms per hour, a skill score — and prints as itself. Rendering 0.14 alarms an
+ * hour as "14%" would be a unit error in a report about unit errors.
+ */
+export type Unit = "paise" | "ms" | "ratio" | "rate" | "count";
 
 /** A number a harness produced. What the scorecard emits. */
 export interface Observation {
@@ -126,6 +131,8 @@ export function formatValue(value: number, unit: Unit): string {
       return `${(value / MINUTE_MS).toFixed(1)}min`;
     case "ratio":
       return `${(value * 100).toFixed(2)}%`;
+    case "rate":
+      return value.toFixed(3);
     case "count":
       return grouped(value);
   }

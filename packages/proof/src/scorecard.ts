@@ -54,7 +54,7 @@ const PROVENANCE = z.strictObject({
 });
 
 const DIRECTION = z.enum(["lower-is-better", "higher-is-better", "neutral"]);
-const UNIT = z.enum(["paise", "ms", "ratio", "count"]);
+const UNIT = z.enum(["paise", "ms", "ratio", "rate", "count"]);
 
 const OBSERVATION = z.strictObject({
   id: z.string().min(1),

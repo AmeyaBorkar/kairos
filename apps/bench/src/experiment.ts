@@ -106,8 +106,19 @@ export const SCENARIOS: readonly Scenario[] = [
 
 export interface ExperimentOptions {
   readonly thresholds: readonly number[];
-  /** Independent runs per (threshold, scenario) cell, and per threshold for the healthy arm. */
+  /** Independent runs per (threshold, scenario) cell. Sets the sample size behind every latency. */
   readonly seedsPerCell: number;
+  /**
+   * Independent runs of the *healthy* arm per threshold, which is the false-alarm rate's denominator.
+   *
+   * Separate from {@link ExperimentOptions.seedsPerCell} because the two size different things and
+   * cost different amounts. A healthy trial injects no degradation, so it is the cheapest run in the
+   * sweep; a scenario trial is what the sweep spends its time on. Tying them meant the quick profile
+   * observed fifty minutes of healthy traffic, in which a *single* false alarm reads as 1.2 an hour
+   * — five times the budget the project has declared. A rate cannot be gated against a threshold it
+   * cannot resolve, and the fix is more denominator rather than a wider band.
+   */
+  readonly healthySeeds: number;
   /**
    * Shifts every seed in the sweep, so the whole curve can be re-drawn on fresh randomness.
    *
@@ -126,6 +137,7 @@ export interface ExperimentOptions {
 export const DEFAULT_OPTIONS: ExperimentOptions = {
   thresholds: [6, 8, 10, 12, 14, 17, 21],
   seedsPerCell: 4,
+  healthySeeds: 12,
   seedBase: 0,
   attemptsPerMinute: 400,
   warmupMs: 25 * MINUTE,
@@ -278,13 +290,13 @@ export function runCurve(
 ): CurveResult {
   const total =
     options.thresholds.length *
-    (options.seedsPerCell + options.scenarios.length * options.seedsPerCell);
+    (options.healthySeeds + options.scenarios.length * options.seedsPerCell);
   let done = 0;
 
   const thresholds = options.thresholds.map((threshold) => {
     let totalFalseAlarms = 0;
     let healthyHours = 0;
-    for (let s = 0; s < options.seedsPerCell; s++) {
+    for (let s = 0; s < options.healthySeeds; s++) {
       const trial = runHealthyTrial(threshold, options.seedBase + 9000 + s * 17, options);
       totalFalseAlarms += trial.alarms;
       healthyHours += trial.hours;

@@ -15,7 +15,11 @@
     "prevent": "node dist/prevent-main.js",
     "prevent:quick": "node dist/prevent-main.js --quick",
     "recover": "node dist/recover-main.js",
-    "recover:quick": "node dist/recover-main.js --quick"
+    "recover:quick": "node dist/recover-main.js --quick",
+    "scorecard": "node dist/scorecard-main.js --profile=full",
+    "gate": "node dist/scorecard-main.js --profile=quick --gate",
+    "bless": "node dist/scorecard-main.js --profile=quick --bless",
+    "variance": "node dist/variance-main.js"
   },
   "dependencies": {
     "@kairos/detect": "workspace:*",

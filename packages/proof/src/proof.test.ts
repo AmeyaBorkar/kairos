@@ -459,20 +459,32 @@ describe("summarise", () => {
 describe("suggestTolerance", () => {
   it("rounds up to one, two or five times a power of ten", () => {
     const at = (sd: number): number | null => suggestTolerance({ ...summarise([0, sd * 2]), sd });
-    // 3 sd of 330 is 990 → 1,000; of 400 is 1,200 → 2,000; of 700 is 2,100 → 5,000.
+    // 3 sd of 330 is 990 → 1,000; of 400 is 1,200 → 1,500; of 700 is 2,100 → 3,000.
     expect(at(330)).toBe(1000);
-    expect(at(400)).toBe(2000);
-    expect(at(700)).toBe(5000);
-    // Past five times the magnitude it steps to the next power of ten: 3 sd of 2,000 is 6,000.
-    expect(at(2000)).toBe(10_000);
-    // And that next power is itself a magnitude, so 10,200 rounds to 20,000 rather than to 10,000.
-    expect(at(3400)).toBe(20_000);
+    expect(at(400)).toBe(1500);
+    expect(at(700)).toBe(3000);
+    // Past seven times the magnitude it steps to the next power of ten: 3 sd of 2,500 is 7,500.
+    expect(at(2500)).toBe(10_000);
+    // And that next power is itself a magnitude, so 10,200 rounds to 15,000, not to 20,000.
+    expect(at(3400)).toBe(15_000);
+  });
+
+  it("returns the number on the ladder rather than the float that computes it", () => {
+    // `3 * 0.1` is 0.30000000000000004, which in a committed baseline reads as a precision claim.
+    expect(suggestTolerance({ ...summarise([0, 0.2]), sd: 0.067 })).toBe(0.3);
+  });
+
+  it("has a ladder fine enough that rounding does not dominate the evidence", () => {
+    // The case that forced it: 3 sd of 9.4 percentage points is 28.1, and a 1-2-5 ladder rounds
+    // that to fifty — a band wider than the metric it guards, arrived at by arithmetic on the
+    // rounding rule rather than by anything measured.
+    expect(suggestTolerance({ ...summarise([0, 20]), sd: 9.4 })).toBe(30);
   });
 
   it("rounds up rather than to nearest, because the sd is itself an estimate", () => {
     const spread = { ...summarise([0, 2]), sd: 1 };
     expect(suggestTolerance(spread, 1)).toBe(1);
-    expect(suggestTolerance({ ...spread, sd: 1.01 }, 1)).toBe(2);
+    expect(suggestTolerance({ ...spread, sd: 1.01 }, 1)).toBe(1.5);
   });
 
   it("has no tolerance to offer for a metric that never moved", () => {
@@ -563,6 +575,23 @@ describe("renderVerdict", () => {
     );
     expect(text).toContain("spend.overspendPaise: expected 0, observed 700");
     expect(text).toContain("spend never exceeded the budget");
+  });
+
+  it("says which bands are too wide to catch anything but breakage", () => {
+    // A reader who sees PASSED deserves to know which half of the sheet is load-bearing.
+    const wide = gated({ id: "a.wide", value: 10, tolerance: 40 });
+    const tight = gated({ id: "b.tight", value: 100, tolerance: 5 });
+    const text = renderVerdict(
+      compare(
+        baseline({ metrics: [wide, tight] }),
+        scorecard({
+          metrics: [observed({ id: "a.wide", value: 10 }), observed({ id: "b.tight", value: 100 })],
+        }),
+      ),
+    );
+    expect(text).toContain("1 of 2 bands are wider than half");
+    expect(text).toContain("a.wide");
+    expect(text).not.toContain("breakage rather than degradation: b.tight");
   });
 
   it("says a run passed when it did", () => {

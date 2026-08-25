@@ -17,7 +17,13 @@ function parseArgs(argv: readonly string[]): { options: ExperimentOptions; out: 
   const options: ExperimentOptions = {
     ...DEFAULT_OPTIONS,
     ...(quick
-      ? { thresholds: [8, 12, 17], seedsPerCell: 2, warmupMs: 15 * 60_000, observeMs: 25 * 60_000 }
+      ? {
+          thresholds: [8, 12, 17],
+          seedsPerCell: 2,
+          healthySeeds: 12,
+          warmupMs: 15 * 60_000,
+          observeMs: 25 * 60_000,
+        }
       : {}),
     ...(flags.has("seeds") ? { seedsPerCell: Number(flags.get("seeds")) } : {}),
   };
@@ -31,7 +37,7 @@ function main(): void {
 
   const total =
     options.thresholds.length *
-    (options.seedsPerCell + options.scenarios.length * options.seedsPerCell);
+    (options.healthySeeds + options.scenarios.length * options.seedsPerCell);
   process.stderr.write(`Running ${total} simulated trials…\n`);
 
   const started = process.hrtime.bigint();
