@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["node"],
+    "paths": {
+      "@kairos/domain": ["../domain/src/index.ts"],
+      "@kairos/simulator": ["../../adapters/simulator/src/index.ts"]
+    }
+  },
+  "include": ["src/**/*"]
+}

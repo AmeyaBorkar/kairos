@@ -147,6 +147,19 @@ importers:
         specifier: ^1.7.0
         version: 1.7.0(fastify@5.12.1)
 
+  packages/recover:
+    dependencies:
+      '@kairos/domain':
+        specifier: workspace:*
+        version: link:../domain
+    devDependencies:
+      '@kairos/simulator':
+        specifier: workspace:*
+        version: link:../../adapters/simulator
+      '@types/node':
+        specifier: ^22.10.0
+        version: 22.20.1
+
   packages/terminus:
     dependencies:
       '@kairos/domain':

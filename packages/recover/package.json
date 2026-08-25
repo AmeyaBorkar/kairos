@@ -1,0 +1,30 @@
+{
+  "name": "@kairos/recover",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The casualty arm. Classifies why a payment failed, prices what to do about it, and schedules it on the cause rather than the clock.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@kairos/domain": "workspace:*"
+  },
+  "devDependencies": {
+    "@kairos/simulator": "workspace:*",
+    "@types/node": "^22.10.0"
+  }
+}
