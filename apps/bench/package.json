@@ -1,0 +1,19 @@
+{
+  "name": "@kairos/bench",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Measurement harness. Produces the detection-latency versus false-alarm curve and the scorecard.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json",
+    "detect-curve": "node dist/main.js",
+    "detect-curve:quick": "node dist/main.js --quick"
+  },
+  "dependencies": {
+    "@kairos/detect": "workspace:*",
+    "@kairos/domain": "workspace:*",
+    "@kairos/simulator": "workspace:*"
+  }
+}

@@ -293,11 +293,27 @@ A Schmitt trigger: trip at `h_trip`, clear at `h_clear < h_trip`, with a minimum
 clearing and a minimum sustained-recovery window. Without this the system flaps at the boundary,
 steering and un-steering every few seconds, which is worse than doing nothing.
 
-### What we publish as evidence
+### What we publish as evidence — measured
 
 **A detection-latency vs false-alarm-rate curve**, swept over thresholds on the simulator where the
-true onset time is known. This is the honest form of "how good is your detector" and it is the
-artifact that makes the rest of the claims credible.
+true onset time is known. Full results, caveats and the blind spot are in
+[MEASUREMENT.md](MEASUREMENT.md); the summary:
+
+| threshold | false alarms/hr | detected | median latency |
+|---:|---:|---:|---:|
+| 6 | 16.71 | 67% | 81s |
+| 8 | 3.00 | 88% | 71s |
+| **12** | **0.21** | **83%** | **93s** |
+| 17 | 0.00 | 83% | 122s |
+
+The operating point is `h = 12`, the fastest threshold inside a budget of 0.25 false alarms/hour. An
+issuer collapse is caught in **5 seconds**; a fifteen-minute slow bleed takes seven minutes, which is
+roughly how long it takes for the evidence to exist.
+
+One case is not detected at all: a degradation confined to a slice seeing ~4 attempts a minute. That
+is a genuine limit rather than a tuning problem — the alternative is the `h = 6` row, which costs
+16.7 false alarms an hour and detects *less* overall, because an early false alarm leaves the slice
+already alarmed when the real event arrives.
 
 ---
 
@@ -710,8 +726,11 @@ shown.
 Recorded rather than resolved, because pretending they are settled would be the wrong kind of
 confidence.
 
-1. **Detector threshold calibration.** ARL₀ targets need to be chosen against realistic Indian traffic
-   shapes, not guessed. Phase 1 produces the curve that decides this.
+1. ~~**Detector threshold calibration.**~~ **Answered in Phase 1.** `h = 12`, from the measured
+   curve. The initial guess of 6.5 was wrong by a wide margin — it produced roughly seventeen false
+   alarms an hour, because three failures in quick succession are enough to trip the most aggressive
+   shift hypothesis at a 2% baseline. Calibrating against simulated traffic rather than an asymptotic
+   approximation is what caught it.
 2. **Is `learnedReservation` earning its place?** §8 commits to measuring it and cutting it if not.
 3. **Holdout size versus incident length.** Short incidents may not accumulate enough control-arm
    volume for a tight interval. We may need to pool across incidents and report confidence intervals
@@ -719,6 +738,14 @@ confidence.
 4. **Checkout method configuration limits.** Exactly how far Razorpay Checkout permits programmatic
    method ordering and suppression needs verification against the live SDK in Phase 3, and the
    steering vocabulary must be built to what it actually supports.
-5. **Recovery attribution.** If a customer would have retried unprompted, our contact did not recover
+5. **Very-low-volume slices are undetectable, and probably always will be.** A slice at ~4 attempts a
+   minute cannot carry enough evidence to separate a broken rail from an unlucky run. Parent-slice
+   coverage and the recovery arm bound the damage; whether that is sufficient is a question for a
+   real merchant's traffic rather than the simulator.
+6. **Incident altitude can be too fine on slow degradations.** A child slice sometimes alarms before
+   its parent has accumulated enough evidence, so an issuer-wide problem is briefly reported as an
+   app-specific one and only rolled up afterwards. A grace delay before emitting a child alarm would
+   fix it; whether the added latency is worth the precision is unmeasured.
+7. **Recovery attribution.** If a customer would have retried unprompted, our contact did not recover
    that money. The holdout handles this for prevention; recovery needs its own control arm, and it
    costs us recovered revenue to run one. We run it anyway.
