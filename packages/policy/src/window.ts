@@ -24,6 +24,13 @@ export interface RailWindowConfig {
    * and `destinationRate` slowly fills with rails nobody uses any more.
    */
   readonly minWeight: number;
+  /**
+   * Control-arm weight below which the blended estimate is used instead.
+   *
+   * Low enough that a thin rail still gets an unbiased rate during an incident, high enough that
+   * the rate is not being read off three attempts.
+   */
+  readonly minControlWeight: number;
 }
 
 /**
@@ -43,14 +50,39 @@ export interface RailWindowConfig {
 export const DEFAULT_WINDOW_CONFIG: RailWindowConfig = {
   halfLifeMs: 2 * 60_000,
   minWeight: 0.5,
+  minControlWeight: 6,
 };
 
-interface Cell {
-  slice: Slice;
+interface Series {
   weight: number;
   failures: number;
   at: number;
 }
+
+interface Cell {
+  slice: Slice;
+  /** Everything observed, which is what volume should be read from. */
+  all: Series;
+  /**
+   * Only the customers whose checkout was left alone.
+   *
+   * This is the fix for a control loop that eats its own signal. The moment a steer takes effect,
+   * traffic leaves the failing rail — so the evidence that justified the steer starts to vanish,
+   * the rail looks healthy again, the steer is withdrawn, and the traffic comes back to a rail that
+   * is still broken. The blended estimate cannot see through its own intervention.
+   *
+   * The holdout can. Control-arm customers go on using the failing rail throughout, so their
+   * outcomes are an unbiased measurement of the world in which nothing was done — which is exactly
+   * the quantity the decision needs. The control group turns out to be load-bearing for stability,
+   * not only for measurement.
+   */
+  control: Series;
+}
+
+/** Which arm an observation came from. `control` means the customer's checkout was unmodified. */
+export type ObservedArm = "treated" | "control";
+
+const emptySeries = (at: number): Series => ({ weight: 0, failures: 0, at });
 
 export class RailWindow {
   readonly #cells = new Map<string, Cell>();
@@ -61,19 +93,24 @@ export class RailWindow {
   }
 
   /** Fold one outcome in. */
-  observe(slice: Slice, failed: boolean, at: number): void {
+  observe(slice: Slice, failed: boolean, at: number, arm: ObservedArm = "treated"): void {
     const key = sliceKey(slice);
-    const cell = this.#cells.get(key);
+    let cell = this.#cells.get(key);
 
     if (cell === undefined) {
-      this.#cells.set(key, { slice, weight: 1, failures: failed ? 1 : 0, at });
-      return;
+      cell = { slice, all: emptySeries(at), control: emptySeries(at) };
+      this.#cells.set(key, cell);
     }
 
-    const decay = this.#decayFrom(cell.at, at);
-    cell.weight = cell.weight * decay + 1;
-    cell.failures = cell.failures * decay + (failed ? 1 : 0);
-    cell.at = at;
+    this.#fold(cell.all, failed, at);
+    if (arm === "control") this.#fold(cell.control, failed, at);
+  }
+
+  #fold(series: Series, failed: boolean, at: number): void {
+    const decay = this.#decayFrom(series.at, at);
+    series.weight = series.weight * decay + 1;
+    series.failures = series.failures * decay + (failed ? 1 : 0);
+    series.at = at;
   }
 
   /** Rail health as of `now`, with stale rails dropped. */
@@ -81,16 +118,24 @@ export class RailWindow {
     const observations: RailObservation[] = [];
 
     for (const [key, cell] of [...this.#cells.entries()]) {
-      const decay = this.#decayFrom(cell.at, now);
-      const weight = cell.weight * decay;
+      const weight = cell.all.weight * this.#decayFrom(cell.all.at, now);
       if (weight < this.#config.minWeight) {
         this.#cells.delete(key);
         continue;
       }
+
+      const controlWeight = cell.control.weight * this.#decayFrom(cell.control.at, now);
+      const useControl = controlWeight >= this.#config.minControlWeight;
+      const series = useControl ? cell.control : cell.all;
+      const denominator = useControl ? controlWeight : weight;
+      const failures = series.failures * this.#decayFrom(series.at, now);
+
       observations.push({
         slice: cell.slice,
+        // Volume always comes from everything observed; only the *rate* comes from the control arm.
+        // Reading volume off a tenth of the traffic would make every steered rail look negligible.
         share: weight,
-        failureRate: Math.min(1, Math.max(0, (cell.failures * decay) / weight)),
+        failureRate: Math.min(1, Math.max(0, failures / denominator)),
       });
     }
 

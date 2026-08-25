@@ -14,7 +14,12 @@ export {
   SteeringController,
   type SteeringControllerOptions,
 } from "./controller.js";
-export { evaluateSteer, type SteerEvaluation, type SteerLever } from "./evaluate.js";
+export {
+  bestSteer,
+  evaluateSteer,
+  type SteerEvaluation,
+  type SteerLever,
+} from "./evaluate.js";
 export { RailHealth, type RailObservation } from "./health.js";
 export { holdoutDraw, isHeldOut } from "./holdout.js";
 export {
@@ -27,6 +32,7 @@ export {
 } from "./plan.js";
 export {
   DEFAULT_WINDOW_CONFIG,
+  type ObservedArm,
   RailWindow,
   type RailWindowConfig,
 } from "./window.js";

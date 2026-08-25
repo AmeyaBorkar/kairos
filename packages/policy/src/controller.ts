@@ -10,7 +10,7 @@ import {
 } from "@kairos/domain";
 import { CLEAN_STATUS, type Clock, type Grant, type Terminus } from "@kairos/terminus";
 import type { SteeringConfig } from "./config.js";
-import { evaluateSteer, type SteerEvaluation } from "./evaluate.js";
+import { bestSteer, evaluateSteer, type SteerEvaluation } from "./evaluate.js";
 import type { RailHealth } from "./health.js";
 import { planFor, type SteerDirective, type SteeringPlan } from "./plan.js";
 
@@ -143,8 +143,22 @@ export class SteeringController {
   }
 
   async #affirmOne(incident: Incident, health: RailHealth, now: number): Promise<AffirmOutcome> {
-    const evaluation = evaluateSteer(incident, health, this.#config);
     const held = this.#held.get(incident.id);
+
+    // Hysteresis on the target, not only on acquisition. A steer changes the traffic it is
+    // measured by: suppress a rail and it goes quiet, and once the control arm is too thin to
+    // supply an unbiased rate the blended estimate says the rail has recovered. Re-deriving the
+    // best target from scratch every tick then swings between levers on evidence the steer itself
+    // created, and a checkout that rearranges itself every few seconds is worse for a merchant
+    // than one that never steered. So an incumbent that still justifies itself is kept, and the
+    // search only re-runs once it stops.
+    const incumbent =
+      held === undefined
+        ? null
+        : evaluateSteer(incident, health, this.#config, held.directive.slice);
+    const evaluation = incumbent?.worthDoing
+      ? incumbent
+      : bestSteer(incident, health, this.#config);
 
     if (!evaluation.worthDoing) {
       this.#corroboration.set(incident.id, 0);
