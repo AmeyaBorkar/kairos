@@ -13,13 +13,16 @@
     "spend-bound": "node dist/spend-main.js",
     "spend-bound:quick": "node dist/spend-main.js --quick",
     "prevent": "node dist/prevent-main.js",
-    "prevent:quick": "node dist/prevent-main.js --quick"
+    "prevent:quick": "node dist/prevent-main.js --quick",
+    "recover": "node dist/recover-main.js",
+    "recover:quick": "node dist/recover-main.js --quick"
   },
   "dependencies": {
     "@kairos/detect": "workspace:*",
     "@kairos/domain": "workspace:*",
     "@kairos/ledger": "workspace:*",
     "@kairos/policy": "workspace:*",
+    "@kairos/recover": "workspace:*",
     "@kairos/razorpay": "workspace:*",
     "@kairos/simulator": "workspace:*",
     "@kairos/terminus": "workspace:*",

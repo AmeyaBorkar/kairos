@@ -156,6 +156,24 @@ export class RecoverWorker {
     const remaining = await terminus.remainingContacts(casualty.customer);
     const contactsRecent = Math.max(0, terminus.mandate.contactCap.limit - remaining);
 
+    // Re-check the schedule before acting, even though the store only handed this over because it
+    // said it was due. The two disagree exactly when somebody else set the due time — an intake
+    // that queued a fresh casualty for "now", a reschedule after a crash — and acting on a stale
+    // one means a message at three in the morning that Terminus then has to refuse. A refusal is a
+    // correct outcome and a wasted pass; deferring is the same outcome without the waste.
+    const planned = schedule(
+      casualty,
+      classification,
+      now,
+      gauge,
+      terminus.mandate.quietHours,
+      this.#scheduleConfig,
+    );
+    if (planned.dueAt === null || planned.dueAt > now) {
+      await store.save(casualty, planned.dueAt);
+      return { claimed: 1, declined: 1, declinesByReason: { [shortReason(planned.reason)]: 1 } };
+    }
+
     const decision = decide(
       casualty,
       classification,
@@ -166,18 +184,13 @@ export class RecoverWorker {
     );
 
     if (!decision.act) {
-      const next = schedule(
-        casualty,
-        classification,
-        now,
-        gauge,
-        terminus.mandate.quietHours,
-        this.#scheduleConfig,
-      );
       // A decision not to act now is not a decision never to act. A casualty declined because its
       // rail is broken becomes worth chasing the moment it heals, and the schedule already knows
-      // when to ask again.
-      await store.save(casualty, decision.reason.includes("control") ? null : next.dueAt);
+      // when to ask again — except for a control, which is never chased at all.
+      await store.save(
+        casualty,
+        decision.reason.includes("control") ? null : now + this.#scheduleConfig.minBackoffMs,
+      );
       return { claimed: 1, declined: 1, declinesByReason: { [shortReason(decision.reason)]: 1 } };
     }
 

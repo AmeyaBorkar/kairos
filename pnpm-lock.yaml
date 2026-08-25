@@ -66,6 +66,9 @@ importers:
       '@kairos/razorpay':
         specifier: workspace:*
         version: link:../../adapters/razorpay
+      '@kairos/recover':
+        specifier: workspace:*
+        version: link:../../packages/recover
       '@kairos/simulator':
         specifier: workspace:*
         version: link:../../adapters/simulator
