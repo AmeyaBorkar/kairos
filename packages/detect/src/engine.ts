@@ -30,6 +30,15 @@ export interface DetectedIncident {
   readonly detectedAt: number;
   readonly baselineRate: number;
   readonly observedRate: number;
+  /**
+   * Worst rate seen since the incident opened.
+   *
+   * Tracked separately from {@link DetectedIncident.observedRate} because steering needs to know
+   * how bad it has been, not only how bad it is this instant. A rail whose rate has already begun
+   * falling is still an incident, and the decision to act on it should not oscillate with the last
+   * few samples.
+   */
+  readonly peakRate: number;
   readonly statistic: number;
   /** How much of the baseline was the slice's own evidence rather than inherited, in [0,1). */
   readonly confidence: number;
@@ -101,6 +110,7 @@ export class DetectionEngine {
           detectedAt: at,
           baselineRate: verdict.baselineRate,
           observedRate: verdict.observedRate,
+          peakRate: verdict.observedRate,
           statistic: verdict.statistic,
           confidence: verdict.confidence,
         };
@@ -114,6 +124,16 @@ export class DetectionEngine {
           }
         }
         // Otherwise an ancestor already explains it, and the child alarm is not news.
+      } else if (verdict.transition === "none" || verdict.transition === "clearing") {
+        const open = this.#open.get(key);
+        if (open !== undefined) {
+          this.#open.set(key, {
+            ...open,
+            observedRate: verdict.observedRate,
+            peakRate: Math.max(open.peakRate, verdict.observedRate),
+            statistic: verdict.statistic,
+          });
+        }
       } else if (verdict.transition === "resolved") {
         const incident = this.#open.get(key);
         if (incident !== undefined) {

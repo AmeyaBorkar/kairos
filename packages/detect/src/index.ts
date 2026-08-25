@@ -35,3 +35,4 @@ export {
   type EngineConfig,
   type EngineEvent,
 } from "./engine.js";
+export { idFor, incidentFrom } from "./incident.js";
