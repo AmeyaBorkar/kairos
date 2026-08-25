@@ -27,3 +27,13 @@ export {
   type ResidualOptions,
   refineResidual,
 } from "./residual.js";
+export {
+  DEFAULT_SCHEDULE_CONFIG,
+  needsCustomer,
+  nextBalanceLikelyMoment,
+  type RailGauge,
+  type Schedule,
+  type ScheduleConfig,
+  type ScheduleTrigger,
+  schedule,
+} from "./schedule.js";
