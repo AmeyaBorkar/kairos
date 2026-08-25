@@ -1,0 +1,32 @@
+import { fileURLToPath } from "node:url";
+import { defineConfig } from "vitest/config";
+
+const pkg = (name: string): string =>
+  fileURLToPath(new URL(`./packages/${name}/src/index.ts`, import.meta.url));
+
+export default defineConfig({
+  resolve: {
+    // Tests run against source, so a clean checkout needs no build step.
+    // Production resolution goes through each package's own `exports`.
+    alias: {
+      "@kairos/domain": pkg("domain"),
+      "@kairos/ledger": pkg("ledger"),
+    },
+  },
+  test: {
+    include: ["packages/**/*.test.ts", "adapters/**/*.test.ts", "apps/**/*.test.ts"],
+    environment: "node",
+    coverage: {
+      provider: "v8",
+      include: ["packages/*/src/**", "adapters/*/src/**"],
+      exclude: ["**/index.ts", "**/*.test.ts"],
+      reporter: ["text", "lcov"],
+      thresholds: {
+        lines: 85,
+        functions: 85,
+        branches: 80,
+        statements: 85,
+      },
+    },
+  },
+});
