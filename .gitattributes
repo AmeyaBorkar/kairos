@@ -1,0 +1,12 @@
+# Normalise to LF in the repository regardless of the checkout platform, so a Windows
+# working copy never produces a diff that is nothing but line endings.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.pdf binary
+*.ico binary
+*.woff binary
+*.woff2 binary
+
+pnpm-lock.yaml linguist-generated=true -diff

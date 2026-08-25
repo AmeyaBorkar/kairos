@@ -1,0 +1,22 @@
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+
+.env
+.env.*
+!.env.example
+
+.DS_Store
+Thumbs.db
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+.idea/
+.vscode/*
+!.vscode/extensions.json
+
+# Harness output: reproducible from a seed, never committed
+bench-out/
+*.scorecard.json
