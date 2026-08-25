@@ -965,8 +965,10 @@ confidence.
    config hashes and are correctly refused as comparable, so this is a gap rather than a hazard — but
    a change could move a published figure while staying inside every band that is enforced. A
    nightly full run against its own baseline is the obvious fix and is not built.
-17. **The reproducibility argument is pinned rather than proven.** These benchmarks reproduce
-   bit-for-bit on a fixed runtime, and the claim that they would differ across V8 releases is a
-   reason for caution rather than an observation: nobody has run the same seed on Node 22 and Node 24
-   and diffed the scorecards. The gate pins one major and prints an advisory on a mismatch, which
-   handles the risk without measuring it.
+17. **Reproducibility is proven across machines, not across engines.** The gate's first CI run
+   reproduced the local scorecard *exactly* — every metric at a delta of zero, ₹5,10,497.00 of
+   incremental recovery on Windows and on an Ubuntu runner alike — so the seeded arithmetic does not
+   depend on the operating system or on a Node patch level. Whether it survives a change of Node
+   *major* is still an assumption: nobody has run the same seed on 22 and on 24 and diffed the
+   result. The bench job pins one major and prints an advisory on a mismatch, which handles the risk
+   without measuring it.

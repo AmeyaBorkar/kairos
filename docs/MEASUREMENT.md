@@ -686,10 +686,13 @@ five, and each changed the code rather than the write-up.
 2. **The bands are as good as eight seeds make them.** A standard deviation from eight samples is
    itself uncertain by roughly a quarter of its size, which is why `suggestTolerance` rounds up
    rather than to nearest, and why `seeds` sits beside every `tolerance` in the baseline.
-3. **Node is pinned rather than proven.** These runs reproduce bit-for-bit on a fixed runtime, but
-   V8 may change the last place of a transcendental between releases and a long simulation can
-   amplify it. The bench job pins one major, the baseline records what it was blessed on, and a
-   mismatch is printed as an advisory rather than mistaken for a regression.
+3. **Reproducibility holds across machines; across Node majors it is an assumption.** The gate's
+   first CI run reproduced this scorecard exactly — every metric at a delta of zero, on an Ubuntu
+   runner against a baseline blessed on Windows — so none of this depends on the operating system or
+   on a patch level. V8 may still change the last place of a transcendental between *major*
+   releases, and a long simulation can amplify that, so the bench job pins one major, the baseline
+   records what it was blessed on, and a mismatch is printed as an advisory rather than mistaken for
+   a regression. Nobody has actually diffed a run on 22 against one on 24.
 4. **The seed study is not automatic, and must not be.** Nothing in CI runs it, because a gate that
    recalibrates itself is not a gate. When the harness changes shape, somebody runs it, reads it, and
    edits the bands by hand.
