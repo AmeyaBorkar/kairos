@@ -21,6 +21,7 @@ export {
   type RecoveryConfig,
   worstActionCostPaise,
 } from "./decide.js";
+export { casualtyFrom, idForAttempt } from "./intake.js";
 export {
   DEFAULT_RECOVERY_MODEL,
   type RecoveryFeatures,
@@ -45,3 +46,18 @@ export {
   type ScheduleTrigger,
   schedule,
 } from "./schedule.js";
+export {
+  type CasualtyStore,
+  type CustomerDirectory,
+  type CustomerProfile,
+  MemoryCasualtyStore,
+} from "./store.js";
+export {
+  classificationOf,
+  type DrainReport,
+  type ExecuteRequest,
+  type ExecuteResult,
+  type Executor,
+  RecoverWorker,
+  type RecoverWorkerOptions,
+} from "./worker.js";

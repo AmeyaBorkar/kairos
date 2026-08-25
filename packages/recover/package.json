@@ -21,10 +21,13 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
-    "@kairos/domain": "workspace:*"
+    "@kairos/domain": "workspace:*",
+    "@kairos/terminus": "workspace:*"
   },
   "devDependencies": {
+    "@kairos/ledger": "workspace:*",
     "@kairos/simulator": "workspace:*",
-    "@types/node": "^22.10.0"
+    "@types/node": "^22.10.0",
+    "throttlekit": "^1.7.0"
   }
 }

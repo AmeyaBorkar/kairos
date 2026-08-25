@@ -2,6 +2,7 @@ import {
   allowsAction,
   type BindingAxis,
   type CasualtyStatus,
+  type CustomerRef,
   inQuietHours,
   isContact,
   isMandateCurrent,
@@ -494,6 +495,25 @@ export class Terminus {
   /** The books, without changing them. */
   snapshot(): Promise<BudgetSnapshot> {
     return this.#budget.snapshot(this.#clock.now());
+  }
+
+  /**
+   * How many contacts this customer may still receive, without consuming one.
+   *
+   * Exposed because the caller deciding *whether* a message is worth sending needs to know how many
+   * this person has already had — the third message to somebody annoys more than the first, and a
+   * policy that cannot see the count cannot price that. Non-consuming, and therefore advisory: the
+   * number can be stale by the time it is used, and the cap that actually binds is still taken
+   * atomically inside {@link Terminus.admit}.
+   */
+  async remainingContacts(customer: CustomerRef): Promise<number> {
+    try {
+      return (await this.#contacts.peek(customer)).remaining;
+    } catch {
+      // Unreadable means assume none left: a policy that cannot tell how much it has already
+      // spoken to somebody should assume it has spoken to them enough (P2).
+      return 0;
+    }
   }
 
   /** The contact-cap refusal, phrased once so the peek and the consume paths cannot drift apart. */

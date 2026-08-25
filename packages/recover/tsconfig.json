@@ -5,6 +5,8 @@
     "types": ["node"],
     "paths": {
       "@kairos/domain": ["../domain/src/index.ts"],
+      "@kairos/ledger": ["../ledger/src/index.ts"],
+      "@kairos/terminus": ["../terminus/src/index.ts"],
       "@kairos/simulator": ["../../adapters/simulator/src/index.ts"]
     }
   },

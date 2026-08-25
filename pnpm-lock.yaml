@@ -80,6 +80,31 @@ importers:
         specifier: ^22.10.0
         version: 22.20.1
 
+  apps/recover-worker:
+    dependencies:
+      '@kairos/domain':
+        specifier: workspace:*
+        version: link:../../packages/domain
+      '@kairos/ledger':
+        specifier: workspace:*
+        version: link:../../packages/ledger
+      '@kairos/razorpay':
+        specifier: workspace:*
+        version: link:../../adapters/razorpay
+      '@kairos/recover':
+        specifier: workspace:*
+        version: link:../../packages/recover
+      '@kairos/terminus':
+        specifier: workspace:*
+        version: link:../../packages/terminus
+      throttlekit:
+        specifier: ^1.7.0
+        version: 1.7.0(fastify@5.12.1)
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.0
+        version: 22.20.1
+
   apps/sentry:
     dependencies:
       '@kairos/detect':
@@ -152,13 +177,22 @@ importers:
       '@kairos/domain':
         specifier: workspace:*
         version: link:../domain
+      '@kairos/terminus':
+        specifier: workspace:*
+        version: link:../terminus
     devDependencies:
+      '@kairos/ledger':
+        specifier: workspace:*
+        version: link:../ledger
       '@kairos/simulator':
         specifier: workspace:*
         version: link:../../adapters/simulator
       '@types/node':
         specifier: ^22.10.0
         version: 22.20.1
+      throttlekit:
+        specifier: ^1.7.0
+        version: 1.7.0(fastify@5.12.1)
 
   packages/terminus:
     dependencies:

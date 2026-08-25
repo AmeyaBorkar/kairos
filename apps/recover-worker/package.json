@@ -1,0 +1,24 @@
+{
+  "name": "@kairos/recover-worker",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Drains the casualty queue under one mandate. Horizontally scalable; every bound it observes belongs to Terminus, not to it.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json",
+    "start": "node dist/main.js"
+  },
+  "dependencies": {
+    "@kairos/domain": "workspace:*",
+    "@kairos/ledger": "workspace:*",
+    "@kairos/razorpay": "workspace:*",
+    "@kairos/recover": "workspace:*",
+    "@kairos/terminus": "workspace:*",
+    "throttlekit": "^1.7.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0"
+  }
+}
