@@ -1,5 +1,10 @@
-import { formatINR, type Paise, type RecoverabilityClass } from "@kairos/domain";
-import { type SmsCost, smsCost } from "./segments.js";
+import {
+  formatINR,
+  type Paise,
+  type RecoverabilityClass,
+  type SmsCost,
+  smsCost,
+} from "@kairos/domain";
 
 /**
  * What a recovery message is allowed to say, and what it is allowed to know.

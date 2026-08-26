@@ -44,14 +44,6 @@ export {
   rupeesAscii,
 } from "./copy.js";
 export {
-  encodingFor,
-  SEGMENT_LIMITS,
-  type SmsCost,
-  type SmsEncoding,
-  smsCost,
-  smsCostPaise,
-} from "./segments.js";
-export {
   memorySeenEvents,
   type SeenEvents,
   verifyWebhook,

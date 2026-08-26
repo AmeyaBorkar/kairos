@@ -94,6 +94,14 @@ export {
   ZERO,
 } from "./money.js";
 export {
+  encodingFor,
+  SEGMENT_LIMITS,
+  type SmsCost,
+  type SmsEncoding,
+  smsCost,
+  smsCostPaise,
+} from "./segments.js";
+export {
   formatSlice,
   isPaymentMethod,
   PAYMENT_METHODS,

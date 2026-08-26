@@ -1,11 +1,10 @@
-import type { ActionKind, Paise } from "@kairos/domain";
+import { type ActionKind, type Paise, smsCostPaise } from "@kairos/domain";
 import {
   acceptableFirstName,
   compose,
   type Gateway,
   type MessageChannel,
   type Messenger,
-  smsCostPaise,
 } from "@kairos/razorpay";
 import type { ExecuteRequest, ExecuteResult, Executor } from "@kairos/recover";
 
