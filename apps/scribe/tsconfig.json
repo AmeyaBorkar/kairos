@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["node"],
+    "paths": {
+      "@kairos/domain": ["../../packages/domain/src/index.ts"],
+      "@kairos/ledger": ["../../packages/ledger/src/index.ts"],
+      "@kairos/policy": ["../../packages/policy/src/index.ts"],
+      "@kairos/reason": ["../../packages/reason/src/index.ts"],
+      "@kairos/reasoner-gemini": ["../../adapters/reasoner-gemini/src/index.ts"],
+      "@kairos/recover": ["../../packages/recover/src/index.ts"],
+      "@kairos/terminus": ["../../packages/terminus/src/index.ts"]
+    }
+  },
+  "include": ["src/**/*"]
+}

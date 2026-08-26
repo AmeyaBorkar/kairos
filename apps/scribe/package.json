@@ -1,0 +1,27 @@
+{
+  "name": "@kairos/scribe",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Writes the copy library. Asks a model once per situation, puts every answer through the gauntlet, and spends the whole run under a signed mandate.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json",
+    "compose": "node dist/main.js",
+    "compose:dry-run": "node dist/main.js --dry-run",
+    "record": "node dist/record.js"
+  },
+  "dependencies": {
+    "@kairos/domain": "workspace:*",
+    "@kairos/ledger": "workspace:*",
+    "@kairos/reason": "workspace:*",
+    "@kairos/reasoner-gemini": "workspace:*",
+    "@kairos/recover": "workspace:*",
+    "@kairos/terminus": "workspace:*",
+    "throttlekit": "^1.7.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0"
+  }
+}
