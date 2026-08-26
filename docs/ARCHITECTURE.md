@@ -172,6 +172,7 @@ Hexagonal. Three rings: a pure core, a set of ports, and adapters that satisfy t
 | `@kairos/recover` | Classification, expected-value gating, action selection, next-action scheduling, and the calibrated recovery-probability model. Also owns the drain loop, which takes every side effect as a port. |
 | `@kairos/terminus` | The governance kernel. Mandates, reservation/reconcile, stopping rules, admission. Wraps `throttlekit`. |
 | `@kairos/ledger` | Hash-chained append and verification. |
+| `@kairos/reason` | What a language model is asked, what it may answer, and what the answer costs. Prompts, the validation gauntlet, pricing at list rate, and the copy library. Knows nothing about any provider — the model writes copy for a *situation*, never for a customer, and rendering afterwards is pure. |
 | `@kairos/proof` | Measurement as a commitment. Metrics with bands, invariants without, provenance over the experiment's configuration, and the comparison that decides whether a run still proves what the project claims. Knows nothing about payments — the benchmarks feed it. |
 
 The core has **zero runtime dependencies** other than `throttlekit` (in `terminus`) and `zod` for
@@ -183,7 +184,9 @@ schema definitions. Anything that needs a network lives outside it.
 interface EventSource   { subscribe(h: (a: Attempt) => void): Unsubscribe }
 interface Gateway       { createOrder · createPaymentLink · capture · refund · fetchDowntimes }
 interface Messenger     { send(msg: Message): Promise<SendResult>   // SendResult carries ACTUAL cost
-interface Reasoner      { diagnose(ctx): Promise<Diagnosis> · compose(ctx): Promise<Composition> }
+interface Composer      { compose(req): Promise<ModelResult<ProposedCopy[]>>   // build time, not send time
+interface Explainer     { explain(req): Promise<ModelResult<string>>          // operator-initiated
+interface ResidualClassifier { classify(input, deadlineMs): Promise<string>   // closed enum, validated
 interface Store         { apply(key, ttl, transform): Promise<ApplyOutcome>  // throttlekit's Store
 interface LedgerSink    { append(r: AuditRecord): Promise<void> }
 interface Clock         { now(): number }
@@ -194,7 +197,7 @@ interface Clock         { now(): number }
 
 ### Adapters
 
-`razorpay` · `simulator` · `reasoner-anthropic` · `store-postgres` · `store-redis` · `messenger-sms`
+`razorpay` · `simulator` · `reasoner-gemini` · `store-postgres` · `store-redis` · `messenger-sms`
 · `messenger-whatsapp` · `ledger-postgres`
 
 Each adapter is independently swappable and independently tested against a shared conformance suite
@@ -828,7 +831,7 @@ config is one less thing to keep aligned.
 ```
 kairos/
 ├── packages/          domain · detect · policy · recover · terminus · ledger · ports
-├── adapters/          razorpay · simulator · reasoner-anthropic · store-postgres
+├── adapters/          razorpay · simulator · reasoner-gemini · store-postgres
 │                      store-redis · messenger-sms · messenger-whatsapp · ledger-postgres
 ├── apps/              sentry · recover-worker · checkout · console · bench
 ├── docs/              ARCHITECTURE.md · MEASUREMENT.md · SECURITY.md · decisions/ (ADRs)
