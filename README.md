@@ -86,7 +86,7 @@ Seventeen claims are checked exactly, because they have no sampling distribution
 exceeded the mandate or it did not. Twenty-one are estimates and carry a band, and the band is
 measured rather than guessed — `bench:variance` holds the code still, varies only the seed, and
 reports how far each number wanders when nothing is wrong. That is the size of a meaningless change,
-which is what a gate has to survive. **Eight of the twenty-one bands are wider than the value they
+which is what a gate has to survive. **Nine of the twenty-three bands are wider than the value they
 guard, and the gate says so**, because a reader who sees PASSED is owed the difference between a
 claim that cannot break and one that merely cannot be measured this cheaply
 ([ADR 0005](docs/decisions/0005-a-benchmark-that-reproduces-exactly-still-needs-a-band.md)).
@@ -99,6 +99,18 @@ name is never assembled — the model writes a sentence with holes and a pure fu
 inference call is an action like any other: admitted against a signed mandate, reserved before the
 call, reconciled against the tokens the provider reports, and priced at list rate even on a free
 tier ([ADR 0006](docs/decisions/0006-copy-is-written-once-reviewed-and-committed.md)).
+
+The library is now read at send time, and a fifth benchmark arm measures what it is worth against the
+same system running hand-written templates: **₹64,648 more recovered, on 126 fewer messages and 11
+fewer opt-outs.** The result is narrower than it sounds, and the sweep beside it is the honest part —
+the entire gain is *readability*, not better writing. Set the readability penalty to 1, where a
+message in the wrong script works as well as one in the right script, and generated copy is worth
+−₹1,076 with its range across seeds straddling zero. Everything the model produced about naming the
+rail and being specific about the next step is worth approximately nothing on this evidence.
+
+`pnpm explain <target>` answers "why did Kairos do that?" from the audit chain. Every figure in the
+answer must appear character-for-character in a record; one that does not is refused rather than
+captioned, because a warning printed above fluent prose is read by nobody.
 
 Design claims that did not survive contact with measurement — each corrected in the open rather than
 quietly:
@@ -131,7 +143,17 @@ quietly:
   seventy units, less the greeting and the placeholders, is twenty-five characters of Hindi
   ([ADR 0007](docs/decisions/0007-an-indic-recovery-sms-buys-a-second-segment.md));
 - the prompt file claimed a provider cache that, measured, never engaged once in sixteen calls
-  sharing an identical 829-token prefix — the ordering stays, the claim is gone (Phase 5.5).
+  sharing an identical 829-token prefix — the ordering stays, the claim is gone (Phase 5.5);
+- generated copy was expected to win on *writing* — naming the rail, saying what to do next. Swept
+  against the readability weight it rests on, it wins on **readability alone**: at a penalty of 1.00
+  the advantage is −₹1,076 and straddles zero (Phase 5.75);
+- an unreadable message was modelled as slightly worse at helping people and exactly as good at
+  bringing them back, which is not a model of anything — legibility now prices the response rate,
+  once, where it acts (Phase 5.75);
+- the detector was measured on how fast it opens an incident and never on how fast it closes one: it
+  detects in about three minutes and resolves about **six hours** after the rail recovers, which
+  keeps traffic steered off a healthy rail and delays every retry that waits on the recovery edge
+  (open question 19).
 
 ## Status
 
@@ -151,6 +173,27 @@ pnpm lint
 Requires Node ≥ 22 and pnpm ≥ 11. **No API key is needed for any of it** — the benchmark is seeded
 and offline, and the reasoner adapter's tests replay a committed recording rather than calling
 anybody.
+
+The operator console runs against simulated traffic with no key at all. It drives the real detector,
+controller, kernel and ledger, and every response says so:
+
+```sh
+KAIROS_MANDATE_SECRET=$(openssl rand -hex 32) pnpm --filter @kairos/console run start
+curl localhost:8788/api/scenarios
+curl -X POST localhost:8788/api/step -H 'content-type: application/json' -d '{"ticks":20}'
+```
+
+Six scenarios, including one where nothing happens and two that end with Kairos refusing to act. The
+client drives the clock rather than the server running a timer, so an incident can be stepped through
+by hand while recording.
+
+Asking why something happened works without a key too — it prints the audit records, and adds prose
+only if a model is configured and every figure in that prose came from a record:
+
+```sh
+pnpm --filter @kairos/console run explain -- --list
+pnpm --filter @kairos/console run explain -- <target>
+```
 
 One job needs a key, and it is run by a person rather than by a machine: regenerating the copy
 library after a prompt changes.

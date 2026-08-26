@@ -855,6 +855,133 @@ never sees it.
 
 ---
 
-## Phase 6 onward
+## Phase 5.75 — What the copy library is worth
 
-Not yet measured. The console and the chaos demonstrations land with their phase.
+Phase 5.5 generated 468 validated variants and measured everything about them except the only thing
+that matters: whether they recover more money. Nothing consumed the library at runtime. This is the
+measurement that closes that gap, and it produced a narrower claim than expected.
+
+### The fifth arm
+
+`kairos + generated copy` against `kairos + template copy`. Identical scheduling, expected-value
+gate, seed, customers and world; the single difference is where the words come from, so any gap
+between them is attributable to the copy and to nothing else.
+
+Two changes were needed before the comparison could mean anything, and both were corrections.
+
+**Customers now have a language.** The simulator modelled attempts in detail and people not at all,
+so every arm was told its recipients read English. That was harmless while every arm sent the same
+English template and stops being harmless the moment one arm can write Tamil: a benchmark whose
+whole population reads the baseline's language cannot measure a language advantage and would report
+zero for a real one. The modelled mix is 55% English, 25% Hindi, 10% Marathi, 10% Tamil — **every
+one of those numbers is a stipulation**, and the measured value moves with the non-English share.
+
+**Legibility moved to where it acts.** `scoreMessage` used to halve its content score for a message
+in the wrong script, and the world then applied that score only to whether a `customer-action`
+casualty got fixed. So an unreadable message pulled back exactly as many people as a readable one
+and was merely slightly worse at helping them, which is not a model of anything. Nobody acts on a
+message they cannot read. Legibility now multiplies the response rate; content still governs the
+outcome. Charging one number for both put the penalty on the wrong quantity, and charging it in
+both places would have billed it twice and flattered every multilingual result by construction.
+
+### The result
+
+| arm | incremental | messages | opt-outs | true cost | legible |
+|---|---:|---:|---:|---:|---:|
+| do nothing | — | 0 | 0 | ₹0.00 | — |
+| chronos ladder | ₹6,41,102.00 | 12,420 | 155 | ₹33,435.80 | 53.6% |
+| message everyone | ₹1,40,736.00 | 5,556 | 67 | ₹14,487.80 | 54.5% |
+| kairos + template copy | ₹6,32,030.00 | 5,845 | 54 | ₹11,496.33 | 53.9% |
+| **kairos + generated copy** | **₹6,96,678.00** | **5,719** | **43** | **₹9,241.73** | **100%** |
+
+Generated copy recovered **₹64,648 more** than the same system running templates, on 126 fewer
+messages and 11 fewer opt-outs. Fewer messages is not a separate saving — a customer who acts on the
+first message never receives the second.
+
+It also moves the headline the recovery report has carried since Phase 4. Kairos previously recovered
+about 6% *less* incremental revenue than the fixed ladder and won on cost; with generated copy it
+recovers more, on 54% fewer messages and with 112 fewer customers lost to opt-out.
+
+### Do not read that number without this table
+
+The gain is entirely a function of a weight nobody has measured. Rather than quote one point from
+it, the harness sweeps the readability penalty across its whole range, four seeds per row:
+
+| penalty | template | generated | mean gain | worst seed | best seed |
+|---:|---:|---:|---:|---:|---:|
+| 0.00 | ₹5,23,612.75 | ₹7,19,031.25 | ₹1,95,418.50 | ₹1,74,322.00 | ₹2,17,464.00 |
+| 0.50 | ₹6,19,180.75 | ₹7,19,031.25 | ₹99,850.50 | ₹64,648.00 | ₹1,39,404.00 |
+| 1.00 | ₹7,20,107.50 | ₹7,19,031.25 | **−₹1,076.25** | −₹17,927.00 | ₹5,922.00 |
+
+**The generated column does not move.** Every message that arm sends is legible, so the penalty has
+nothing to bite on; all the movement is in the baseline. That is the whole finding: what the library
+buys is *readability*, not better writing. At a penalty of 1.00 the gain is negative and its range
+straddles zero — everything the model wrote about naming the rail, being specific about the next
+step and fitting the channel is worth, on this evidence, approximately no money.
+
+That is a much narrower claim than "we generate better copy", and it is the one the measurement
+supports.
+
+### Why the sweep is four seeds and not one
+
+The first version was one seed and came out **non-monotonic** — a penalty of 0.25 scoring below
+0.00, which is impossible. The step was ₹31,737 against a seed-to-seed coefficient of variation of
+4.18% on this metric. The inversion was the noise floor announcing itself, and a curve whose middle
+cannot be ordered is not a curve.
+
+`recover.generatedGainPaise` is gated with a tolerance of ₹1,00,000 against a mean of ₹78,509 — a
+band wider than the value it guards. Its own cv is **37.6%**, the highest on the scorecard, because
+a difference between two noisy quantities is noisier than either. The gate can catch the gain
+disappearing and nothing finer. **Do not quote that metric's point value as a finding**; quote the
+sweep.
+
+### What moved in the baseline, and why it should have
+
+`recover.trueCostPaise` doubled, from ₹6,014.69 to ₹12,046.33, and its band was widened from ₹5,000
+to ₹10,000. That is not a regression: the template arm is now measured against a population half of
+which cannot read it, so it sends more messages and loses more consent. The cost the library exists
+to remove should appear in the baseline rather than be tuned away.
+
+### Caveats
+
+1. **The language mix is invented**, and the gain scales with the non-English share. Halve it and
+   you roughly halve the measured benefit. A real merchant knows their own distribution in a day.
+2. **The gain is not resolvable at this sample size.** The point estimate has a 37.6% coefficient of
+   variation. What is resolvable is its sign at low penalties and its absence at a penalty of 1.
+3. **Legibility is modelled as a script check**, which is a crude proxy. A customer who reads
+   English perfectly well is counted as unable to read Tamil and vice versa; nothing models partial
+   comprehension, and real bilingualism is the norm in this market.
+4. **No customer has seen any of this.** The same caveat as Phase 5.5, and it still dominates.
+
+---
+
+## Phase 6 — Demonstration
+
+The console API and its scenarios are built and tested; the UI is not. `pnpm explain` is built.
+Nothing here is a measurement, with one exception that belongs in this document because it was found
+by building the console and is a fact about the detector rather than about the demo.
+
+### The detector resolves an incident six hours after the rail recovers
+
+Detection latency has been measured since Phase 1 — a median of 93 seconds at `h=12`. **Resolution
+latency has never been measured**, and it is roughly two orders of magnitude worse.
+
+On the `issuer-outage` scenario the rail is healthy again at +81 minutes. The incident opens at +49
+and does not resolve until **+442**:
+
+```
++ 60m  phase=alarmed  statistic=18.28
++ 80m  phase=alarmed  statistic=22.40   <- rail has recovered
++240m  phase=alarmed  statistic=10.04   <- three hours later
+        clearThreshold = 3.6
+```
+
+A one-sided CUSUM accumulates while the observed rate exceeds the frozen baseline and decays only
+while it is *below* it. A rail that recovers to exactly its baseline produces a drift near zero, so
+the statistic plateaus near its peak and descends on noise alone.
+
+This is expensive rather than untidy. Steering keeps diverting traffic off a healed rail for as long
+as the incident is open, which is collateral damage buying nothing, and the recovery arm's whole
+timing claim is that it retries on the recovery edge. See open question 19. It is asserted in a
+console test rather than patched, because changing the detector re-baselines every number in this
+document.

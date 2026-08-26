@@ -173,6 +173,7 @@ Hexagonal. Three rings: a pure core, a set of ports, and adapters that satisfy t
 | `@kairos/terminus` | The governance kernel. Mandates, reservation/reconcile, stopping rules, admission. Wraps `throttlekit`. |
 | `@kairos/ledger` | Hash-chained append and verification. |
 | `@kairos/reason` | What a language model is asked, what it may answer, and what the answer costs. Prompts, the validation gauntlet, pricing at list rate, and the copy library. Knows nothing about any provider — the model writes copy for a *situation*, never for a customer, and rendering afterwards is pure. |
+| `@kairos/explain` | Turning the audit chain into an answer: retrieval by subject, redaction down to an allowlist of six fields, and the check that every figure in the prose appears in a record. Refuses an answer it cannot vouch for rather than captioning it. |
 | `@kairos/proof` | Measurement as a commitment. Metrics with bands, invariants without, provenance over the experiment's configuration, and the comparison that decides whether a run still proves what the project claims. Knows nothing about payments — the benchmarks feed it. |
 
 The core has **zero runtime dependencies** other than `throttlekit` (in `terminus`) and `zod` for
@@ -210,8 +211,8 @@ what lets the entire system run offline in CI.
 |---|---|
 | `sentry` | Ingests outcomes, runs detection, publishes the current steering plan. Stateless, horizontally scalable. |
 | `recover-worker` | Drains the casualty queue. **Deliberately multi-instance** — this is where a naive budget check would race, and where Terminus earns its place. Ships in dry-run delivery: every decision real, no message sent. |
-| `checkout` | Demo storefront on Razorpay Checkout whose method configuration is driven by `sentry`. |
-| `console` | Operator view: live rail health, active incidents, which bound is binding, the audit trail. |
+| `checkout` | **Not built.** A demo storefront on Razorpay Checkout whose method configuration is driven by `sentry`. It needs a Razorpay test key and is the one place the steering claim would meet a rendered page rather than a documented API — see open question 6. |
+| `console` | Operator view: rail health, incidents, which bound is binding, the audit trail. A JSON API with no view layer, driving the real detector, controller, kernel and ledger over simulated traffic — every response carries `provenance: {kind: "simulated", scenario, seed}`, because a dashboard of red rails and rupee figures is what ends up in a slide. Six named scenarios, including one where nothing happens and two that end in a refusal. Also hosts `pnpm explain`. **The UI is not built.** |
 | `scribe` | Writes the copy library. Asks a model once per *situation* — 180 of them, not 5,719 messages — validates every answer, and commits the result. Runs under a signed mandate whose only permitted action is `reason`, so it could not send a message if its code asked it to. Resumable, because a free tier's daily quota is a real bound. |
 | `bench` | The measurement harness. Four experiments on pinned seeds, a consolidated scorecard, the seed study its regression bands are derived from, and the gate CI runs on every change. |
 
@@ -883,7 +884,8 @@ shown.
 | **4 · Recovery** | Classification, EV gate, scheduling, `recover-worker` — and the incremental recovery measured against a control arm and three baselines |
 | **5 · Proof** | ✅ Consolidated scorecard, seed study, provenance, `bench.yml` regression gate — bands derived from measured spread rather than guessed |
 | **5.5 · Language** | ✅ `reasoner-gemini`, the validation gauntlet, `scribe`, and a committed copy library in four languages — generated at build time under a signed mandate, reviewed as a diff, replayed offline by every test |
-| **6 · Demonstration** | Console, chaos scenarios, pitch materials |
+| **5.75 · Consumption** | ✅ The copy library wired into the recovery path, a multilingual customer population, and the fifth benchmark arm that measures what generated copy is worth — with the readability penalty swept rather than assumed |
+| **6 · Demonstration** | Console API and chaos scenarios ✅, `explain` CLI ✅ — console UI, `checkout`, and pitch materials outstanding |
 
 ---
 
@@ -984,7 +986,19 @@ confidence.
    result. The bench job pins one major and prints an advisory on a mismatch, which handles the risk
    without measuring it.
 
-18. **The message-quality weights are invented, and the multilingual claim rests on them.**
+18. **The message-quality weights are invented, and the multilingual claim rests on them —
+   now with the sensitivity measured.** Phase 5.75 swept the readability penalty across its whole
+   range instead of quoting one point from it, and the answer is sharper than expected: at a
+   penalty of 1.00, where a message in the wrong script works exactly as well as one in the right
+   one, generated copy is worth **−₹1,076** and its range across seeds straddles zero. The
+   generated arm's own figure does not move across the sweep at all, because every message it sends
+   is legible and the penalty has nothing to bite on. **All of the value is readability; none of it
+   is better writing.** Everything the model produced about naming the rail, being specific about
+   the next step and fitting the channel is worth approximately no money on this evidence. What
+   remains unmeasured is where on that curve the truth sits, and ADR 0007 still spends real postage
+   on the assumption that it is nearer 0.5 than 1.0. The original note follows.
+
+   **The message-quality weights are invented, and the multilingual claim rests on them.**
    `scoreMessage` splits a message's effect four ways — names the cause (0.4), names the action
    (0.4), fits its channel (0.2), and readable-or-halved. The *ordering* is defensible from first
    principles; the *levels* are not measured, because measuring them needs customers rather than a
@@ -994,3 +1008,27 @@ confidence.
    [ADR 0007](decisions/0007-an-indic-recovery-sms-buys-a-second-segment.md) commits to paying
    double postage for an Indic SMS on the strength of it. If the true penalty is milder than a
    half, that decision loses money and nothing in this repository would notice.
+
+19. **The detector opens an incident in three minutes and closes it in six hours.** Found while
+   building the console, and it is the sharpest unaddressed defect in the repository. On the
+   `issuer-outage` scenario the rail is healthy again at +81 minutes and the incident does not
+   resolve until **+442**. The detection study measures latency and false alarms and has never
+   measured *resolution* latency, so nothing caught it.
+
+   The cause is the shape of a one-sided CUSUM. The statistic accumulates while the observed rate
+   exceeds the frozen baseline and decays only while it is *below* it, so a rail that recovers to
+   exactly its baseline produces a drift near zero: the statistic plateaus near its peak and comes
+   down on noise alone. Clearing needs it under 3.6, and three hours after recovery it is still
+   above 10.
+
+   It is not cosmetic, and it is worst where it costs most. Steering keeps diverting traffic off a
+   healed rail for as long as the incident is open, which is collateral damage buying nothing — the
+   30-minute reservation TTL does not help, because a still-open incident is re-affirmed. And the
+   recovery arm's entire timing claim is that it retries on the recovery edge, so a `transient`
+   casualty on a rolled-up incident waits hours past the moment it should have been retried.
+
+   The obvious repairs are to reset the statistic when the phase moves to `clearing`, or to give
+   the CUSUM a forgetting factor so evidence ages. Neither is done, because either changes the
+   detector and re-baselines every published measurement here — that is a decision to take
+   deliberately rather than in passing. `apps/console` asserts the current behaviour in a test so
+   it cannot be fixed by accident and go unnoticed.

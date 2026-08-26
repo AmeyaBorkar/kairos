@@ -24,6 +24,9 @@ import { type Scenario, scenarioNamed } from "./scenario.js";
 const MINUTE = 60_000;
 const DAY = 24 * 60 * MINUTE;
 
+/** The instant every CLI run starts from, so ids are the same in every process. */
+const PINNED_START = 1_756_000_000_000;
+
 function usage(): never {
   process.stderr.write(
     'usage: pnpm --filter @kairos/console run explain <target> [--scenario=name] [--ask="..."]\n' +
@@ -57,6 +60,27 @@ function mandateFor(scenario: Scenario, secret: string): Mandate {
   );
 }
 
+/**
+ * How to describe a record whose `allowed` is false.
+ *
+ * `allowed` is overloaded, and printing every false as "REFUSED" is what made that obvious. Three
+ * different things write it: the kernel refusing an action, the policy layer declining to propose
+ * one, and a controller *releasing* authority it no longer needs. The third reads absurdly as a
+ * refusal — the first run of this CLI printed `REFUSED steer renewing on continuing evidence`,
+ * which is a revoke immediately followed by a fresh reservation, described as though something had
+ * gone wrong.
+ *
+ * Only the first of the three names a binding axis, so that is the discriminator available here. It
+ * separates a real refusal from the other two; it cannot separate a decline from a release, and
+ * both are reported as `declined` rather than guessed at. Fixing that properly means adding a
+ * `kind` to the audit record, which is a change to the chain's schema and to every record already
+ * written under it.
+ */
+function verdictOf(entry: { readonly allowed: boolean; readonly binding: string | null }): string {
+  if (entry.allowed) return "allowed";
+  return entry.binding === null ? "declined" : "REFUSED";
+}
+
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
   const flags = new Map(
@@ -75,7 +99,12 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  const startAt = Date.now();
+  // Pinned rather than `Date.now()`, and this is a correctness requirement rather than a
+  // convenience. Incident ids are derived from the moment they open, so a run starting at the wall
+  // clock produces different ids on every invocation — `--list` in one process would name targets
+  // that no longer exist by the time the next process looks for them. The console *server* can use
+  // the wall clock because one process serves both calls; a CLI cannot.
+  const startAt = PINNED_START;
   const name = flags.get("scenario") ?? "issuer-outage";
   const scenario = scenarioNamed(name, startAt);
   if (scenario === null) {
@@ -112,7 +141,7 @@ async function main(): Promise<void> {
   // The records first, always. They are the answer; the prose is a convenience over them.
   process.stdout.write(`\n${target} — ${retrieved.timeline.length} record(s)\n\n`);
   for (const entry of retrieved.timeline) {
-    const verdict = entry.allowed ? "allowed" : "REFUSED";
+    const verdict = verdictOf(entry);
     const bound = entry.binding === null ? "" : `  [${entry.binding}]`;
     process.stdout.write(
       `  ${entry.at}  ${verdict.padEnd(8)}  ${entry.action}  ${entry.reason}${bound}\n`,
