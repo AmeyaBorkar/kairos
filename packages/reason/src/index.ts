@@ -6,6 +6,7 @@ export {
   type Verdict,
   validate,
 } from "./gauntlet.js";
+export { type HonestyVerdict, verifyExplanation } from "./honesty.js";
 export {
   COPY_LIBRARY,
   Copy,
