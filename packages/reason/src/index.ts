@@ -34,7 +34,15 @@ export {
   type Usage,
   usdPerMillionToPaise,
 } from "./price.js";
-export { composePrompt, explainPrompt, type Prompt, promptHash } from "./prompt.js";
+export {
+  CLASSES,
+  type ClassifyRequest,
+  classifyPrompt,
+  composePrompt,
+  explainPrompt,
+  type Prompt,
+  promptHash,
+} from "./prompt.js";
 export {
   CONTACT_CHANNELS,
   type ContactChannel,
