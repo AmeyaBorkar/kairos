@@ -20,6 +20,7 @@ import {
   type Language,
   type Paise,
   paise,
+  SEGMENT_LIMITS,
   type SmsCost,
   smsCost,
 } from "@kairos/domain";
@@ -163,6 +164,115 @@ export function render(
   return { subject: variant.subject, text, cost: smsCost(text) };
 }
 
+/** A typical customer: a Latin name, a modest amount, a short bank, a real link. */
+const TYPICAL: CopyVariables = {
+  firstName: "Rohit",
+  amount: paise(1_245_00),
+  link: "https://rzp.io/i/aB3xQ",
+  institution: "HDFC",
+};
+
+export interface BodyBudget {
+  /**
+   * Characters the template may occupy, counting `{amount}` and `{link}` as the eight and six
+   * characters they are written as.
+   *
+   * Directly checkable by whoever is writing: no subtraction, no knowledge of what a Razorpay short
+   * link is, no arithmetic on a greeting nobody has seen. That is the whole point of the number.
+   */
+  readonly characters: number;
+  /** The greeting, which is written by code and paid for before any copy. */
+  readonly greeting: number;
+  /** Billable units the whole message may reach. */
+  readonly capacity: number;
+  /** What each hole costs *beyond* its written form, once filled with a typical customer's values. */
+  readonly placeholders: Readonly<Record<Placeholder, number>>;
+}
+
+/**
+ * How much room the copy actually has, once everything else in the message is paid for.
+ *
+ * The function this package was missing, and its absence was a real defect rather than an omission:
+ * the prompt used to state the *segment* capacity and add "including the greeting that will be added
+ * before your text and the values that replace the placeholders", which asks a model to subtract
+ * four numbers it was never given. It cannot know that the Hindi greeting is fourteen characters or
+ * that a Razorpay short link is twenty-two. So it guessed, and it guessed high — eleven per cent of
+ * the first recorded batch survived the gauntlet, almost all of the rest rejected for length.
+ *
+ * ## What the arithmetic shows
+ *
+ * Stating the real number exposes something worth knowing, which the old prompt hid. For a Hindi
+ * SMS at one segment: seventy units of capacity, less a fourteen-unit greeting, a twenty-two-unit
+ * link and a nine-unit amount, leaves **about twenty-five characters of Hindi**. That is not a
+ * message a better prompt can fit into — it is two words. A single-segment recovery SMS in an Indic
+ * script is not a demanding target, it is an impossible one, and the honest response is to let the
+ * caller buy a second segment rather than to keep asking for the impossible and calling the refusals
+ * a fallback rate.
+ *
+ * Which is a cost, stated plainly: **multilingual SMS recovery costs twice as much per message
+ * before anybody writes a word.** Whether the extra readability pays for the extra segment is a
+ * question for the benchmark, not for this function.
+ */
+/** Every hole, so the encoding is measured on a message that carries what will really be sent. */
+const HOLES = "{amount}{link}{institution}";
+
+export function bodyBudget(
+  segment: CopySegment,
+  maxSegments: number,
+  typical: CopyVariables = TYPICAL,
+): BodyBudget {
+  const empty: CopyVariant = {
+    id: "",
+    segment: "",
+    body: "",
+    subject: null,
+    typicalSegments: 0,
+    worstCaseSegments: 0,
+  };
+
+  const greeting = render(empty, segment, typical).cost.units;
+
+  // The encoding is decided by the *whole* message, so it has to be measured on a message that has
+  // the substituted values in it. Measuring the greeting alone was a real defect and it had a real
+  // victim: on WhatsApp the rupee sign is free, so `money` writes ₹ (U+20B9) — which is not in
+  // GSM-7 — and an English WhatsApp message is therefore UCS-2 with 134 units, not GSM-7 with 306.
+  // The budget said 279 characters, the truth was 103, and every English WhatsApp variant in the
+  // first full run was rejected for a length the prompt had told the model it had.
+  const filled = render({ ...empty, body: HOLES }, segment, typical);
+  const [single, multi] =
+    filled.cost.encoding === "gsm-7"
+      ? [SEGMENT_LIMITS.gsmSingle, SEGMENT_LIMITS.gsmMulti]
+      : [SEGMENT_LIMITS.ucsSingle, SEGMENT_LIMITS.ucsMulti];
+  const capacity = maxSegments <= 1 ? single : maxSegments * multi;
+
+  // What a hole costs *beyond* the characters somebody types to write it. `{link}` is six
+  // characters on the page and twenty-two on the wire, so it carries a surcharge of sixteen;
+  // `{institution}` is thirteen characters and usually expands to four, so it carries none.
+  const surcharge = (placeholder: Placeholder, filled: string): number =>
+    Math.max(0, smsCost(filled).units - (placeholder.length + 2));
+
+  const placeholders = {
+    amount: surcharge("amount", money(typical.amount, segment.channel, segment.language)),
+    link: surcharge("link", typical.link),
+    institution: surcharge(
+      "institution",
+      typical.institution ?? GENERIC_INSTITUTION[segment.language],
+    ),
+  };
+
+  // `{amount}` and `{link}` are both mandatory, so their surcharges are certain and are taken out
+  // here rather than left as arithmetic for the writer. `{institution}` is optional and its
+  // surcharge is zero in every case measured, so it is only ever mentioned.
+  const mandatory = placeholders.amount + placeholders.link;
+
+  return {
+    characters: Math.max(0, capacity - greeting - mandatory),
+    greeting,
+    capacity,
+    placeholders,
+  };
+}
+
 /** What this copy costs a typical customer and the most expensive one, in segments. */
 export function measure(
   body: string,
@@ -179,14 +289,6 @@ export function measure(
     worstCaseSegments: 0,
   };
 
-  // A customer with a Latin name, a modest amount, and a bank whose name is short.
-  const typical: CopyVariables = {
-    firstName: "Rohit",
-    amount: paise(1_245_00),
-    link: "https://rzp.io/i/aB3xQ",
-    institution: "HDFC",
-  };
-
   const worstVariables: CopyVariables = {
     firstName: worst.firstName,
     amount: worst.amount,
@@ -195,7 +297,7 @@ export function measure(
   };
 
   return {
-    typicalSegments: render(draft, segment, typical).cost.segments,
+    typicalSegments: render(draft, segment, TYPICAL).cost.segments,
     worstCaseSegments: render(draft, segment, worstVariables).cost.segments,
   };
 }

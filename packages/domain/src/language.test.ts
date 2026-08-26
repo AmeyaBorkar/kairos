@@ -1,21 +1,15 @@
 import { describe, expect, it } from "vitest";
-import {
-  charactersPerSegment,
-  isInScript,
-  isLanguage,
-  LANGUAGE_SPECS,
-  tallyScripts,
-} from "./language.js";
+import { isInScript, isLanguage, LANGUAGE_SPECS, tallyScripts } from "./language.js";
 
 describe("language", () => {
   it("gives an Indic language less than half the room English gets", () => {
     // Not a localisation detail. One character outside GSM-7 moves the whole message to UCS-2, and
     // there is no partial encoding — so the Hindi version of a sentence costs two or three times
     // what the English one costs, every time it is sent.
-    expect(charactersPerSegment("en")).toBe(160);
-    expect(charactersPerSegment("hi")).toBe(70);
-    expect(charactersPerSegment("ta")).toBe(70);
+    expect(LANGUAGE_SPECS.en.gsm7).toBe(true);
     expect(LANGUAGE_SPECS.hi.gsm7).toBe(false);
+    expect(LANGUAGE_SPECS.mr.gsm7).toBe(false);
+    expect(LANGUAGE_SPECS.ta.gsm7).toBe(false);
   });
 
   it("ignores placeholders when deciding what script text is in", () => {

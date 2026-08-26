@@ -46,6 +46,8 @@ export {
   segmentKey,
 } from "./segment.js";
 export {
+  type BodyBudget,
+  bodyBudget,
   type CopyVariant,
   DEFAULT_WORST_CASE,
   makeVariant,

@@ -18,6 +18,7 @@
 
 import type { Usage } from "./price.js";
 import type { CopySegment } from "./segment.js";
+import type { BodyBudget, bodyBudget } from "./variant.js";
 
 /**
  * What came back, and what it cost.
@@ -50,8 +51,14 @@ export interface ComposeRequest {
    * tier's daily quota.
    */
   readonly variants: number;
-  /** Characters one segment holds in this language — the budget the copy has to live inside. */
-  readonly charactersPerSegment: number;
+  /**
+   * How much room the copy has, after the greeting and the substituted values are paid for.
+   *
+   * A {@link BodyBudget} rather than a segment capacity, because they are not the same number and
+   * the difference is most of the message. See {@link bodyBudget} for what stating the wrong one
+   * costs.
+   */
+  readonly budget: BodyBudget;
 }
 
 export interface Composer {

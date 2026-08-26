@@ -147,7 +147,7 @@ export interface ComposeVariables {
  * input rather than a hundred and eighty of them.
  */
 export function composePrompt(request: ComposeRequest): Prompt {
-  const { segment, variants, charactersPerSegment } = request;
+  const { segment, variants, budget } = request;
   const spec = LANGUAGE_SPECS[segment.language];
   const method = segment.method;
 
@@ -157,13 +157,22 @@ export function composePrompt(request: ComposeRequest): Prompt {
   ];
 
   if (segment.channel !== "contact-email") {
+    // The budget the model is given is the budget it can act on: the characters left for *its
+    // text*, with the surcharge each placeholder adds once filled already taken out. Stating the
+    // segment capacity instead — and asking it to subtract a greeting and three substitutions it
+    // has never seen — is the version of this prompt that produced an eleven per cent acceptance
+    // rate on the first recorded batch.
     lines.push(
-      `Budget: ${charactersPerSegment} characters INCLUDING the greeting that will be added before` +
-        ` your text and the values that replace the placeholders. ${spec.englishName} is` +
-        (spec.gsm7
-          ? " sent at seven bits per character, which is where that budget comes from."
-          : " sent at sixteen bits per character, which is why that budget is less than half what" +
-            " an English message gets. Going over doubles the price of every message."),
+      `Length: at most ${budget.characters} characters, counting {amount} and {link} exactly as` +
+        " you type them. Room for the greeting and for the real values has already been taken out" +
+        ` of this message's ${budget.capacity}, so the number is yours to spend and nothing else` +
+        " comes out of it. Count it.",
+      spec.gsm7
+        ? "One character over doubles the price of every message ever sent from this text."
+        : `${spec.englishName} is sent at sixteen bits per character, which is why this budget is` +
+            " a fraction of what an English message gets. One character over doubles the price of" +
+            " every message ever sent from this text. Be ruthless: cut every word that is not" +
+            " load-bearing, and prefer the short way of saying a thing to the polite way.",
     );
   }
 

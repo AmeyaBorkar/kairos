@@ -33,7 +33,9 @@ export interface LanguageSpec {
    * Whether text in this script survives the seven-bit alphabet.
    *
    * `false` means every message in this language is UCS-2 and its per-segment capacity is 70
-   * characters rather than 160 — see {@link charactersPerSegment}.
+   * characters rather than 160. What that leaves for the copy itself, once a greeting and the
+   * substituted values are paid for, is `bodyBudget` in `@kairos/reason` — and the answer for an
+   * Indic SMS at one segment is about twenty-five characters, which is why they are given two.
    */
   readonly gsm7: boolean;
 }
@@ -47,18 +49,6 @@ export const LANGUAGE_SPECS: Readonly<Record<Language, LanguageSpec>> = {
 
 export function isLanguage(value: string): value is Language {
   return (LANGUAGES as readonly string[]).includes(value);
-}
-
-/**
- * How many characters one SMS segment holds in this language.
- *
- * The number a prompt must state, and the reason it differs by language rather than by message.
- * These are the single-segment limits; a concatenated message loses a few more characters per part
- * to its header, which {@link file://./gauntlet.ts} accounts for by pricing the real text rather
- * than trusting this figure.
- */
-export function charactersPerSegment(language: Language): number {
-  return LANGUAGE_SPECS[language].gsm7 ? 160 : 70;
 }
 
 // Ranges rather than exhaustive sets: unlike GSM 03.38, these *are* contiguous blocks, and the

@@ -17,7 +17,7 @@ import {
   requiredSegments,
   segmentKey,
 } from "./segment.js";
-import { makeVariant, measure, render } from "./variant.js";
+import { bodyBudget, makeVariant, measure, render } from "./variant.js";
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────────────────────
 
@@ -428,11 +428,8 @@ describe("the copy library", () => {
 // ── Prompts ───────────────────────────────────────────────────────────────────────────────────
 
 describe("prompts", () => {
-  const request = {
-    segment: segment({ recoverability: "customer-retry", method: "upi", language: "hi" }),
-    variants: 3,
-    charactersPerSegment: 70,
-  };
+  const hindiSms = segment({ recoverability: "customer-retry", method: "upi", language: "hi" });
+  const request = { segment: hindiSms, variants: 3, budget: bodyBudget(hindiSms, 2) };
 
   it("never carries a customer", () => {
     // The property the whole design rests on. A field that is never assembled cannot be
@@ -445,18 +442,56 @@ describe("prompts", () => {
     }
   });
 
-  it("tells the model the budget its language actually has", () => {
+  it("tells the model what is left for its own text, not the segment's capacity", () => {
+    // The two numbers are not the same and the difference is most of the message. Stating the
+    // capacity is the version of this prompt that produced an 11% acceptance rate.
+    const budget = bodyBudget(hindiSms, 2);
     const hindi = composePrompt(request).user;
-    expect(hindi).toContain("70 characters");
+    expect(hindi).toContain(`at most ${budget.characters} characters`);
+    expect(hindi).not.toContain(`at most ${budget.capacity} characters`);
     expect(hindi).toContain("sixteen bits");
+  });
 
-    const english = composePrompt({
-      ...request,
-      segment: segment(),
-      charactersPerSegment: 160,
+  it("takes the mandatory placeholders' surcharge out itself, rather than asking for arithmetic", () => {
+    // `{link}` is six characters written and twenty-two sent. A model cannot know that, so the
+    // budget it is given has already paid for the difference and says so.
+    const budget = bodyBudget(hindiSms, 2);
+    expect(budget.placeholders.link).toBeGreaterThan(0);
+    expect(budget.characters).toBe(
+      budget.capacity - budget.greeting - budget.placeholders.amount - budget.placeholders.link,
+    );
+    expect(composePrompt(request).user).toContain("counting {amount} and {link} exactly as you");
+  });
+
+  it("measures the encoding on a message that has the real values in it", () => {
+    // A regression test for a defect that rejected every English WhatsApp variant in the first full
+    // run. On WhatsApp the rupee sign is free, so the amount renders as ₹1,245.00 — and U+20B9 is
+    // not in GSM-7, so the message is UCS-2 at 67 units a segment rather than GSM-7 at 153. Reading
+    // the encoding off the greeting alone says 306 units where the truth is 134.
+    const whatsapp = segment({ channel: "contact-whatsapp" });
+    expect(bodyBudget(whatsapp, 2).capacity).toBe(134);
+    // An English SMS writes `Rs.` instead, precisely to stay in GSM-7, and keeps its 160.
+    expect(bodyBudget(segment(), 1).capacity).toBe(160);
+  });
+
+  it("leaves a one-segment Indic SMS visibly too small to write in", () => {
+    // Not a defect in this function — a fact about the medium, and the reason the copy generator
+    // buys a second segment for UCS-2 languages. Seventy units, less a fourteen-unit greeting and
+    // a seventeen-unit surcharge, is thirty-nine characters of which fourteen are placeholders.
+    const oneSegment = bodyBudget(hindiSms, 1);
+    expect(oneSegment.characters).toBeLessThan(40);
+    expect(bodyBudget(segment(), 1).characters).toBeGreaterThan(100);
+  });
+
+  it("does not lecture an English message about sixteen-bit encoding", () => {
+    const english = segment();
+    const user = composePrompt({
+      segment: english,
+      variants: 3,
+      budget: bodyBudget(english, 1),
     }).user;
-    expect(english).toContain("160 characters");
-    expect(english).toContain("seven bits");
+    expect(user).not.toContain("sixteen bits");
+    expect(user).toContain("doubles the price");
   });
 
   it("names the customer's actual next move on the rail they used", () => {

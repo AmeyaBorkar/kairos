@@ -70,7 +70,6 @@ export {
   isActive,
 } from "./incident.js";
 export {
-  charactersPerSegment,
   isInScript,
   isLanguage,
   LANGUAGE_SPECS,
