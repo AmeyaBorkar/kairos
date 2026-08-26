@@ -114,6 +114,46 @@ importers:
         specifier: ^22.10.0
         version: 22.20.1
 
+  apps/console:
+    dependencies:
+      '@kairos/detect':
+        specifier: workspace:*
+        version: link:../../packages/detect
+      '@kairos/domain':
+        specifier: workspace:*
+        version: link:../../packages/domain
+      '@kairos/explain':
+        specifier: workspace:*
+        version: link:../../packages/explain
+      '@kairos/ledger':
+        specifier: workspace:*
+        version: link:../../packages/ledger
+      '@kairos/policy':
+        specifier: workspace:*
+        version: link:../../packages/policy
+      '@kairos/reason':
+        specifier: workspace:*
+        version: link:../../packages/reason
+      '@kairos/reasoner-gemini':
+        specifier: workspace:*
+        version: link:../../adapters/reasoner-gemini
+      '@kairos/simulator':
+        specifier: workspace:*
+        version: link:../../adapters/simulator
+      '@kairos/terminus':
+        specifier: workspace:*
+        version: link:../../packages/terminus
+      fastify:
+        specifier: ^5.2.0
+        version: 5.12.1
+      throttlekit:
+        specifier: ^1.7.0
+        version: 1.7.0(fastify@5.12.1)
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.0
+        version: 22.20.1
+
   apps/recover-worker:
     dependencies:
       '@kairos/domain':

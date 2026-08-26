@@ -1,0 +1,30 @@
+{
+  "name": "@kairos/console",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The operator view: rail health, open incidents, which bound is binding, and the audit trail. Read-only over the real components.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json",
+    "start": "node dist/main.js",
+    "explain": "node dist/explain-main.js"
+  },
+  "dependencies": {
+    "@kairos/detect": "workspace:*",
+    "@kairos/domain": "workspace:*",
+    "@kairos/explain": "workspace:*",
+    "@kairos/ledger": "workspace:*",
+    "@kairos/policy": "workspace:*",
+    "@kairos/reason": "workspace:*",
+    "@kairos/reasoner-gemini": "workspace:*",
+    "@kairos/simulator": "workspace:*",
+    "@kairos/terminus": "workspace:*",
+    "fastify": "^5.2.0",
+    "throttlekit": "^1.7.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0"
+  }
+}
