@@ -5,6 +5,11 @@
   "description": "The operator view: rail health, open incidents, which bound is binding, and the audit trail. Read-only over the real components.",
   "license": "MIT",
   "type": "module",
+  "exports": {
+    "./run.js": "./dist/run.js",
+    "./scenario.js": "./dist/scenario.js",
+    "./model.js": "./dist/model.js"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "typecheck": "tsc -p tsconfig.json",
