@@ -78,6 +78,19 @@
       "suggestedTolerance": 0.1
     },
     {
+      "id": "prevent.netbanking-hdfc.leverChanges",
+      "unit": "count",
+      "direction": "lower-is-better",
+      "n": 8,
+      "mean": 0,
+      "sd": 0,
+      "min": 0,
+      "max": 0,
+      "coefficientOfVariation": null,
+      "degenerate": true,
+      "suggestedTolerance": null
+    },
+    {
       "id": "prevent.netbanking-hdfc.lossRateDelta",
       "unit": "ratio",
       "direction": "higher-is-better",
@@ -115,6 +128,19 @@
       "coefficientOfVariation": 0.2130293397952787,
       "degenerate": false,
       "suggestedTolerance": 0.02
+    },
+    {
+      "id": "prevent.upi-hdfc-severe.leverChanges",
+      "unit": "count",
+      "direction": "lower-is-better",
+      "n": 8,
+      "mean": 0,
+      "sd": 0,
+      "min": 0,
+      "max": 0,
+      "coefficientOfVariation": null,
+      "degenerate": true,
+      "suggestedTolerance": null
     },
     {
       "id": "prevent.upi-hdfc-severe.lossRateDelta",
@@ -160,11 +186,11 @@
       "unit": "ratio",
       "direction": "lower-is-better",
       "n": 8,
-      "mean": 0.018921113551816374,
-      "sd": 0.005110042400013423,
-      "min": 0.011593661154674263,
-      "max": 0.029719419248838034,
-      "coefficientOfVariation": 0.2700709123709515,
+      "mean": 0.020771169109102715,
+      "sd": 0.005178772497804626,
+      "min": 0.014286369400339798,
+      "max": 0.028819216508821365,
+      "coefficientOfVariation": 0.2493250365736559,
       "degenerate": false,
       "suggestedTolerance": 0.02
     },
@@ -173,37 +199,63 @@
       "unit": "rate",
       "direction": "higher-is-better",
       "n": 8,
-      "mean": 0.2665115599670017,
-      "sd": 0.02762453605774825,
-      "min": 0.20311644264804307,
-      "max": 0.28325216854533564,
-      "coefficientOfVariation": 0.10365229958943843,
+      "mean": 0.2880562699129875,
+      "sd": 0.020237443091649758,
+      "min": 0.246802858381872,
+      "max": 0.31257900930227744,
+      "coefficientOfVariation": 0.07025517305269154,
       "degenerate": false,
-      "suggestedTolerance": 0.1
+      "suggestedTolerance": 0.07
+    },
+    {
+      "id": "recover.copyLegibleRate",
+      "unit": "ratio",
+      "direction": "higher-is-better",
+      "n": 8,
+      "mean": 0.5338945109862999,
+      "sd": 0.00892380277387347,
+      "min": 0.5228670767584915,
+      "max": 0.5441289332310054,
+      "coefficientOfVariation": 0.01671454302346716,
+      "degenerate": false,
+      "suggestedTolerance": 0.03
+    },
+    {
+      "id": "recover.generatedGainPaise",
+      "unit": "paise",
+      "direction": "higher-is-better",
+      "n": 8,
+      "mean": 7850912.5,
+      "sd": 2948584.622413899,
+      "min": 3793500,
+      "max": 12497300,
+      "coefficientOfVariation": 0.3755722181865992,
+      "degenerate": false,
+      "suggestedTolerance": 10000000
     },
     {
       "id": "recover.incrementalPaise",
       "unit": "paise",
       "direction": "higher-is-better",
       "n": 8,
-      "mean": 51049362.5,
-      "sd": 2131848.263119185,
-      "min": 48166400,
-      "max": 54092300,
-      "coefficientOfVariation": 0.04176052664945982,
+      "mean": 43102812.5,
+      "sd": 2878331.410203538,
+      "min": 39008500,
+      "max": 46518800,
+      "coefficientOfVariation": 0.0667782736962591,
       "degenerate": false,
-      "suggestedTolerance": 7000000
+      "suggestedTolerance": 10000000
     },
     {
       "id": "recover.messages",
       "unit": "count",
       "direction": "lower-is-better",
       "n": 8,
-      "mean": 3922.25,
-      "sd": 203.54694088307284,
-      "min": 3737,
-      "max": 4390,
-      "coefficientOfVariation": 0.05189545309020915,
+      "mean": 3856.125,
+      "sd": 198.44138213300457,
+      "min": 3579,
+      "max": 4232,
+      "coefficientOfVariation": 0.051461345815554366,
       "degenerate": false,
       "suggestedTolerance": 700
     },
@@ -212,24 +264,24 @@
       "unit": "paise",
       "direction": "lower-is-better",
       "n": 8,
-      "mean": 622411,
-      "sd": 108151.33517569589,
-      "min": 497779,
-      "max": 792539,
-      "coefficientOfVariation": 0.17376192769037804,
+      "mean": 700685,
+      "sd": 235830.64262971183,
+      "min": 478973,
+      "max": 1204633,
+      "coefficientOfVariation": 0.33657155873140115,
       "degenerate": false,
-      "suggestedTolerance": 500000
+      "suggestedTolerance": 1000000
     },
     {
       "id": "recover.wastedActions",
       "unit": "count",
       "direction": "lower-is-better",
       "n": 8,
-      "mean": 471.125,
-      "sd": 36.51785277680728,
-      "min": 429,
+      "mean": 469.125,
+      "sd": 36.8566237504972,
+      "min": 428,
       "max": 534,
-      "coefficientOfVariation": 0.07751202499720304,
+      "coefficientOfVariation": 0.07856461231121173,
       "degenerate": false,
       "suggestedTolerance": 150
     },
@@ -317,16 +369,6 @@
       "broke": 0
     },
     {
-      "id": "prevent.netbanking-hdfc.leverChanges",
-      "held": 8,
-      "broke": 0
-    },
-    {
-      "id": "prevent.upi-hdfc-severe.leverChanges",
-      "held": 8,
-      "broke": 0
-    },
-    {
       "id": "recover.beatsDoNothing",
       "held": 8,
       "broke": 0
@@ -353,6 +395,11 @@
     },
     {
       "id": "recover.refusals",
+      "held": 8,
+      "broke": 0
+    },
+    {
+      "id": "recover.generatedCopyServed",
       "held": 8,
       "broke": 0
     }

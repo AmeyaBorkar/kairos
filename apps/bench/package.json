@@ -28,6 +28,7 @@
     "@kairos/policy": "workspace:*",
     "@kairos/proof": "workspace:*",
     "@kairos/razorpay": "workspace:*",
+    "@kairos/reason": "workspace:*",
     "@kairos/recover": "workspace:*",
     "@kairos/simulator": "workspace:*",
     "@kairos/terminus": "workspace:*",

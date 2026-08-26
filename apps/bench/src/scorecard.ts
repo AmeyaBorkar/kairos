@@ -406,9 +406,10 @@ async function collectRecover(
 ): Promise<ScorecardDetail["recover"]> {
   const result = await runRecovery(p.recover);
 
-  const kairos = result.arms.find((a) => a.name === "kairos");
+  const kairos = result.arms.find((a) => a.name === "kairos + template copy");
   if (kairos === undefined) throw new Error("the recovery run produced no kairos arm");
 
+  const generated = result.arms.find((a) => a.name === "kairos + generated copy");
   const unclassified = result.classMix["unknown"] ?? 0;
   const refusals = Object.values(kairos.refusals).reduce((sum, n) => sum + n, 0);
 
@@ -448,6 +449,19 @@ async function collectRecover(
         "before it asks",
       refusals,
     ),
+    // Not "the library is good" — a gate cannot check that. This checks that the arm which claims to
+    // run generated copy actually ran it. A library that failed to load, or whose segment keys
+    // stopped matching what the executor looks up, would fall back to templates on every single
+    // message and still report a plausible-looking number. That is the regression this catches, and
+    // it is invisible in every other figure on the scorecard.
+    invariant.holds(
+      "recover.generatedCopyServed",
+      "the generated-copy arm was actually served by the library rather than falling back to " +
+        "templates on every message",
+      generated === undefined || generated.copy.sent === 0
+        ? false
+        : generated.copy.fromLibrary / generated.copy.sent > 0.9,
+    ),
   );
 
   metrics.push(
@@ -471,6 +485,22 @@ async function collectRecover(
       kairos.messages,
       "lower-is-better",
       "count",
+    ),
+    metric(
+      "recover.copyLegibleRate",
+      "share of the baseline's messages that reached somebody in a script they read — the size of " +
+        "the problem the copy library exists to solve, measured on the arm that does not solve it",
+      kairos.copy.sent === 0 ? 0 : kairos.copy.legible / kairos.copy.sent,
+      "higher-is-better",
+      "ratio",
+    ),
+    metric(
+      "recover.generatedGainPaise",
+      "what generated copy recovered over the same system running templates, at the default " +
+        "readability penalty — a figure that goes to zero if that penalty is wrong",
+      generated === undefined ? 0 : generated.incrementalPaise - kairos.incrementalPaise,
+      "higher-is-better",
+      "paise",
     ),
     metric(
       "recover.wastedActions",

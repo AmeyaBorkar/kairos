@@ -14,6 +14,7 @@ export default defineConfig({
     alias: {
       "@kairos/domain": pkg("domain"),
       "@kairos/detect": pkg("detect"),
+      "@kairos/explain": pkg("explain"),
       "@kairos/ledger": pkg("ledger"),
       "@kairos/policy": pkg("policy"),
       "@kairos/proof": pkg("proof"),

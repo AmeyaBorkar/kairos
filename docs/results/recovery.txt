@@ -2,27 +2,28 @@
 RECOVERY — what the casualty arm is worth, against three baselines
 ────────────────────────────────────────────────────────────────────────────────────────────
 
-643 casualties worth ₹5,48,242.00 over 1.5h of traffic, worked for 10 days.
+5556 casualties worth ₹48,04,504.00 over 4.0h of traffic, worked for 40 days.
 
 class            casualties  share
 ───────────────  ──────────  ─────
-transient               194  30.2%
-timed                   176  27.4%
-customer-retry          174  27.1%
-customer-action          63   9.8%
-dead                     36   5.6%
+transient              2684  48.3%
+customer-retry         1158  20.8%
+timed                  1057  19.0%
+customer-action         424   7.6%
+dead                    233   4.2%
 
-Only 16.2% of these payments can be charged again without the customer being present. For the rest, knowing the rail has healed is worth nothing on
+Only 12.0% of these payments can be charged again without the customer being present. For the rest, knowing the rail has healed is worth nothing on
 its own — the only lever left is a message. See ADR 0004.
 
 ────────────────────────────────────────────────────────────────────────────────────────────
 
-arm                                  recovered  incremental  postage  lost  true cost  msgs  retries  wasted  cost/₹
-────────────────────────────────  ────────────  ───────────  ───────  ────  ─────────  ────  ───────  ──────  ──────
-do nothing                        ₹1,40,429.00            —    ₹0.00     0      ₹0.00     0        0       0       —
-chronos ladder (+1h, +24h, +72h)  ₹1,97,053.00   ₹56,624.00  ₹271.80    14  ₹3,071.80  1387        0      63  0.0542
-message everyone, immediately     ₹1,81,075.00   ₹40,646.00  ₹126.20     4    ₹926.20   643        0     140  0.0228
-kairos                            ₹1,84,625.00   ₹44,196.00   ₹52.06     4    ₹852.06   497       30      44  0.0193
+arm                                   recovered   incremental    postage  lost   true cost   msgs  retries  wasted  cost/₹
+────────────────────────────────  ─────────────  ────────────  ─────────  ────  ──────────  ─────  ───────  ──────  ──────
+do nothing                        ₹11,39,929.00             —      ₹0.00     0       ₹0.00      0        0       0       —
+chronos ladder (+1h, +24h, +72h)  ₹17,81,031.00  ₹6,41,102.00  ₹2,435.80   155  ₹33,435.80  12420        0     753  0.0522
+message everyone, immediately     ₹12,80,665.00  ₹1,40,736.00  ₹1,087.80    67  ₹14,487.80   5556        0     758  0.1029
+kairos + template copy            ₹17,71,959.00  ₹6,32,030.00    ₹696.33    54  ₹11,496.33   5845      249     732  0.0182
+kairos + generated copy           ₹18,36,607.00  ₹6,96,678.00    ₹641.73    43   ₹9,241.73   5719      249     730  0.0133
 
 `incremental` is recovery minus what the do-nothing arm collected. It is the column no dunning dashboard shows, and
 the gap between it and `recovered` is customers who were coming back regardless. `wasted` counts the actions that landed
@@ -34,13 +35,13 @@ budget, the same contact cap, and a message deferred rather than dropped when it
 get is Kairos's classification — a naive ladder has not classified anything, so it sends generic copy and earns none of
 the stopping rules that come from knowing what went wrong.
 
-Kairos recovered ₹1,84,625.00 gross, ₹44,196.00 of it incremental, for a true cost of ₹852.06.
-Against the fixed ladder: 21.9% less incremental recovery, 72.3% lower true cost, 64.2% fewer messages,
-and 10 fewer customers lost.
+Kairos recovered ₹17,71,959.00 gross, ₹6,32,030.00 of it incremental, for a true cost of ₹11,496.33.
+Against the fixed ladder: 1.4% less incremental recovery, 65.6% lower true cost, 52.9% fewer messages,
+and 101 fewer customers lost.
 
 The honest headline is not that Kairos recovers more. A ladder that messages every casualty three times recovers a
 little more money than one that thinks about it — brute force works. It works by sending twice the messages and
-costing 14 customers their consent rather than 4, and the merchant pays for that in a currency
+costing 155 customers their consent rather than 54, and the merchant pays for that in a currency
 that does not appear on the invoice.
 
 Refusals — chronos ladder (+1h, +24h, +72h):
@@ -49,28 +50,63 @@ Refusals — chronos ladder (+1h, +24h, +72h):
 Refusals — message everyone, immediately:
   none
 
-Refusals — kairos:
+Refusals — kairos + template copy:
+  none
+
+Refusals — kairos + generated copy:
   none
 
 ────────────────────────────────────────────────────────────────────────────────────────────
 
-Held out of treatment entirely: 370 casualties, of which ₹1,14,941.00 came back unaided.
+Held out of treatment entirely: 2339 casualties, of which ₹5,83,753.00 came back unaided.
 That population costs real recovered revenue and is the only reason any number above has a denominator (open question 11).
+
+────────────────────────────────────────────────────────────────────────────────────────────
+
+LANGUAGE — what the generated copy library is actually worth
+
+copy library: 180 segments, written by gemini-3.1-flash-lite on 2026-08-26
+
+Modelled population: en 54.5%, hi 24.9%, mr 11.4%, ta 9.2%. Stipulated, not measured — nobody here has a merchant's customer-language distribution, and the value of the library scales with the non-English share.
+
+arm                                                                                     copy source   sent  generated  legible
+────────────────────────────────  ─────────────────────────────────────────────────────────────────  ─────  ─────────  ───────
+chronos ladder (+1h, +24h, +72h)                                   hand-written templates (English)  12420       0.0%    53.6%
+message everyone, immediately                                      hand-written templates (English)   5556       0.0%    54.5%
+kairos + template copy                                             hand-written templates (English)   5845       0.0%    53.9%
+kairos + generated copy           library(gemini-3.1-flash-lite) → hand-written templates (English)   5719     100.0%   100.0%
+
+`legible` is the share of messages that arrived in a script the recipient reads. For every template arm it is simply the English share of the population, because a template is English whatever it is asked for — that gap is the problem the library was built to close, and it is reported rather than assumed.
+
+Generated copy recovered ₹64,648.00 more than the same system running templates (10.2%), on 126 fewer messages and 11 fewer opt-outs.
+Fewer messages is not a separate saving, it is the same effect seen from the other end: a customer who acts on the first message never receives the second.
+
+How much of that survives if the readability penalty is not 0.5:
+
+penalty      template     generated     mean gain    worst seed     best seed
+───────  ────────────  ────────────  ────────────  ────────────  ────────────
+0.00     ₹5,23,612.75  ₹7,19,031.25  ₹1,95,418.50  ₹1,74,322.00  ₹2,17,464.00
+0.50     ₹6,19,180.75  ₹7,19,031.25    ₹99,850.50    ₹64,648.00  ₹1,39,404.00
+1.00     ₹7,20,107.50  ₹7,19,031.25    -₹1,076.25   -₹17,927.00     ₹5,922.00
+
+Each row is the mean of 4 seeds, and the two right-hand columns are the best and worst of them. They are wide on purpose: a single-seed version of this table came out non-monotonic, because seed-to-seed variation on this metric is 4.18% and the gap between adjacent rows is smaller than that.
+
+The row that matters is the last one. At a penalty of 1.00 a message in a script the reader does not use works exactly as well as one they do, the entire multilingual argument is void, and whatever gain remains is the library naming the rail rather than speaking the language. Nobody has measured where on this table the truth sits: it is open question 18, and ADR 0007 spends real postage on the strength of it.
 
 ────────────────────────────────────────────────────────────────────────────────────────────
 
 THE SPONTANEOUS WINDOW — how long to let a customer come back unaided
 
-window   incremental  msgs  retries  wasted  lost  true cost
-───────  ───────────  ────  ───────  ──────  ────  ─────────
-none      ₹48,372.00   537       30     101     4    ₹886.06
-5 min     ₹49,689.00   524       30      84     4    ₹886.50
-15 min    ₹41,872.00   519       30      68     4    ₹871.00
-45 min    ₹44,196.00   497       30      44     4    ₹852.06
-120 min   ₹63,321.00   474       30      32     3    ₹651.78
+window    incremental  msgs  retries  wasted  lost   true cost
+───────  ────────────  ────  ───────  ──────  ────  ──────────
+none     ₹5,18,569.00  6557      249    1060    37   ₹7,993.45
+5 min    ₹5,81,882.00  6070      249     990    63  ₹13,502.77
+15 min   ₹5,75,645.00  6039      249     896    64  ₹13,607.15
+45 min   ₹6,32,030.00  5845      249     732    54  ₹11,496.33
+120 min  ₹6,26,109.00  5578      249     540    61  ₹12,963.67
 
-Waiting 120 minutes instead of none sends 11.7% fewer messages, wastes 68.3% fewer of them on customers who were
-already returning, and recovers 30.9% more incremental revenue.
+Waiting 120 minutes instead of none sends 14.9% fewer messages, wastes 49.1% fewer of them on customers who were
+already returning, and recovers 20.7% more incremental revenue.
 
 The window went in on the argument that a nudge ninety seconds after a cancelled payment is mostly paid for by people who
 were already reaching for another card, and that waiting therefore trades recovery for restraint. The table says there is no
@@ -84,22 +120,22 @@ sweep are noisy enough that the cheapest row is not stable, so the default is le
 
 ────────────────────────────────────────────────────────────────────────────────────────────
 
-CALIBRATION — 527 predictions
+CALIBRATION — 6094 predictions
 
-predicted    n  mean p  actual    gap
-─────────  ───  ──────  ──────  ─────
-0–10%      138    5.5%    5.1%   -0.4
-10–20%     140   14.2%    9.3%   -5.0
-20–30%      98   25.3%   19.4%   -5.9
-30–40%      82   34.6%   20.7%  -13.9
-40–50%      33   43.5%   39.4%   -4.1
-50–60%       8   53.3%   37.5%  -15.8
-60–70%       6   65.2%   83.3%  +18.1
-70–80%       1   72.1%  100.0%  +27.9
-80–90%       2   89.1%  100.0%  +10.9
-90–100%     19   94.4%  100.0%   +5.6
+predicted     n  mean p  actual    gap
+─────────  ────  ──────  ──────  ─────
+0–10%      1609    5.6%    4.2%   -1.4
+10–20%     1643   13.2%   11.6%   -1.6
+20–30%      750   24.1%   22.8%   -1.3
+30–40%     1523   37.1%   36.7%   -0.4
+40–50%      315   41.2%   37.5%   -3.7
+50–60%       19   57.2%   84.2%  +27.0
+60–70%        8   64.5%   62.5%   -2.0
+70–80%        2   73.4%   50.0%  -23.4
+80–90%        5   84.3%  100.0%  +15.7
+90–100%     220   94.9%   99.1%   +4.2
 
-expected calibration error 5.7% · Brier 0.1168 · skill 0.234
+expected calibration error 1.5% · Brier 0.1317 · skill 0.237
 
 The gate multiplies this probability by a rupee amount, so what matters is whether 30% means thirty per cent. Skill is
 reported beside it because a model that repeats the base rate for ever is perfectly calibrated and worth nothing.

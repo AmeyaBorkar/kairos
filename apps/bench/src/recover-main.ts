@@ -1,10 +1,11 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { DEFAULT_DETECTOR_CONFIG, withThreshold } from "@kairos/detect";
-import { formatINR, mandateId, paise, slice } from "@kairos/domain";
+import { formatINR, LANGUAGES, mandateId, paise, slice } from "@kairos/domain";
 import { DEFAULT_RECOVERY_CONFIG, worstActionCostPaise } from "@kairos/recover";
 import { type Degradation, INDIA_PROFILES, type SimulatorConfig } from "@kairos/simulator";
 import { sealMandate } from "@kairos/terminus";
+import { loadLibrary } from "./library.js";
 import { type ArmResult, type RecoveryScorecard, runRecovery } from "./recover.js";
 
 const MINUTE = 60_000;
@@ -203,6 +204,8 @@ async function main(): Promise<void> {
     SECRET,
   );
 
+  const library = loadLibrary();
+
   const scorecard = await runRecovery({
     simulator,
     detector: { ...withThreshold(DEFAULT_DETECTOR_CONFIG, 12), rollup: true },
@@ -210,6 +213,14 @@ async function main(): Promise<void> {
     secret: SECRET,
     tailMs,
     spontaneousWindows: [0, 5 * MINUTE, 15 * MINUTE, 45 * MINUTE, 2 * HOUR],
+    library: library.copy,
+    // The endpoints matter more than the middle: 0 is "an unreadable message does nothing at all",
+    // 1 is "script makes no difference and the language programme was worthless". A reader who
+    // believes either can read their own number off the table instead of arguing with ours.
+    legibilitySweep: [0, 0.5, 1],
+    // Four seeds, because one is not enough to order the rows: `recover.incrementalPaise` varies
+    // 4.18% seed to seed, and the first single-seed version of this table came out non-monotonic.
+    legibilitySeeds: [20260825, 20261834, 20262843, 20263852],
   });
 
   const out: string[] = [];
@@ -217,7 +228,8 @@ async function main(): Promise<void> {
     out.push(line);
   };
 
-  const kairos = scorecard.arms.find((a) => a.name === "kairos");
+  const kairos = scorecard.arms.find((a) => a.name === "kairos + template copy");
+  const generated = scorecard.arms.find((a) => a.name === "kairos + generated copy");
   const nothing = scorecard.arms.find((a) => a.name === "do nothing");
 
   say(RULE);
@@ -326,6 +338,97 @@ async function main(): Promise<void> {
     "That population costs real recovered revenue and is the only reason any number above has a " +
       "denominator (open question 11).",
   );
+  say();
+  say(RULE);
+  say();
+  say("LANGUAGE — what the generated copy library is actually worth");
+  say();
+  say(library.note);
+  say();
+  say(
+    `Modelled population: ${LANGUAGES.map((l) => `${l} ${percent(scorecard.languageMix[l])}`).join(", ")}. ` +
+      "Stipulated, not measured — nobody here has a merchant's customer-language distribution, and the " +
+      "value of the library scales with the non-English share.",
+  );
+  say();
+
+  const copyRows = scorecard.arms
+    .filter((arm) => arm.copy.sent > 0)
+    .map((arm) => [
+      arm.name,
+      arm.copy.source,
+      String(arm.copy.sent),
+      percent(arm.copy.fromLibrary / arm.copy.sent),
+      percent(arm.copy.legible / arm.copy.sent),
+    ]);
+  say(table(["arm", "copy source", "sent", "generated", "legible"], copyRows));
+  say();
+  say(
+    "`legible` is the share of messages that arrived in a script the recipient reads. For every " +
+      "template arm it is simply the English share of the population, because a template is English " +
+      "whatever it is asked for — that gap is the problem the library was built to close, and it is " +
+      "reported rather than assumed.",
+  );
+
+  if (generated !== undefined && kairos !== undefined) {
+    const gain = generated.incrementalPaise - kairos.incrementalPaise;
+    say();
+    say(
+      `Generated copy recovered ${inr(gain)} more than the same system running templates ` +
+        `(${percent(gain / kairos.incrementalPaise)}), on ${kairos.messages - generated.messages} fewer messages ` +
+        `and ${kairos.optOuts - generated.optOuts} fewer opt-outs.`,
+    );
+    say(
+      "Fewer messages is not a separate saving, it is the same effect seen from the other end: a " +
+        "customer who acts on the first message never receives the second.",
+    );
+  }
+
+  if (scorecard.legibilitySweep.length > 0) {
+    say();
+    say("How much of that survives if the readability penalty is not 0.5:");
+    say();
+    say(
+      table(
+        ["penalty", "template", "generated", "mean gain", "worst seed", "best seed"],
+        scorecard.legibilitySweep.map((row) => [
+          row.penalty.toFixed(2),
+          inr(row.templatePaise),
+          inr(row.generatedPaise),
+          inr(row.gainPaise),
+          inr(row.gainLowPaise),
+          inr(row.gainHighPaise),
+        ]),
+      ),
+    );
+    say();
+    say(
+      `Each row is the mean of ${scorecard.legibilitySweep[0]?.seeds ?? 0} seeds, and the two right-hand columns are the ` +
+        "best and worst of them. They are wide on purpose: a single-seed version of this table came out " +
+        "non-monotonic, because seed-to-seed variation on this metric is 4.18% and the gap between " +
+        "adjacent rows is smaller than that.",
+    );
+    say();
+    say(
+      "The generated column does not move, because every message that arm sends is legible and the " +
+        "penalty has nothing to bite on. All the movement is in the baseline, and that is the whole " +
+        "result: what the library buys is *readability*, not better writing.",
+    );
+    say();
+    say(
+      "The last row is the one to read carefully. At a penalty of 1.00 — script makes no difference " +
+        "to whether somebody acts — generated copy is worth nothing at all, and the range across " +
+        "seeds straddles zero. Everything the model wrote about naming the rail, being specific about " +
+        "the next step and fitting the channel is worth, on this evidence, approximately no money. " +
+        "The library earns its cost by speaking the customer's language and by nothing else.",
+    );
+    say();
+    say(
+      "That is a narrower claim than 'we generate better copy', and it is the one the measurement " +
+        "supports. Where the truth sits on this table is open question 18; ADR 0007 spends real " +
+        "postage on the strength of it, and at the bottom row that spend is a loss.",
+    );
+  }
   say();
   say(RULE);
   say();

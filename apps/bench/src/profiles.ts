@@ -25,6 +25,7 @@ import { DEFAULT_RECOVERY_CONFIG, worstActionCostPaise } from "@kairos/recover";
 import { type Degradation, INDIA_PROFILES, type SimulatorConfig } from "@kairos/simulator";
 import { sealMandate, type UnsignedMandate } from "@kairos/terminus";
 import { DEFAULT_OPTIONS, type ExperimentOptions } from "./experiment.js";
+import { loadLibrary } from "./library.js";
 import { DEFAULT_PREVENT_OPTIONS, type PreventOptions } from "./prevent.js";
 import type { RecoveryRunConfig } from "./recover.js";
 import { DEFAULT_SPEND_OPTIONS, type SpendOptions } from "./spend.js";
@@ -309,8 +310,11 @@ export function profile(name: ProfileName, seed: number = PINNED_SEED): Profile 
       mandate: sealMandate(recoveryMandate(), SECRET),
       secret: SECRET,
       tailMs: quick ? 25 * DAY : 40 * DAY,
-      // No window sweep. It is a design question, answered once in the recovery report, not a
-      // claim that needs re-checking on every commit.
+      library: loadLibrary().copy,
+      // No window sweep, and no legibility sweep. Both are design questions, answered once in the
+      // recovery report, not claims that need re-checking on every commit. The gate does check
+      // that the generated arm exists and that its coverage has not collapsed, because those are
+      // regressions rather than opinions.
     },
   };
 }

@@ -5,6 +5,7 @@ import {
   type CasualtyId,
   inQuietHours,
   isContact,
+  type Language,
   type Mandate,
   markRecovered,
   paise,
@@ -14,7 +15,8 @@ import {
   sliceKey,
 } from "@kairos/domain";
 import { MemoryLedger } from "@kairos/ledger";
-import { compose } from "@kairos/razorpay";
+import { templateCopy } from "@kairos/razorpay";
+import { type Copy, type CopySource, libraryCopy } from "@kairos/reason";
 import {
   brierScore,
   type Classification,
@@ -37,12 +39,18 @@ import {
   skillScore,
 } from "@kairos/recover";
 import {
+  type ActionContext,
   type CasualtyClass,
   type ContactChannel,
+  DEFAULT_RECOVERY_WORLD,
   failureRateAt,
   generateLabelled,
+  INDIA_LANGUAGE_MIX,
   type LabelledAttempt,
+  languageOf,
+  type MessageQuality,
   RecoveryWorld,
+  realisedMix,
   type SimulatorConfig,
   type SliceProfile,
   scoreMessage,
@@ -86,6 +94,21 @@ export interface ArmResult {
    */
   readonly ledgerVerified: boolean;
   readonly auditRecords: number;
+  /**
+   * What this arm's copy actually was, rather than what it was configured to be.
+   *
+   * `fromLibrary` is the share of sent messages a generated variant wrote; `legible` is the share
+   * that arrived in a script the recipient reads. Both are reported for every arm, including the
+   * ones with no library at all — a baseline's legibility rate is the size of the problem the
+   * library exists to solve, and quoting it next to the treated arm is what stops the headline from
+   * being a claim about copy when it is really a claim about coverage.
+   */
+  readonly copy: {
+    readonly source: string;
+    readonly sent: number;
+    readonly fromLibrary: number;
+    readonly legible: number;
+  };
 }
 
 /** One point on the spontaneous-window sweep. */
@@ -99,9 +122,40 @@ export interface WindowRow {
   readonly wastedActions: number;
 }
 
+/**
+ * One point on the legibility sweep: what generated copy is worth if a message in the wrong script
+ * loses this much of its pull.
+ *
+ * The whole row exists because `gainPaise` at the default penalty is not a finding, it is a
+ * consequence of a number somebody picked. Publishing the curve turns "we think this is worth ₹X"
+ * into "here is the assumption, and here is what X is for every value of it you might believe" —
+ * which is the difference between a measurement and an advertisement.
+ */
+export interface LegibilityRow {
+  readonly penalty: number;
+  /** How many seeds this row averages. One seed is not a measurement of this quantity. */
+  readonly seeds: number;
+  readonly templatePaise: number;
+  readonly generatedPaise: number;
+  /** Mean gain across seeds. */
+  readonly gainPaise: number;
+  /** The best and worst seed, so a reader can see whether the row is separable from its neighbour. */
+  readonly gainLowPaise: number;
+  readonly gainHighPaise: number;
+}
+
 export interface RecoveryScorecard {
   readonly arms: readonly ArmResult[];
   readonly windowSweep: readonly WindowRow[];
+  readonly legibilitySweep: readonly LegibilityRow[];
+  /**
+   * The language mix the run actually contained, not the one it was configured with.
+   *
+   * A few hundred customers drawn from a stipulated distribution do not reproduce it, and the value
+   * of multilingual copy is roughly proportional to the non-English share — so the realised mix is
+   * part of the result rather than a footnote about the setup.
+   */
+  readonly languageMix: Readonly<Record<Language, number>>;
   /** Kairos's own held-out casualties: the internal control that answers "compared to what?". */
   readonly holdout: { readonly casualties: number; readonly recoveredPaise: number };
   readonly calibration: {
@@ -133,6 +187,36 @@ export interface RecoveryRunConfig {
    * not knowable from first principles, so it is measured.
    */
   readonly spontaneousWindows?: readonly number[];
+  /**
+   * What the modelled customers read. Defaults to {@link INDIA_LANGUAGE_MIX}.
+   *
+   * Every number in it is a stipulation and the measured value of the copy library moves with the
+   * non-English share, so it is a parameter of the run rather than a fact about the world. Set it
+   * to `ENGLISH_ONLY` to reproduce the population every benchmark before this one assumed.
+   */
+  readonly languageMix?: Readonly<Record<Language, number>>;
+  /**
+   * The generated copy library, for the arm that uses one. `null` runs template-only.
+   *
+   * Passed in rather than read from disk here, so the benchmark has no opinion about where a
+   * library lives and a test can hand it three variants instead of four hundred.
+   */
+  readonly library?: Copy | null;
+  /**
+   * Legibility penalties to sweep, each producing a fresh pair of Kairos arms.
+   *
+   * The direct answer to open question 18. The gap between generated and template copy is
+   * proportional to how much a message in the wrong script actually loses, and nobody has measured
+   * that — so rather than publish one number derived from a guess, the harness publishes the whole
+   * curve and lets a reader find their own belief on it. At `1.0` the language work is worth
+   * nothing by construction, and the sweep says so out loud.
+   */
+  readonly legibilitySweep?: readonly number[];
+  /**
+   * Seeds to average each legibility row over. Defaults to the simulator's own, which is one seed
+   * and therefore not enough — see the note at the sweep itself.
+   */
+  readonly legibilitySeeds?: readonly number[];
 }
 
 /**
@@ -194,6 +278,17 @@ interface Truth {
 }
 
 /**
+ * Attach a scored message to an action context.
+ *
+ * Split out so the two fields the scorer produces travel together and cannot be attached one
+ * without the other — passing `guidance` while leaving `legible` at its retry default would score
+ * an unreadable message as if the reader had understood it, and would do so silently.
+ */
+function withQuality(context: ActionContext, quality: MessageQuality): ActionContext {
+  return { ...context, guidance: quality.guidance, legible: quality.legible };
+}
+
+/**
  * The executor the harness runs every arm through.
  *
  * Consults the simulated world for what actually happens, and records both the outcome and whether
@@ -210,43 +305,77 @@ class SimulatedExecutor implements Executor {
   }[] = [];
   #optOuts = 0;
 
+  /**
+   * What the copy did, counted.
+   *
+   * Reported per arm rather than aggregated, because the two numbers answer the question a reader
+   * asks first — *did the treatment actually reach anybody?* An arm whose library missed half its
+   * segments quietly falls back to English templates and looks like a modest win over the baseline,
+   * when what it really is is a half-applied treatment. `fromLibrary` makes that visible instead of
+   * averaging it away.
+   */
+  readonly copyStats = { sent: 0, fromLibrary: 0, legible: 0 };
+
   constructor(
     private readonly world: RecoveryWorld,
     private readonly simulator: SimulatorConfig,
     private readonly profiles: ReadonlyMap<string, SliceProfile>,
     private readonly classOf: (id: CasualtyId) => CasualtyClass,
+    /** Where this arm's words come from. The only thing that differs between the two Kairos arms. */
+    private readonly copy: CopySource,
   ) {}
 
   get optOuts(): number {
     return this.#optOuts;
   }
 
+  get copySource(): string {
+    return this.copy.name;
+  }
+
   /**
    * Build the message this action would send, and score it.
    *
-   * The copy is the hand-written template library, composed exactly as the recovery worker would
-   * compose it — so what the world judges is the text a customer would really receive, greeting and
-   * bank name and all. A template scored with its holes still in would be credited for a bank name
-   * it never printed.
+   * Composed through this arm's {@link CopySource}, exactly as the recovery worker would compose it
+   * — so what the world judges is the text a customer would really receive, greeting and bank name
+   * and all. Copy scored with its holes still in would be credited for a bank name it never
+   * printed.
+   *
+   * The expectation is built from the customer's *own* language, whichever source wrote the words.
+   * That is what makes the comparison fair in the only direction that matters: the baseline is not
+   * handicapped, it is scored against the population that actually exists. An English template
+   * reaching an English reader scores exactly what it always did; the same template reaching a
+   * Tamil reader is marked illegible, because it is.
    */
-  #guidanceFor(request: ExecuteRequest, channel: ContactChannel): number {
+  #qualityFor(request: ExecuteRequest, channel: ContactChannel): MessageQuality {
     const { casualty } = request;
     const institution = institutionName(casualty.slice.issuer);
-    const message = compose(request.classification.recoverability, {
-      firstName: null,
-      amount: casualty.amount,
-      link: BENCH_LINK,
-      institution,
+    const selected = this.copy.select({
+      recoverability: request.classification.recoverability,
+      method: casualty.slice.method,
+      language: request.language,
+      channel,
+      pick: request.grant.id,
+      variables: {
+        firstName: null,
+        amount: casualty.amount,
+        link: BENCH_LINK,
+        institution,
+      },
     });
 
-    return scoreMessage(message.text, {
-      // Everyone reads English in this population. Giving customers their own language, and copy
-      // that matches it, is what the generated library is for and is measured separately.
-      language: "en",
+    const quality = scoreMessage(selected.text, {
+      language: request.language,
       institution,
       method: casualty.slice.method,
       channel,
-    }).guidance;
+    });
+
+    this.copyStats.sent++;
+    if (selected.variantId !== null) this.copyStats.fromLibrary++;
+    if (quality.legible) this.copyStats.legible++;
+
+    return quality;
   }
 
   execute(request: ExecuteRequest): Promise<ExecuteResult> {
@@ -260,9 +389,9 @@ class SimulatedExecutor implements Executor {
       pastPayday: pastPayday(casualty.occurredAt, at),
       ordinal: casualty.attempts.length,
       guidance: 0,
-      // Every arm writes English templates and every customer reads English, so nothing here is
-      // ever illegible yet. The multilingual population is a change to the world this benchmark
-      // models, and it arrives with the arm that measures it.
+      // A retry sends no message, and a message nobody sent cannot be unreadable. `true` is the
+      // neutral value here — it leaves the response rate unmultiplied — not a claim that some
+      // imaginary text was legible.
       legible: true,
     };
 
@@ -275,7 +404,7 @@ class SimulatedExecutor implements Executor {
       kind === "retry"
         ? this.world.retry(context)
         : this.world.contact(
-            { ...context, guidance: this.#guidanceFor(request, kind as ContactChannel) },
+            withQuality(context, this.#qualityFor(request, kind as ContactChannel)),
             kind as ContactChannel,
           );
 
@@ -350,6 +479,15 @@ export async function runRecovery(config: RecoveryRunConfig): Promise<RecoverySc
   const endAt = startAt + config.simulator.durationMs;
   const tailMs = config.tailMs ?? 40 * DAY;
 
+  const languageMix = config.languageMix ?? INDIA_LANGUAGE_MIX;
+  const library = config.library ?? null;
+
+  // Every arm below the last one writes the hand-written English templates, because that is what
+  // every arm in this benchmark has always written and what the system actually shipped. The last
+  // arm differs in exactly one input.
+  const templates = templateCopy;
+  const generated = library === null ? null : libraryCopy(library, templates);
+
   const arms: ArmResult[] = [];
 
   arms.push(doNothing(truths));
@@ -358,6 +496,8 @@ export async function runRecovery(config: RecoveryRunConfig): Promise<RecoverySc
     await runLadder({
       name: "chronos ladder (+1h, +24h, +72h)",
       offsets: [HOUR, DAY, 3 * DAY],
+      copy: templates,
+      languageMix,
       truths,
       world,
       config,
@@ -370,6 +510,8 @@ export async function runRecovery(config: RecoveryRunConfig): Promise<RecoverySc
     await runLadder({
       name: "message everyone, immediately",
       offsets: [0],
+      copy: templates,
+      languageMix,
       truths,
       world,
       config,
@@ -379,6 +521,9 @@ export async function runRecovery(config: RecoveryRunConfig): Promise<RecoverySc
   );
 
   const kairos = await runKairos({
+    name: "kairos + template copy",
+    copy: templates,
+    languageMix,
     truths,
     labelled,
     world,
@@ -392,12 +537,40 @@ export async function runRecovery(config: RecoveryRunConfig): Promise<RecoverySc
   });
   arms.push(kairos.result);
 
+  // The fifth arm, and the only reason the copy library is worth its generation cost. Identical to
+  // the fourth in scheduling, expected-value gate, seed, customers and world — the *single* thing
+  // that differs is where the words come from. Any gap between them is attributable to the copy
+  // and to nothing else, which is a claim this harness can make precisely because everything else
+  // is shared by construction rather than by care.
+  const generatedArm =
+    generated === null
+      ? null
+      : await runKairos({
+          name: "kairos + generated copy",
+          copy: generated,
+          languageMix,
+          truths,
+          labelled,
+          world,
+          config,
+          profiles,
+          classOf,
+          startAt,
+          endAt,
+          tailMs,
+          schedule: DEFAULT_SCHEDULE_CONFIG,
+        });
+  if (generatedArm !== null) arms.push(generatedArm.result);
+
   const windowSweep: WindowRow[] = [];
   for (const windowMs of config.spontaneousWindows ?? []) {
     const variant =
       windowMs === DEFAULT_SCHEDULE_CONFIG.spontaneousWindowMs
         ? kairos
         : await runKairos({
+            name: `kairos (window ${windowMs}ms)`,
+            copy: templates,
+            languageMix,
             truths,
             labelled,
             world,
@@ -420,6 +593,80 @@ export async function runRecovery(config: RecoveryRunConfig): Promise<RecoverySc
     });
   }
 
+  // What the language work is worth, as a function of the one number nobody measured. Both arms are
+  // re-run at each penalty against a world configured with it, because the penalty is a property of
+  // the world rather than of the copy — running one arm and rescaling would assume the very linear
+  // relationship the sweep exists to check.
+  const legibilitySweep: LegibilityRow[] = [];
+  // There is nothing to sweep without a library: the curve is the *gap* between two arms, and with
+  // one arm it would be a flat line at zero dressed up as a finding.
+  //
+  // Swept across several seeds rather than one, and the first version of this table is why. At a
+  // single seed the template column came out non-monotonic — a penalty of 0.25 scored *below* a
+  // penalty of 0.00, which is impossible — and the step was ₹31,737 against a seed-to-seed
+  // coefficient of variation of 4.18% on this very metric. The inversion was the noise floor
+  // announcing itself. A curve whose middle cannot be ordered is not a curve, so each point is a
+  // mean over seeds and the observed range is carried alongside it.
+  for (const penalty of generated === null ? [] : (config.legibilitySweep ?? [])) {
+    if (generated === null) break;
+
+    const gains: number[] = [];
+    let templateTotal = 0;
+    let generatedTotal = 0;
+
+    for (const seed of config.legibilitySeeds ?? [config.simulator.seed]) {
+      const simulator = { ...config.simulator, seed };
+      const seedLabelled = [...generateLabelled(simulator)];
+      const swept = new RecoveryWorld(seed, {
+        ...DEFAULT_RECOVERY_WORLD,
+        illegiblePenalty: penalty,
+      });
+      const sweptTruths = buildTruths(seedLabelled, swept, simulator, profiles);
+      const sweptClassOf = new Map(sweptTruths.map((t) => [t.casualty.id, t.klass]));
+
+      const sources: readonly { name: string; copy: CopySource }[] = [
+        { name: "template", copy: templates },
+        { name: "generated", copy: generated },
+      ];
+      const pair = await Promise.all(
+        sources.map((source) =>
+          runKairos({
+            name: `kairos + ${source.name} copy (penalty ${penalty}, seed ${seed})`,
+            copy: source.copy,
+            languageMix,
+            truths: sweptTruths,
+            labelled: seedLabelled,
+            world: swept,
+            config: { ...config, simulator },
+            profiles,
+            classOf: sweptClassOf,
+            startAt: simulator.startAt,
+            endAt: simulator.startAt + simulator.durationMs,
+            tailMs,
+            schedule: DEFAULT_SCHEDULE_CONFIG,
+          }),
+        ),
+      );
+
+      const [template, generatedRun] = pair;
+      if (template === undefined || generatedRun === undefined) continue;
+      templateTotal += template.result.incrementalPaise;
+      generatedTotal += generatedRun.result.incrementalPaise;
+      gains.push(generatedRun.result.incrementalPaise - template.result.incrementalPaise);
+    }
+
+    if (gains.length === 0) continue;
+    legibilitySweep.push({
+      penalty,
+      seeds: gains.length,
+      templatePaise: Math.round(templateTotal / gains.length),
+      generatedPaise: Math.round(generatedTotal / gains.length),
+      gainPaise: Math.round(gains.reduce((sum, gain) => sum + gain, 0) / gains.length),
+      gainLowPaise: Math.min(...gains),
+      gainHighPaise: Math.max(...gains),
+    });
+  }
+
   const autonomous = truths.filter((t) => t.casualty.retry === "autonomous");
   const classMix: Record<string, number> = {};
   for (const t of truths) classMix[t.klass] = (classMix[t.klass] ?? 0) + 1;
@@ -427,6 +674,11 @@ export async function runRecovery(config: RecoveryRunConfig): Promise<RecoverySc
   return {
     arms,
     windowSweep,
+    legibilitySweep,
+    languageMix: realisedMix(
+      truths.map((t) => t.casualty.customer),
+      languageMix,
+    ),
     holdout: kairos.holdout,
     calibration: kairos.calibration,
     autonomousShare: truths.length === 0 ? 0 : autonomous.length / truths.length,
@@ -466,8 +718,8 @@ function buildTruths(
         railHealthy,
         pastPayday: pastPayday(casualty.occurredAt, spontaneousAt),
         ordinal: 0,
-        // No message was sent, so there is nothing to be unreadable. `true` is the neutral value:
-        // it leaves the response rate unmultiplied.
+        // Nobody sent this customer anything — they came back on their own. `legible` is neutral
+        // here for the same reason `guidance` is zero: there is no message to judge.
         legible: true,
         // Nobody sent them anything; whatever brought them back, it was not our copy.
         guidance: 0,
@@ -509,12 +761,15 @@ function doNothing(truths: readonly Truth[]): ArmResult {
     // Saying so is better than leaving the field to be read as "we checked".
     ledgerVerified: true,
     auditRecords: 0,
+    copy: { source: "none — sends nothing", sent: 0, fromLibrary: 0, legible: 0 },
   };
 }
 
 interface LadderRun {
   readonly name: string;
   readonly offsets: readonly number[];
+  readonly copy: CopySource;
+  readonly languageMix: Readonly<Record<Language, number>>;
   readonly truths: readonly Truth[];
   readonly world: RecoveryWorld;
   readonly config: RecoveryRunConfig;
@@ -548,6 +803,7 @@ async function runLadder(run: LadderRun): Promise<ArmResult> {
     run.config.simulator,
     run.profiles,
     (id) => classOf.get(id) ?? "unknown",
+    run.copy,
   );
 
   const recoveredIds = new Set<CasualtyId>();
@@ -629,10 +885,10 @@ async function runLadder(run: LadderRun): Promise<ArmResult> {
       classification: generic,
       firstName: null,
       token: null,
-      // Everyone in this population reads English, which is what the benchmark has always
-      // assumed. Giving customers a language of their own is a change to the world model and
-      // belongs with the arm that measures it, not with the plumbing that makes it expressible.
-      language: "en",
+      // The ladder sends English templates into the same multilingual population Kairos serves.
+      // Handing it the customer's real language is what makes that visible rather than assumed —
+      // the baseline is not being handicapped, it is being scored against who is actually there.
+      language: languageOf(casualty.customer, run.languageMix),
       at,
     });
 
@@ -649,6 +905,9 @@ async function runLadder(run: LadderRun): Promise<ArmResult> {
 }
 
 interface KairosRun {
+  readonly copy: CopySource;
+  readonly languageMix: Readonly<Record<Language, number>>;
+  readonly name: string;
   readonly truths: readonly Truth[];
   readonly labelled: readonly LabelledAttempt[];
   readonly world: RecoveryWorld;
@@ -693,6 +952,7 @@ async function runKairos(run: KairosRun): Promise<{
     run.config.simulator,
     run.profiles,
     (id) => run.classOf.get(id) ?? "unknown",
+    run.copy,
   );
 
   const predictions: Prediction[] = [];
@@ -715,8 +975,16 @@ async function runKairos(run: KairosRun): Promise<{
   const worker = new RecoverWorker({
     terminus,
     store,
+    // A directory that knows what each customer reads. Derived from the customer reference, so the
+    // same person reads the same language in every arm — two arms that disagreed about that would
+    // differ by more than their copy and the comparison would be measuring the population.
     directory: {
-      lookup: () => Promise.resolve({ firstName: "Rohit", token: "tok", language: "en" }),
+      lookup: (customer) =>
+        Promise.resolve({
+          firstName: "Rohit",
+          token: "tok",
+          language: languageOf(customer, run.languageMix),
+        }),
     },
     gauge,
     model,
@@ -802,7 +1070,7 @@ async function runKairos(run: KairosRun): Promise<{
   const bins = calibrationCurve(predictions);
 
   return {
-    result: summarise("kairos", run.truths, recoveredIds, executor, spent, ledger),
+    result: summarise(run.name, run.truths, recoveredIds, executor, spent, ledger),
     holdout: { casualties: holdoutCasualties, recoveredPaise: holdoutRecoveredPaise },
     calibration: {
       bins,
@@ -870,5 +1138,6 @@ function summarise(
     refusals: ledger.countByBinding(),
     ledgerVerified: ledger.verify().valid,
     auditRecords: ledger.length,
+    copy: { source: executor.copySource, ...executor.copyStats },
   };
 }

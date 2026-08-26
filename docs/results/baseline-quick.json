@@ -2,7 +2,7 @@
   "provenance": {
     "profile": "quick",
     "configHash": "c34c67874919f42d",
-    "codeRevision": "ade9a46-dirty",
+    "codeRevision": "e289ddc-dirty",
     "node": "v24.13.1",
     "config": {
       "profile": "quick",
@@ -270,7 +270,7 @@
     },
     {
       "id": "recover.incrementalPaise",
-      "value": 50198900,
+      "value": 45734800,
       "direction": "higher-is-better",
       "unit": "paise",
       "label": "recovered because of the arm, over and above what came back unaided",
@@ -281,18 +281,18 @@
     },
     {
       "id": "recover.trueCostPaise",
-      "value": 601469,
+      "value": 1204633,
       "direction": "lower-is-better",
       "unit": "paise",
       "label": "postage plus the priced value of every customer lost to an opt-out",
-      "tolerance": 500000,
-      "sd": 108151,
+      "tolerance": 1000000,
+      "sd": 235831,
       "seeds": 8,
-      "note": "3.0 sd over 8 seeds, rounded up"
+      "note": "widened from ₹5,000 when the population became multilingual. The old band was 3 sd of a monolingual world; opt-outs are a small integer count and a baseline that half its readers cannot read produces more of them, so the seed-to-seed coefficient of variation on this metric went from 17.4% to 33.7%. ₹10,000 is about 3 sd of the new spread. A band this wide catches breakage rather than degradation and is listed as such in the gate's own note."
     },
     {
       "id": "recover.messages",
-      "value": 4381,
+      "value": 4232,
       "direction": "lower-is-better",
       "unit": "count",
       "label": "messages sent — the term the contact cap and the opt-out cost are both about",
@@ -302,8 +302,30 @@
       "note": "3.0 sd over 8 seeds, rounded up"
     },
     {
+      "id": "recover.copyLegibleRate",
+      "value": 0.5394612476370511,
+      "direction": "higher-is-better",
+      "unit": "ratio",
+      "label": "share of the baseline's messages that reached somebody in a script they read — the size of the problem the copy library exists to solve, measured on the arm that does not solve it",
+      "tolerance": 0.03,
+      "sd": 0.00892380277387347,
+      "seeds": 8,
+      "note": "3 sd over 8 seeds, rounded up. The steadiest metric on the recovery scorecard (cv 1.67%) because it is a property of the population rather than of any decision: it is roughly the English share of customers, and drifts only as the sample does. It is gated because a change here means either the language mix or the template arm's copy moved, and both should be deliberate."
+    },
+    {
+      "id": "recover.generatedGainPaise",
+      "value": 5507600,
+      "direction": "higher-is-better",
+      "unit": "paise",
+      "label": "what generated copy recovered over the same system running templates, at the default readability penalty — a figure that goes to zero if that penalty is wrong",
+      "tolerance": 10000000,
+      "sd": 2948585,
+      "seeds": 8,
+      "note": "₹1,00,000 against a mean of ₹78,509 — a band wider than the value it guards, and deliberately so. The seed-to-seed coefficient of variation is 37.6%, the highest on the scorecard, because this is a difference between two noisy quantities and differences of noisy quantities are noisier than either. The honest reading is that the gain is positive and its magnitude is not resolvable at this sample size; the gate can therefore only catch it disappearing, which is what it is for. Do not quote this metric's point value as a finding — quote the multi-seed legibility sweep in the recovery report."
+    },
+    {
       "id": "recover.wastedActions",
-      "value": 531,
+      "value": 534,
       "direction": "lower-is-better",
       "unit": "count",
       "label": "actions that landed on somebody who was coming back anyway",
@@ -314,7 +336,7 @@
     },
     {
       "id": "recover.calibrationError",
-      "value": 0.01720613652080516,
+      "value": 0.017879833316620828,
       "direction": "lower-is-better",
       "unit": "ratio",
       "label": "expected calibration error — whether a stated 30% means thirty per cent, which is what the gate multiplies by a rupee amount",
@@ -325,7 +347,7 @@
     },
     {
       "id": "recover.calibrationSkill",
-      "value": 0.2061646906451895,
+      "value": 0.246802858381872,
       "direction": "higher-is-better",
       "unit": "rate",
       "label": "Brier skill over the base rate — a model that repeats the base rate for ever is perfectly calibrated and worth nothing",
@@ -427,7 +449,7 @@
     {
       "id": "recover.beatsDoNothing",
       "kind": "positive",
-      "value": 50198900,
+      "value": 45734800,
       "expected": null,
       "label": "the recovery arm collected more than the customers would have returned with unaided"
     },
@@ -441,14 +463,14 @@
     {
       "id": "recover.holdoutCasualties",
       "kind": "positive",
-      "value": 1433,
+      "value": 1440,
       "expected": null,
       "label": "casualties were held out of treatment entirely, which is the only reason any recovery figure has a denominator"
     },
     {
       "id": "recover.calibrationPredictions",
       "kind": "positive",
-      "value": 4564,
+      "value": 4415,
       "expected": null,
       "label": "the probability model made predictions there were outcomes for"
     },
@@ -465,6 +487,13 @@
       "value": 0,
       "expected": null,
       "label": "nothing was proposed that the kernel then had to decline; the worker checks the schedule before it asks"
+    },
+    {
+      "id": "recover.generatedCopyServed",
+      "kind": "true",
+      "value": true,
+      "expected": null,
+      "label": "the generated-copy arm was actually served by the library rather than falling back to templates on every message"
     }
   ]
 }

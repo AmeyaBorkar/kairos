@@ -2,10 +2,10 @@
   "arms": [
     {
       "name": "do nothing",
-      "casualties": 643,
-      "lostPaise": 54824200,
-      "recovered": 164,
-      "recoveredPaise": 14042900,
+      "casualties": 5556,
+      "lostPaise": 480450400,
+      "recovered": 1267,
+      "recoveredPaise": 113992900,
       "incrementalPaise": 0,
       "spentPaise": 0,
       "messages": 0,
@@ -13,189 +13,279 @@
       "optOuts": 0,
       "wastedActions": 0,
       "wastedPaise": 0,
-      "refusals": {}
+      "refusals": {},
+      "ledgerVerified": true,
+      "auditRecords": 0,
+      "copy": {
+        "source": "none — sends nothing",
+        "sent": 0,
+        "fromLibrary": 0,
+        "legible": 0
+      }
     },
     {
       "name": "chronos ladder (+1h, +24h, +72h)",
-      "casualties": 643,
-      "lostPaise": 54824200,
-      "recovered": 239,
-      "recoveredPaise": 19705300,
-      "incrementalPaise": 5662400,
-      "spentPaise": 27180,
-      "messages": 1387,
+      "casualties": 5556,
+      "lostPaise": 480450400,
+      "recovered": 2014,
+      "recoveredPaise": 178103100,
+      "incrementalPaise": 64110200,
+      "spentPaise": 243580,
+      "messages": 12420,
       "retries": 0,
-      "optOuts": 14,
-      "wastedActions": 63,
-      "wastedPaise": 1260,
-      "refusals": {}
+      "optOuts": 155,
+      "wastedActions": 753,
+      "wastedPaise": 15060,
+      "refusals": {},
+      "ledgerVerified": true,
+      "auditRecords": 24840,
+      "copy": {
+        "source": "hand-written templates (English)",
+        "sent": 12420,
+        "fromLibrary": 0,
+        "legible": 6655
+      }
     },
     {
       "name": "message everyone, immediately",
-      "casualties": 643,
-      "lostPaise": 54824200,
-      "recovered": 211,
-      "recoveredPaise": 18107500,
-      "incrementalPaise": 4064600,
-      "spentPaise": 12620,
-      "messages": 643,
+      "casualties": 5556,
+      "lostPaise": 480450400,
+      "recovered": 1441,
+      "recoveredPaise": 128066500,
+      "incrementalPaise": 14073600,
+      "spentPaise": 108780,
+      "messages": 5556,
       "retries": 0,
-      "optOuts": 4,
-      "wastedActions": 140,
-      "wastedPaise": 2800,
-      "refusals": {}
+      "optOuts": 67,
+      "wastedActions": 758,
+      "wastedPaise": 15160,
+      "refusals": {},
+      "ledgerVerified": true,
+      "auditRecords": 11112,
+      "copy": {
+        "source": "hand-written templates (English)",
+        "sent": 5556,
+        "fromLibrary": 0,
+        "legible": 3029
+      }
     },
     {
-      "name": "kairos",
-      "casualties": 643,
-      "lostPaise": 54824200,
-      "recovered": 225,
-      "recoveredPaise": 18462500,
-      "incrementalPaise": 4419600,
-      "spentPaise": 5206,
-      "messages": 497,
-      "retries": 30,
-      "optOuts": 4,
-      "wastedActions": 44,
-      "wastedPaise": 301,
-      "refusals": {}
+      "name": "kairos + template copy",
+      "casualties": 5556,
+      "lostPaise": 480450400,
+      "recovered": 2003,
+      "recoveredPaise": 177195900,
+      "incrementalPaise": 63203000,
+      "spentPaise": 69633,
+      "messages": 5845,
+      "retries": 249,
+      "optOuts": 54,
+      "wastedActions": 732,
+      "wastedPaise": 8278,
+      "refusals": {},
+      "ledgerVerified": true,
+      "auditRecords": 12188,
+      "copy": {
+        "source": "hand-written templates (English)",
+        "sent": 5845,
+        "fromLibrary": 0,
+        "legible": 3151
+      }
+    },
+    {
+      "name": "kairos + generated copy",
+      "casualties": 5556,
+      "lostPaise": 480450400,
+      "recovered": 2101,
+      "recoveredPaise": 183660700,
+      "incrementalPaise": 69667800,
+      "spentPaise": 64173,
+      "messages": 5719,
+      "retries": 249,
+      "optOuts": 43,
+      "wastedActions": 730,
+      "wastedPaise": 8110,
+      "refusals": {},
+      "ledgerVerified": true,
+      "auditRecords": 11936,
+      "copy": {
+        "source": "library(gemini-3.1-flash-lite) → hand-written templates (English)",
+        "sent": 5719,
+        "fromLibrary": 5719,
+        "legible": 5719
+      }
     }
   ],
   "windowSweep": [
     {
       "windowMs": 0,
-      "incrementalPaise": 4837200,
-      "messages": 537,
-      "retries": 30,
-      "optOuts": 4,
-      "spentPaise": 8606,
-      "wastedActions": 101
+      "incrementalPaise": 51856900,
+      "messages": 6557,
+      "retries": 249,
+      "optOuts": 37,
+      "spentPaise": 59345,
+      "wastedActions": 1060
     },
     {
       "windowMs": 300000,
-      "incrementalPaise": 4968900,
-      "messages": 524,
-      "retries": 30,
-      "optOuts": 4,
-      "spentPaise": 8650,
-      "wastedActions": 84
+      "incrementalPaise": 58188200,
+      "messages": 6070,
+      "retries": 249,
+      "optOuts": 63,
+      "spentPaise": 90277,
+      "wastedActions": 990
     },
     {
       "windowMs": 900000,
-      "incrementalPaise": 4187200,
-      "messages": 519,
-      "retries": 30,
-      "optOuts": 4,
-      "spentPaise": 7100,
-      "wastedActions": 68
+      "incrementalPaise": 57564500,
+      "messages": 6039,
+      "retries": 249,
+      "optOuts": 64,
+      "spentPaise": 80715,
+      "wastedActions": 896
     },
     {
       "windowMs": 2700000,
-      "incrementalPaise": 4419600,
-      "messages": 497,
-      "retries": 30,
-      "optOuts": 4,
-      "spentPaise": 5206,
-      "wastedActions": 44
+      "incrementalPaise": 63203000,
+      "messages": 5845,
+      "retries": 249,
+      "optOuts": 54,
+      "spentPaise": 69633,
+      "wastedActions": 732
     },
     {
       "windowMs": 7200000,
-      "incrementalPaise": 6332100,
-      "messages": 474,
-      "retries": 30,
-      "optOuts": 3,
-      "spentPaise": 5178,
-      "wastedActions": 32
+      "incrementalPaise": 62610900,
+      "messages": 5578,
+      "retries": 249,
+      "optOuts": 61,
+      "spentPaise": 76367,
+      "wastedActions": 540
     }
   ],
+  "legibilitySweep": [
+    {
+      "penalty": 0,
+      "seeds": 4,
+      "templatePaise": 52361275,
+      "generatedPaise": 71903125,
+      "gainPaise": 19541850,
+      "gainLowPaise": 17432200,
+      "gainHighPaise": 21746400
+    },
+    {
+      "penalty": 0.5,
+      "seeds": 4,
+      "templatePaise": 61918075,
+      "generatedPaise": 71903125,
+      "gainPaise": 9985050,
+      "gainLowPaise": 6464800,
+      "gainHighPaise": 13940400
+    },
+    {
+      "penalty": 1,
+      "seeds": 4,
+      "templatePaise": 72010750,
+      "generatedPaise": 71903125,
+      "gainPaise": -107625,
+      "gainLowPaise": -1792700,
+      "gainHighPaise": 592200
+    }
+  ],
+  "languageMix": {
+    "en": 0.5451763858891289,
+    "hi": 0.24874010079193665,
+    "mr": 0.11393088552915767,
+    "ta": 0.09215262778977681
+  },
   "holdout": {
-    "casualties": 370,
-    "recoveredPaise": 11494100
+    "casualties": 2339,
+    "recoveredPaise": 58375300
   },
   "calibration": {
     "bins": [
       {
         "lower": 0,
         "upper": 0.1,
-        "count": 138,
-        "predicted": 0.05489493647927855,
-        "observed": 0.050724637681159424
+        "count": 1609,
+        "predicted": 0.05645229942547753,
+        "observed": 0.04226227470478558
       },
       {
         "lower": 0.1,
         "upper": 0.2,
-        "count": 140,
-        "predicted": 0.14241753229109277,
-        "observed": 0.09285714285714286
+        "count": 1643,
+        "predicted": 0.13232170324825726,
+        "observed": 0.1162507608034084
       },
       {
         "lower": 0.2,
         "upper": 0.3,
-        "count": 98,
-        "predicted": 0.2527154478738754,
-        "observed": 0.19387755102040816
+        "count": 750,
+        "predicted": 0.24059735610154698,
+        "observed": 0.228
       },
       {
         "lower": 0.3,
         "upper": 0.4,
-        "count": 82,
-        "predicted": 0.3458981103534573,
-        "observed": 0.2073170731707317
+        "count": 1523,
+        "predicted": 0.37097907232379457,
+        "observed": 0.3670387393302692
       },
       {
         "lower": 0.4,
         "upper": 0.5,
-        "count": 33,
-        "predicted": 0.435087756393611,
-        "observed": 0.3939393939393939
+        "count": 315,
+        "predicted": 0.4116006442396216,
+        "observed": 0.3746031746031746
       },
       {
         "lower": 0.5,
         "upper": 0.6,
-        "count": 8,
-        "predicted": 0.5326714191841131,
-        "observed": 0.375
+        "count": 19,
+        "predicted": 0.5716985669726352,
+        "observed": 0.8421052631578947
       },
       {
         "lower": 0.6,
         "upper": 0.7,
-        "count": 6,
-        "predicted": 0.6521794852143373,
-        "observed": 0.8333333333333334
+        "count": 8,
+        "predicted": 0.6446910397783538,
+        "observed": 0.625
       },
       {
         "lower": 0.7,
         "upper": 0.8,
-        "count": 1,
-        "predicted": 0.721193397759318,
-        "observed": 1
+        "count": 2,
+        "predicted": 0.7339185657567007,
+        "observed": 0.5
       },
       {
         "lower": 0.8,
         "upper": 0.9,
-        "count": 2,
-        "predicted": 0.8914096138127703,
+        "count": 5,
+        "predicted": 0.8434865222830041,
         "observed": 1
       },
       {
         "lower": 0.9,
         "upper": 1,
-        "count": 19,
-        "predicted": 0.9437756003933575,
-        "observed": 1
+        "count": 220,
+        "predicted": 0.9490529182692959,
+        "observed": 0.990909090909091
       }
     ],
-    "expectedError": 0.05676310448924879,
-    "brier": 0.11682689220034811,
-    "skill": 0.2342533761939376,
-    "predictions": 527
+    "expectedError": 0.015112187958624916,
+    "brier": 0.13171754114075673,
+    "skill": 0.2370250606334906,
+    "predictions": 6094
   },
-  "autonomousShare": 0.16174183514774496,
+  "autonomousShare": 0.12005039596832254,
   "classMix": {
-    "transient": 194,
-    "customer-retry": 174,
-    "timed": 176,
-    "customer-action": 63,
-    "dead": 36
+    "transient": 2684,
+    "customer-retry": 1158,
+    "timed": 1057,
+    "customer-action": 424,
+    "dead": 233
   }
 }
