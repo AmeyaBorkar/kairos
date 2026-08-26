@@ -16,12 +16,13 @@ import { createHash } from "node:crypto";
 import {
   type CopyVariables,
   formatINR,
+  LANGUAGE_SPECS,
+  type Language,
   type Paise,
   paise,
   type SmsCost,
   smsCost,
 } from "@kairos/domain";
-import { LANGUAGE_SPECS, type Language } from "./language.js";
 import type { ContactChannel, CopySegment } from "./segment.js";
 
 /** The holes a variant may contain. Anything else is a rejection — see {@link file://./gauntlet.ts}. */

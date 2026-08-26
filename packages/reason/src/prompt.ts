@@ -24,8 +24,7 @@
  */
 
 import { createHash } from "node:crypto";
-import type { PaymentMethod, RecoverabilityClass } from "@kairos/domain";
-import { LANGUAGE_SPECS } from "./language.js";
+import { LANGUAGE_SPECS, type PaymentMethod, type RecoverabilityClass } from "@kairos/domain";
 import type { ComposeRequest, ExplanationRequest } from "./port.js";
 import type { ContactChannel } from "./segment.js";
 

@@ -70,6 +70,19 @@ export {
   isActive,
 } from "./incident.js";
 export {
+  charactersPerSegment,
+  isInScript,
+  isLanguage,
+  LANGUAGE_SPECS,
+  LANGUAGES,
+  type Language,
+  type LanguageSpec,
+  SCRIPT_MAJORITY,
+  type Script,
+  type ScriptTally,
+  tallyScripts,
+} from "./language.js";
+export {
   allowsAction,
   type ContactCap,
   inQuietHours,

@@ -22,8 +22,8 @@
  * has since changed should say so rather than look current.
  */
 
+import { LANGUAGES } from "@kairos/domain";
 import { z } from "zod";
-import { LANGUAGES } from "./language.js";
 import { CONTACT_CHANNELS, type CopySegment, SENDING_CLASSES, segmentKey } from "./segment.js";
 import type { CopyVariant } from "./variant.js";
 

@@ -18,7 +18,7 @@
  * solvency one.
  */
 
-import { isInScript } from "./language.js";
+import { isInScript } from "@kairos/domain";
 import type { CopySegment } from "./segment.js";
 import { type CopyVariant, makeVariant, measure, PLACEHOLDERS, type WorstCase } from "./variant.js";
 

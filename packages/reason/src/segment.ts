@@ -16,8 +16,7 @@
  * the model sees, and the model does not see customers. See {@link file://./variant.ts}.
  */
 
-import type { ActionKind, PaymentMethod, RecoverabilityClass } from "@kairos/domain";
-import type { Language } from "./language.js";
+import type { ActionKind, Language, PaymentMethod, RecoverabilityClass } from "@kairos/domain";
 
 /**
  * The contact kinds, derived from the domain's closed action vocabulary rather than restated.
