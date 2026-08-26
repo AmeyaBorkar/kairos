@@ -17,6 +17,14 @@ export {
 } from "./generate.js";
 export { blendedFailureRate, INDIA_PROFILES, type SliceProfile } from "./profiles.js";
 export {
+  ILLEGIBLE_PENALTY,
+  type MessageChannelKind,
+  type MessageExpectation,
+  type MessageQuality,
+  NO_MESSAGE,
+  scoreMessage,
+} from "./quality.js";
+export {
   type ActionContext,
   type ActionOutcome,
   type CasualtyClass,

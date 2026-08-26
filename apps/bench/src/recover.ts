@@ -14,6 +14,7 @@ import {
   sliceKey,
 } from "@kairos/domain";
 import { MemoryLedger } from "@kairos/ledger";
+import { compose } from "@kairos/razorpay";
 import {
   brierScore,
   type Classification,
@@ -44,6 +45,7 @@ import {
   RecoveryWorld,
   type SimulatorConfig,
   type SliceProfile,
+  scoreMessage,
 } from "@kairos/simulator";
 import { ManualClock, Terminus } from "@kairos/terminus";
 import { MemoryStore } from "throttlekit";
@@ -219,6 +221,34 @@ class SimulatedExecutor implements Executor {
     return this.#optOuts;
   }
 
+  /**
+   * Build the message this action would send, and score it.
+   *
+   * The copy is the hand-written template library, composed exactly as the recovery worker would
+   * compose it — so what the world judges is the text a customer would really receive, greeting and
+   * bank name and all. A template scored with its holes still in would be credited for a bank name
+   * it never printed.
+   */
+  #guidanceFor(request: ExecuteRequest, channel: ContactChannel): number {
+    const { casualty } = request;
+    const institution = institutionName(casualty.slice.issuer);
+    const message = compose(request.classification.recoverability, {
+      firstName: null,
+      amount: casualty.amount,
+      link: BENCH_LINK,
+      institution,
+    });
+
+    return scoreMessage(message.text, {
+      // Everyone reads English in this population. Giving customers their own language, and copy
+      // that matches it, is what the generated library is for and is measured separately.
+      language: "en",
+      institution,
+      method: casualty.slice.method,
+      channel,
+    }).guidance;
+  }
+
   execute(request: ExecuteRequest): Promise<ExecuteResult> {
     const { casualty, grant, at } = request;
     const context = {
@@ -229,14 +259,21 @@ class SimulatedExecutor implements Executor {
       railHealthy: this.#healthy(casualty, at),
       pastPayday: pastPayday(casualty.occurredAt, at),
       ordinal: casualty.attempts.length,
-      guided: guidedFor(request.classification),
+      guidance: 0,
     };
 
     const kind = grant.action.kind;
+    // Compose before acting, and score what was composed. The executor used to price a channel
+    // without ever building the message, and the world was handed a boolean the *benchmark* set
+    // from the failure class — so an arm could have claimed better copy by passing `true`. Now every
+    // arm's text goes through the same scorer, which has no argument for who wrote it.
     const outcome =
       kind === "retry"
         ? this.world.retry(context)
-        : this.world.contact(context, kind as ContactChannel);
+        : this.world.contact(
+            { ...context, guidance: this.#guidanceFor(request, kind as ContactChannel) },
+            kind as ContactChannel,
+          );
 
     if (outcome.optedOut) this.#optOuts++;
 
@@ -277,16 +314,16 @@ class SimulatedExecutor implements Executor {
 }
 
 /** Whether a balance-likely date has passed between the loss and now. Ground truth for `timed`. */
-function pastPayday(occurredAt: number, at: number): boolean {
-  return nextBalanceLikelyMoment(occurredAt, DEFAULT_SCHEDULE_CONFIG) <= at;
+/** A stand-in for the single-use URL the worker would mint. Same length as a real one. */
+const BENCH_LINK = "https://rzp.io/i/aB3xQ";
+
+/** What a message calls an issuer. The adapter does this properly; a benchmark can uppercase. */
+function institutionName(issuer: string | null): string | null {
+  return issuer === null ? null : issuer.toUpperCase();
 }
 
-/** Whether the copy for this class tells the customer what to fix. Mirrors the template table. */
-function guidedFor(classification: Classification): boolean {
-  return (
-    classification.recoverability === "customer-action" ||
-    classification.recoverability === "transient"
-  );
+function pastPayday(occurredAt: number, at: number): boolean {
+  return nextBalanceLikelyMoment(occurredAt, DEFAULT_SCHEDULE_CONFIG) <= at;
 }
 
 /**
@@ -425,7 +462,8 @@ function buildTruths(
         railHealthy,
         pastPayday: pastPayday(casualty.occurredAt, spontaneousAt),
         ordinal: 0,
-        guided: false,
+        // Nobody sent them anything; whatever brought them back, it was not our copy.
+        guidance: 0,
       });
     }
 

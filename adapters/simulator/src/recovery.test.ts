@@ -23,7 +23,7 @@ function context(o: Partial<ActionContext> = {}): ActionContext {
     railHealthy: true,
     pastPayday: false,
     ordinal: 0,
-    guided: false,
+    guidance: 0,
     ...o,
   };
 }
@@ -185,7 +185,7 @@ describe("contact", () => {
               casualtyId: id,
               casualtyClass: "customer-action",
               at: AT + 3 * DAY,
-              guided: true,
+              guidance: 1,
             }),
             "contact-sms",
           ).recovered,
@@ -231,21 +231,46 @@ describe("contact", () => {
   it("recovers more when it says what to fix than when it says a payment failed", () => {
     // Why a specific fix-link is worth more than a reminder, and the reason classification pays for
     // itself twice: once by picking the right moment and once by picking the right words.
-    const rate = (guided: boolean): number =>
-      ids(4000, `g${String(guided)}`).filter(
+    const rate = (guidance: number): number =>
+      ids(4000, `g${String(guidance)}`).filter(
         (id) =>
           world.contact(
             context({
               casualtyId: id,
               casualtyClass: "customer-action",
               at: AT + 2 * DAY,
-              guided,
+              guidance,
             }),
             "contact-sms",
           ).recovered,
       ).length / 4000;
 
-    expect(rate(true)).toBeGreaterThan(rate(false) * 1.5);
+    expect(rate(1)).toBeGreaterThan(rate(0) * 1.5);
+  });
+
+  it("scales with how good the copy is, rather than switching on a flag", () => {
+    // The reason the field stopped being a boolean. Copy is not guided or unguided: it names the
+    // bank or it does not, says what to do or does not, arrives in a script the reader uses or does
+    // not. A message with some of those is worth more than one with none and less than one with all.
+    const rate = (guidance: number): number =>
+      ids(3000, `scale${String(guidance)}`).filter(
+        (id) =>
+          world.contact(
+            context({
+              casualtyId: id,
+              casualtyClass: "customer-action",
+              at: AT + 2 * DAY,
+              guidance,
+            }),
+            "contact-sms",
+          ).recovered,
+      ).length / 3000;
+
+    const none = rate(0);
+    const half = rate(0.5);
+    const full = rate(1);
+    expect(half).toBeGreaterThan(none);
+    expect(full).toBeGreaterThan(half);
   });
 
   it("fails to deliver, and costs consent, at the configured rates", () => {

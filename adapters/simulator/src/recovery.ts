@@ -170,8 +170,15 @@ export interface ActionContext {
   readonly pastPayday: boolean;
   /** How many actions have already been taken on this casualty. */
   readonly ordinal: number;
-  /** Whether the message told the customer specifically what to fix. */
-  readonly guided: boolean;
+  /**
+   * How good the message was, scored from the message.
+   *
+   * A number in [0,1] rather than a flag, and produced by {@link scoreMessage} from the rendered
+   * text rather than supplied by the arm that wrote it. That distinction is the whole reason this
+   * field changed shape: a boolean the caller set was an arm's opinion of its own copy, and an arm
+   * could improve its measured result by passing `true`.
+   */
+  readonly guidance: number;
 }
 
 /**
@@ -223,10 +230,11 @@ export class RecoveryWorld {
    * being credited with our timing.
    */
   wouldSucceed(context: ActionContext): boolean {
+    // Zero guidance: nobody sent them anything. Whatever brought them back, it was not our copy.
     return this.#underlyingFixed(
       context,
       this.#rngFor(context.casualtyId, "spontaneous-success"),
-      false,
+      0,
     );
   }
 
@@ -240,7 +248,8 @@ export class RecoveryWorld {
     const rng = this.#rngFor(context.casualtyId, `retry:${context.ordinal}`);
     const wasAlreadyComing = this.#coming(context);
 
-    const success = this.#underlyingFixed(context, rng, false);
+    // Likewise: an autonomous retry is a server call. There is no message to be good.
+    const success = this.#underlyingFixed(context, rng, 0);
     return {
       recovered: success,
       hardDecline: !success && context.casualtyClass === "customer-action",
@@ -284,7 +293,7 @@ export class RecoveryWorld {
     // it is where the *timing* of the message earns its keep — the same customer, contacted while
     // their rail is still broken, responds and fails.
     const responded = wasAlreadyComing || rng.bool(Math.min(1, pull));
-    const recovered = responded && this.#underlyingFixed(context, rng, context.guided);
+    const recovered = responded && this.#underlyingFixed(context, rng, context.guidance);
 
     return { recovered, hardDecline: false, delivered: true, optedOut, wasAlreadyComing };
   }
@@ -295,7 +304,7 @@ export class RecoveryWorld {
    * Separate from whether the customer is willing, because they are separate facts and conflating
    * them is what makes a dunning system retry into an outage all afternoon.
    */
-  #underlyingFixed(context: ActionContext, rng: Rng, guided: boolean): boolean {
+  #underlyingFixed(context: ActionContext, rng: Rng, guidance: number): boolean {
     switch (context.casualtyClass) {
       case "transient":
         return context.railHealthy;
@@ -305,7 +314,12 @@ export class RecoveryWorld {
         );
       case "customer-action": {
         const days = Math.max(0, (context.at - context.occurredAt) / DAY);
-        const rate = guided ? this.#config.fixRateWithGuidance : this.#config.fixRatePerDay;
+        // Interpolated rather than switched. Copy is not guided or unguided; it names the bank or
+        // it does not, says what to do or does not, arrives in a script the reader uses or does
+        // not. A message with two of those three is worth more than one with none and less than one
+        // with all, and a boolean could not say so.
+        const { fixRatePerDay, fixRateWithGuidance } = this.#config;
+        const rate = fixRatePerDay + guidance * (fixRateWithGuidance - fixRatePerDay);
         return rng.bool(1 - (1 - rate) ** days);
       }
       case "customer-retry":
