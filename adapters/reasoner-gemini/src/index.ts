@@ -10,12 +10,12 @@ export {
   CASSETTE,
   type Cassette,
   type CassetteEntry,
-  cassetteKey,
   parseCassette,
   type Recorder,
   recording,
   replayable,
   replaying,
+  requestDigest,
   serialiseCassette,
 } from "./cassette.js";
 export { type ClassifierOptions, classifyBudget, geminiClassifier } from "./classifier.js";

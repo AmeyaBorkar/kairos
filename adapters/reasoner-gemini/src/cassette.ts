@@ -32,8 +32,16 @@ import type { Transport } from "./transport.js";
 import { GENERATE_RESPONSE, type GenerateRequest, type GenerateResponse } from "./wire.js";
 
 const ENTRY = z.object({
-  /** `sha256(model + canonical request)`, truncated. Recomputed on replay; never trusted. */
-  key: z.string().regex(/^[0-9a-f]{16}$/),
+  /**
+   * `sha256(model + canonical request)`, truncated. Recomputed on replay; never trusted.
+   *
+   * Named `digest` rather than `key`, which is what it was called until a secret scanner flagged
+   * the file. It was a false positive — sixteen hex characters next to a field called "key" is what
+   * an API credential looks like from the outside — but the fix is the name rather than a
+   * suppression: this value is a digest, "key" was the ambiguous word, and an allowlist entry would
+   * have weakened the scanner on every file added under that path afterwards.
+   */
+  digest: z.string().regex(/^[0-9a-f]{16}$/),
   /** What this exchange is, for a human reading the file. Never part of the key. */
   label: z.string(),
   model: z.string().min(1),
@@ -79,7 +87,7 @@ function canonical(value: unknown): string {
   return `{${entries.join(",")}}`;
 }
 
-export function cassetteKey(model: string, request: GenerateRequest): string {
+export function requestDigest(model: string, request: GenerateRequest): string {
   return createHash("sha256")
     .update(`${model}\u0000${canonical(request)}`, "utf8")
     .digest("hex")
@@ -93,17 +101,17 @@ export function cassetteKey(model: string, request: GenerateRequest): string {
  * made to by any argument it is given.
  */
 export function replaying(cassette: Cassette): Transport {
-  const byKey = new Map(cassette.entries.map((entry) => [entry.key, entry]));
+  const byDigest = new Map(cassette.entries.map((entry) => [entry.digest, entry]));
   return {
     call(model, request) {
-      const key = cassetteKey(model, request);
-      const entry = byKey.get(key);
+      const digest = requestDigest(model, request);
+      const entry = byDigest.get(digest);
       if (entry === undefined) {
         return Promise.reject(
           new GeminiError(
-            `no recording for ${model} ${key}. The request changed, so the cassette is stale: ` +
+            `no recording for ${model} ${digest}. The request changed, so the cassette is stale: ` +
               `re-record it rather than reaching for the network. Recorded: ` +
-              `${[...byKey.values()].map((e) => `${e.label} (${e.key})`).join(", ") || "nothing"}`,
+              `${[...byDigest.values()].map((e) => `${e.label} (${e.digest})`).join(", ") || "nothing"}`,
             { kind: "rejected" },
           ),
         );
@@ -131,8 +139,8 @@ export function recording(inner: Transport, label: (request: GenerateRequest) =>
   return {
     async call(model, request, deadlineMs) {
       const response = await inner.call(model, request, deadlineMs);
-      const key = cassetteKey(model, request);
-      captured.set(key, { key, label: label(request), model, response });
+      const digest = requestDigest(model, request);
+      captured.set(digest, { digest, label: label(request), model, response });
       return response;
     },
     cassette(recordedAt, note) {
@@ -142,7 +150,7 @@ export function recording(inner: Transport, label: (request: GenerateRequest) =>
 }
 
 export function serialiseCassette(cassette: Cassette): string {
-  const entries = [...cassette.entries].sort((a, b) => (a.key < b.key ? -1 : 1));
+  const entries = [...cassette.entries].sort((a, b) => (a.digest < b.digest ? -1 : 1));
   return `${JSON.stringify({ ...cassette, entries }, null, 2)}\n`;
 }
 

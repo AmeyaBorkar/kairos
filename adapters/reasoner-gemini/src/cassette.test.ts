@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
   type Cassette,
-  cassetteKey,
   parseCassette,
   recording,
   replayable,
   replaying,
+  requestDigest,
   serialiseCassette,
 } from "./cassette.js";
 import type { Transport } from "./transport.js";
@@ -29,7 +29,7 @@ const RESPONSE: GenerateResponse = {
 
 const ALWAYS: Transport = { call: () => Promise.resolve(RESPONSE) };
 
-describe("keying a recording", () => {
+describe("digesting a request", () => {
   it("does not change when a field is written in a different order", () => {
     // The reason this is canonicalised rather than stringified. Reordering a key in a request
     // builder is not a change to the request, and it must not invalidate every recording.
@@ -42,7 +42,7 @@ describe("keying a recording", () => {
       },
       systemInstruction: { parts: [{ text: "you write payment copy" }] },
     };
-    expect(cassetteKey("m", reordered)).toBe(cassetteKey("m", REQUEST));
+    expect(requestDigest("m", reordered)).toBe(requestDigest("m", REQUEST));
   });
 
   it("changes when the request does", () => {
@@ -50,11 +50,11 @@ describe("keying a recording", () => {
       ...REQUEST,
       contents: [{ role: "user" as const, parts: [{ text: "write four" }] }],
     };
-    expect(cassetteKey("m", different)).not.toBe(cassetteKey("m", REQUEST));
+    expect(requestDigest("m", different)).not.toBe(requestDigest("m", REQUEST));
   });
 
   it("changes when the model does, because two models are two answers", () => {
-    expect(cassetteKey("a", REQUEST)).not.toBe(cassetteKey("b", REQUEST));
+    expect(requestDigest("a", REQUEST)).not.toBe(requestDigest("b", REQUEST));
   });
 
   it("keeps array order, because a conversation is not a set", () => {
@@ -72,7 +72,7 @@ describe("keying a recording", () => {
         { role: "user", parts: [{ text: "second" }] },
       ],
     };
-    expect(cassetteKey("m", swapped)).not.toBe(cassetteKey("m", original));
+    expect(requestDigest("m", swapped)).not.toBe(requestDigest("m", original));
   });
 });
 
@@ -127,7 +127,7 @@ describe("replaying", () => {
       parseCassette({
         recordedAt: "2026-08-26",
         note: "",
-        entries: [{ key: "nothex", label: "x", model: "m", response: {} }],
+        entries: [{ digest: "nothex", label: "x", model: "m", response: {} }],
       }),
     ).toThrow();
   });
@@ -153,18 +153,18 @@ describe("recording", () => {
       recordedAt: "2026-08-26",
       note: "",
       entries: [
-        { key: "ffffffffffffffff", label: "z", model: "m", response: {} },
-        { key: "0000000000000000", label: "a", model: "m", response: {} },
+        { digest: "ffffffffffffffff", label: "z", model: "m", response: {} },
+        { digest: "0000000000000000", label: "a", model: "m", response: {} },
       ],
     };
     const written = JSON.parse(serialiseCassette(cassette)) as Cassette;
-    expect(written.entries.map((entry) => entry.key)).toEqual([
+    expect(written.entries.map((entry) => entry.digest)).toEqual([
       "0000000000000000",
       "ffffffffffffffff",
     ]);
   });
 
-  it("carries no credential, because the key is a header and a cassette holds bodies", () => {
+  it("carries no credential, because the API key is a header and a cassette holds bodies", () => {
     const recorder = recording(ALWAYS, () => "x");
     return recorder.call("m", REQUEST, 1000).then(() => {
       const written = serialiseCassette(recorder.cassette("2026-08-26", "note"));

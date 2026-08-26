@@ -3,7 +3,7 @@
   "note": "Recorded against the live API. Regenerate with `pnpm --filter @kairos/scribe run record`.",
   "entries": [
     {
-      "key": "28b64a41a3b99434",
+      "digest": "28b64a41a3b99434",
       "label": "a Hindi SMS telling a customer to approve with their UPI PIN",
       "model": "gemini-3.1-flash-lite",
       "response": {
@@ -39,7 +39,7 @@
       }
     },
     {
-      "key": "36e26473665d33ba",
+      "digest": "36e26473665d33ba",
       "label": "a Marathi SMS for a low-balance failure, which must never say so",
       "model": "gemini-3.1-flash-lite",
       "response": {
@@ -75,7 +75,7 @@
       }
     },
     {
-      "key": "42a898451e211d4e",
+      "digest": "42a898451e211d4e",
       "label": "an English SMS for a transient bank outage",
       "model": "gemini-3.1-flash-lite",
       "response": {
@@ -111,7 +111,7 @@
       }
     },
     {
-      "key": "5c9a84049b53c84d",
+      "digest": "5c9a84049b53c84d",
       "label": "an English WhatsApp message for a netbanking login",
       "model": "gemini-3.1-flash-lite",
       "response": {
@@ -147,7 +147,7 @@
       }
     },
     {
-      "key": "6d906a85d69a7bb2",
+      "digest": "6d906a85d69a7bb2",
       "label": "an operator asking why a customer was never contacted",
       "model": "gemini-3.1-flash-lite",
       "response": {
@@ -183,7 +183,7 @@
       }
     },
     {
-      "key": "70b0afc024152301",
+      "digest": "70b0afc024152301",
       "label": "a gateway error the rule table could not name",
       "model": "gemini-3.1-flash-lite",
       "response": {
@@ -219,7 +219,7 @@
       }
     },
     {
-      "key": "72d03b1e686475ae",
+      "digest": "72d03b1e686475ae",
       "label": "a Tamil SMS for a card that needs updating",
       "model": "gemini-3.1-flash-lite",
       "response": {
@@ -255,7 +255,7 @@
       }
     },
     {
-      "key": "8aca9a5f670fd6de",
+      "digest": "8aca9a5f670fd6de",
       "label": "an English email for a failure nobody could classify",
       "model": "gemini-3.1-flash-lite",
       "response": {
@@ -291,7 +291,7 @@
       }
     },
     {
-      "key": "933e7f7808206b89",
+      "digest": "933e7f7808206b89",
       "label": "a cancelled payment, which is the classifier's easy case",
       "model": "gemini-3.1-flash-lite",
       "response": {
@@ -327,7 +327,7 @@
       }
     },
     {
-      "key": "a47cad405d236ae0",
+      "digest": "a47cad405d236ae0",
       "label": "an injection attempt hidden in a gateway description",
       "model": "gemini-3.1-flash-lite",
       "response": {

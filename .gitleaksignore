@@ -1,0 +1,23 @@
+# Findings a person has examined and cleared, one fingerprint per line.
+#
+# This file is not a way to quieten the scanner. Every line here is a claim that somebody opened the
+# named line of the named commit and established it is not a credential, and the fingerprint is
+# precise enough that clearing one finding clears nothing else — not the file, not the rule, not the
+# path. A blanket path exclusion would have covered every file added under that directory
+# afterwards, which is the failure mode this format exists to avoid.
+#
+# ── ce557ec, adapters/reasoner-gemini/src/fixtures/gemini.cassette.json:222 ──────────────────────
+#
+# `generic-api-key`, on `"key": "72d03b1e686475ae"`.
+#
+# Sixteen hex characters beside a field named "key" is what an API credential looks like from the
+# outside, and the rule is right to say so. The value is `sha256(model + canonical request)`
+# truncated to sixteen characters — the lookup index of a recorded HTTP exchange, computed from a
+# request that is itself committed in the same file. It authorises nothing and it is reproducible
+# from public inputs by anyone with the repository.
+#
+# The field is called `digest` from the next commit onward, because "key" was the ambiguous word and
+# renaming it removes the ambiguity at its source rather than teaching the scanner to look away. The
+# entry below covers only the commits where it was still called "key". A real Gemini key never
+# reaches a cassette at all: it is sent as an `x-goog-api-key` header, and a cassette holds bodies.
+ce557ec9677c0b2241345a16a44a5ec69bb2ad86:adapters/reasoner-gemini/src/fixtures/gemini.cassette.json:generic-api-key:222

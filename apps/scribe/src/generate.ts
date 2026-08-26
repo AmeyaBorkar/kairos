@@ -107,11 +107,8 @@ export async function generate(options: GenerateOptions): Promise<GenerateResult
 
     const key = segmentKey(segment);
     const request = requestFor(segment);
-    const ceiling = reservationFor(
-      budgetFor(request).inputTokens,
-      budgetFor(request).outputTokens,
-      price,
-    );
+    const { inputTokens, outputTokens } = budgetFor(request);
+    const ceiling = reservationFor(inputTokens, outputTokens, price);
 
     const admission = await terminus.admit({
       action: {
