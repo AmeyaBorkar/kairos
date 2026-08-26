@@ -23,3 +23,12 @@ bench-out/
 
 # Stray package tarballs from local inspection.
 *.tgz
+
+# Compiled browser bundle for apps/site. Built, never committed.
+apps/site/public/app/
+
+# Generated from src/pixel/mark.ts by `pnpm --filter @kairos/site run icons`.
+apps/site/public/assets/icons/
+
+# Scene previews, rendered on demand by `pnpm --filter @kairos/site run preview`.
+apps/site/preview/
