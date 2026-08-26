@@ -91,6 +91,15 @@ guard, and the gate says so**, because a reader who sees PASSED is owed the diff
 claim that cannot break and one that merely cannot be measured this cheaply
 ([ADR 0005](docs/decisions/0005-a-benchmark-that-reproduces-exactly-still-needs-a-band.md)).
 
+**Language** — a model writes the recovery copy, once per *situation* rather than once per message:
+180 calls instead of 5,719, into a file that is reviewed in a pull request and committed. No
+inference happens on the path where money moves, the benchmark stays seeded while using real model
+output, and CI never makes a call. The prompt cannot contain a customer's name because a customer's
+name is never assembled — the model writes a sentence with holes and a pure function fills them. An
+inference call is an action like any other: admitted against a signed mandate, reserved before the
+call, reconciled against the tokens the provider reports, and priced at list rate even on a free
+tier ([ADR 0006](docs/decisions/0006-copy-is-written-once-reviewed-and-committed.md)).
+
 Design claims that did not survive contact with measurement — each corrected in the open rather than
 quietly:
 
@@ -115,6 +124,14 @@ quietly:
   ([ADR 0005](docs/decisions/0005-a-benchmark-that-reproduces-exactly-still-needs-a-band.md));
 - "the steering lever never changes mid-incident" was true on eight seeds of a short run and false on
   a long one, which is what a study at a single size cannot tell you (Phase 5).
+- the copy prompt was asking a model to subtract a greeting and three substitutions it had never
+  seen the length of — eleven per cent of the first batch survived validation, and eighty-eight per
+  cent survived once it was told the number it could actually act on (Phase 5.5);
+- a one-segment recovery SMS in an Indic script is not a demanding target but an impossible one:
+  seventy units, less the greeting and the placeholders, is twenty-five characters of Hindi
+  ([ADR 0007](docs/decisions/0007-an-indic-recovery-sms-buys-a-second-segment.md));
+- the prompt file claimed a provider cache that, measured, never engaged once in sixteen calls
+  sharing an identical 829-token prefix — the ordering stays, the claim is gone (Phase 5.5).
 
 ## Status
 
@@ -131,7 +148,23 @@ pnpm test
 pnpm lint
 ```
 
-Requires Node ≥ 22 and pnpm ≥ 11.
+Requires Node ≥ 22 and pnpm ≥ 11. **No API key is needed for any of it** — the benchmark is seeded
+and offline, and the reasoner adapter's tests replay a committed recording rather than calling
+anybody.
+
+One job needs a key, and it is run by a person rather than by a machine: regenerating the copy
+library after a prompt changes.
+
+```sh
+cp .env.example .env          # then fill in GOOGLE_API_KEY
+pnpm --filter @kairos/scribe run compose --dry-run   # what it would ask for, and the budget
+pnpm --filter @kairos/scribe run compose             # ~180 calls, about ₹10 at list rate
+pnpm --filter @kairos/scribe run record              # re-record the adapter's test cassette
+```
+
+`compose` is resumable: it writes what it has, reports where it stopped, and asks only for the
+segments still missing next time. A free tier's daily quota is a real bound, so that is not a
+nicety.
 
 ## Licence
 

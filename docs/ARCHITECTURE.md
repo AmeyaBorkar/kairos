@@ -212,6 +212,7 @@ what lets the entire system run offline in CI.
 | `recover-worker` | Drains the casualty queue. **Deliberately multi-instance** — this is where a naive budget check would race, and where Terminus earns its place. Ships in dry-run delivery: every decision real, no message sent. |
 | `checkout` | Demo storefront on Razorpay Checkout whose method configuration is driven by `sentry`. |
 | `console` | Operator view: live rail health, active incidents, which bound is binding, the audit trail. |
+| `scribe` | Writes the copy library. Asks a model once per *situation* — 180 of them, not 5,719 messages — validates every answer, and commits the result. Runs under a signed mandate whose only permitted action is `reason`, so it could not send a message if its code asked it to. Resumable, because a free tier's daily quota is a real bound. |
 | `bench` | The measurement harness. Four experiments on pinned seeds, a consolidated scorecard, the seed study its regression bands are derived from, and the gate CI runs on every change. |
 
 ---
@@ -528,10 +529,16 @@ Three properties, all present, which is why an `if` statement is not sufficient:
    overspends. This is the same bug as three department heads drawing on one budget line before
    anything posts.
 2. **Cost revealed after commitment.** You cannot price an action at admission time:
-   - **LLM tokens** — known only as the completion streams.
+   - **LLM tokens** — known only once the completion has streamed. Realised in
+     `adapters/reasoner-gemini`: a call is reserved at a ceiling derived from the prompt and settled
+     against `usageMetadata`, and the two differ because *thinking* tokens are billed as output and
+     nobody knows in advance how many there will be.
    - **SMS segments** — GSM-7 gives 160 characters per segment; Devanagari forces UCS-2 at **70**. So
-     `"aapka payment fail ho gaya"` is one segment and `"आपका पेमेंट फेल हो गया"` is three. *The
-     model's choice of script sets the price, and you learn it after generation.*
+     `"aapka payment fail ho gaya"` is one segment and `"आपका पेमेंट फेल हो गया"` is three. Since
+     copy is generated at build time the *language* is known at admission — but the customer's own
+     name is not ours to choose, and one Devanagari character in it moves an otherwise Latin message
+     to UCS-2. *A message is composed with a person's name in it, and a person is free to be called
+     रोहित.*
    - **Gateway fees** on a retry, resolved when the attempt does.
 3. **Utilisation matters** — though less than this section originally claimed. The worry was that
    reserving the worst case for every action sterilises the budget, so the system stops chasing
@@ -875,6 +882,7 @@ shown.
 | **3 · Prevention** | Steering policy, holdout, `sentry` — and the lift measured against a control group |
 | **4 · Recovery** | Classification, EV gate, scheduling, `recover-worker` — and the incremental recovery measured against a control arm and three baselines |
 | **5 · Proof** | ✅ Consolidated scorecard, seed study, provenance, `bench.yml` regression gate — bands derived from measured spread rather than guessed |
+| **5.5 · Language** | ✅ `reasoner-gemini`, the validation gauntlet, `scribe`, and a committed copy library in four languages — generated at build time under a signed mandate, reviewed as a diff, replayed offline by every test |
 | **6 · Demonstration** | Console, chaos scenarios, pitch materials |
 
 ---
@@ -975,3 +983,14 @@ confidence.
    *major* is still an assumption: nobody has run the same seed on 22 and on 24 and diffed the
    result. The bench job pins one major and prints an advisory on a mismatch, which handles the risk
    without measuring it.
+
+18. **The message-quality weights are invented, and the multilingual claim rests on them.**
+   `scoreMessage` splits a message's effect four ways — names the cause (0.4), names the action
+   (0.4), fits its channel (0.2), and readable-or-halved. The *ordering* is defensible from first
+   principles; the *levels* are not measured, because measuring them needs customers rather than a
+   simulator. They were chosen conservatively on purpose: `ILLEGIBLE_PENALTY = 0.5` scores a
+   message somebody cannot read at half effectiveness rather than zero, which makes the
+   multilingual case *harder* to win. That matters because
+   [ADR 0007](decisions/0007-an-indic-recovery-sms-buys-a-second-segment.md) commits to paying
+   double postage for an Indic SMS on the strength of it. If the true penalty is milder than a
+   half, that decision loses money and nothing in this repository would notice.

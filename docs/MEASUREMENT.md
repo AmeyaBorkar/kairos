@@ -22,6 +22,14 @@ pnpm bench:variance        # how far each number moves when only the seed change
 pnpm bench:bless           # rewrite the baseline. Never widens a band.
 ```
 
+All of the above run offline and need no credential. One thing in this document does not, and it is
+run by a person rather than by a machine:
+
+```sh
+cp .env.example .env       # then fill in GOOGLE_API_KEY
+pnpm --filter @kairos/scribe run compose   # regenerate the copy library, ~180 calls, ~10 minutes
+```
+
 ---
 
 ## Phase 1 — Detection
@@ -696,6 +704,154 @@ five, and each changed the code rather than the write-up.
 4. **The seed study is not automatic, and must not be.** Nothing in CI runs it, because a gate that
    recalibrates itself is not a gate. When the harness changes shape, somebody runs it, reads it, and
    edits the bands by hand.
+
+---
+
+## Phase 5.5 — The copy library
+
+Generated against the live API with `pnpm --filter @kairos/scribe run compose`, and committed at
+`data/copy-library.json`. Every test and every CI run replays it; nothing below needs a key to check
+except the generation itself.
+
+### What was measured
+
+Not recovery. That is the benchmark's fourth arm and it has not run — nothing consumes the library
+at runtime yet, and the recovery worker still sends hand-written templates. What is measured here is
+the thing that has to be true before that arm can mean anything: whether a model, asked once per
+*situation* under a stated character budget, produces copy a deterministic validator accepts, and
+what it costs to find out.
+
+### The library
+
+468 variants over all 180 situations — five failure classes, six rails where the rail changes what
+the customer must do, four languages, three channels.
+
+| language | SMS | WhatsApp | email | total |
+|---|---:|---:|---:|---:|
+| English | 42 | 41 | 43 | 126 |
+| Hindi | 40 | 41 | 42 | 123 |
+| Marathi | 36 | 34 | 41 | 111 |
+| Tamil | 32 | 35 | 41 | 108 |
+| **all** | **150** | **151** | **167** | **468** |
+
+Coverage is complete; density is not. 132 segments carry three variants, 24 carry two and 24 carry
+one. The thin ones are where the budget is tightest — Tamil and Marathi SMS — and a segment with one
+variant gives the exploration bandit nothing to explore. That is a real cost of writing to a
+character budget, and it is reported rather than smoothed over.
+
+### What it cost
+
+**190 calls, ₹8.15 at list rate**, for a library that serves 5,719 messages in a four-hour window
+and every window after it until somebody changes the prompt. Per-message generation would have been
+about forty times the calls, and would have to be paid again every window.
+
+Priced at `gemini-3.1-flash-lite`'s published rate — $0.25 in and $1.50 out per million tokens at
+₹96/USD — even though the tier this ran on billed nothing. A free tier is a development convenience,
+and an accounting of ₹0 would be a true statement about this month and a false one about the first
+month anybody deployed.
+
+**85% of proposals were accepted** on the final prompt. The rejections were 55 missing a mandatory
+placeholder and 27 over budget; no proposal in the final run wrote a URL, invented a rupee figure,
+or answered in the wrong script.
+
+### The honesty checks, over the whole library
+
+Run as tests on every change, because a library gets edited by hand the moment somebody dislikes a
+variant, and that step has no validator behind it.
+
+| check | result |
+|---|---|
+| `timed` variants mentioning a balance or funds | **0 of 36** |
+| `timed` and `unknown` variants inventing a cause | **0 of 72** |
+| variants writing a URL of their own | **0 of 468** |
+| variants writing a rupee figure rather than `{amount}` | **0 of 468** |
+| variants missing `{amount}` or `{link}` | **0 of 468** |
+| non-email variants over the 3-segment reservation ceiling | **0 of 301** |
+| `transient` variants naming the institution | **28 of 30 (93%)** |
+
+The last row is the mirror of the second. `transient` copy exists to say *what went wrong* — that is
+where its uplift comes from — so the check there is that it does, not that it does not.
+
+### Four things the measurement changed
+
+**The prompt was asking for arithmetic the model could not do.** It stated the segment's *capacity*
+and added "including the greeting that will be added before your text and the values that replace
+the placeholders", while never saying how long a greeting is, or a link, or a rendered amount.
+**Eleven per cent** of the first recorded batch survived the gauntlet. Telling the model the
+characters left for its own text took that to **eighty-eight** — same model, same gauntlet, same
+day.
+
+**A one-segment Indic SMS is not a target.** Stating the real number exposed it: seventy units, less
+a fourteen-unit greeting and a seventeen-unit placeholder surcharge, is thirty-nine characters of
+which fourteen are the placeholders themselves. Twenty-five characters of Hindi is two words. See
+[ADR 0007](decisions/0007-an-indic-recovery-sms-buys-a-second-segment.md) — an Indic recovery SMS
+buys a second segment and costs twice as much to send, which is a cost line the multilingual claim
+now has to carry.
+
+**The budget read the encoding off the wrong string.** `bodyBudget` measured the greeting alone. On
+WhatsApp the rupee sign is free, so an amount renders as `₹1,245.00` — and U+20B9 is not in GSM-7,
+so an English WhatsApp message is UCS-2 at 134 units rather than GSM-7 at 306. The budget promised
+279 characters where the truth was 103, and *every* English WhatsApp variant was rejected for a
+length the prompt had told the model it had. Measuring the encoding on a message carrying the
+substituted values took that cell from **0% to 90%**.
+
+**The model invented a cause when told to name none.** Found by reading the finished library, which
+is the entire reason it is committed rather than streamed. Six variants in 465 — all in `timed` and
+`unknown` — said the payment had failed for *technical* reasons. Not a balance: the prompt guards
+that heavily and nothing in the library mentioned one. This is the softer failure, a comforting
+fiction about a fault at the bank's end, and it is still a false statement about somebody's money
+sent under the merchant's own sender id. Both prompts now forbid it by name, and the gauntlet
+enforces it structurally for those two classes, because a prohibited-phrase list does not depend on
+the model having complied. The regenerated library has zero.
+
+### Three findings about the provider
+
+None came from a documentation page. All three came from a response.
+
+**`gemini-2.5-flash` is retired.** A new API key gets `404: no longer available to new users. Please
+update your code to use models/gemini-3.6-flash`. An adapter written from memory ships with that
+model name in it.
+
+**The free tier's daily quota selects the model, and neither the rate nor the price would have.**
+`gemini-3.6-flash` allows twenty requests *per day*:
+`GenerateRequestsPerDayPerProjectPerModel-FreeTier = 20`. A hundred and eighty segments at twenty a
+day is a nine-day copy library. `gemini-3.1-flash-lite` measured at fifteen requests a minute with a
+daily allowance large enough to write the whole thing several times over, costs a third as much per
+token, and answers about five times faster.
+
+**There is no `Retry-After` header.** A 429 carries the wait in the body as a `google.rpc.RetryInfo`
+— `"29s"`, `"0.194s"` — beside a `QuotaFailure` naming the limit that bound and its value. An
+implementation reading the header finds `null` and falls back to a guess that is slower than the
+wait actually needed and, when short, a second refusal. The adapter reads the body, and corrects its
+own pacing downward from what the server said.
+
+And one that would otherwise have been a silent 23× under-report: **thinking tokens are billed as
+output.** With no thinking configuration, a request for three SMS variants on `gemini-3.6-flash`
+spent **751 thinking tokens against 33 of answer** and truncated its own JSON by exhausting
+`maxOutputTokens`. At `thinkingLevel: "minimal"` it spent none. `usageMetadata.thoughtsTokenCount`
+is reported separately and appears only when non-zero, so code written against one observed response
+never sees it.
+
+### Caveats
+
+1. **Acceptance is not quality.** The gauntlet checks structure — placeholders present, no invented
+   amount, no URL, right script, within budget, nothing prohibited. It cannot check whether a
+   sentence is *good*, and it passed all six invented causes. A person reading the file is what
+   caught those, which is why the file is committed.
+2. **No customer has seen any of this.** Everything downstream is measured against `scoreMessage`,
+   whose weights are invented — see open question 18. A message naming the rail and the action
+   scores higher than one that does not because this project decided it should, not because anybody
+   observed it.
+3. **One model, one day, one prompt.** Nothing here compares providers, and "flash-lite's output is
+   not visibly worse than flash's" is an impression from reading both rather than a measurement. The
+   committed library is what lets somebody disagree.
+4. **Marathi and Tamil are the thinnest, and nobody here is a native speaker.** The script check
+   catches an answer in the wrong language; it cannot catch one that is grammatical nonsense in the
+   right one. That review has not happened.
+5. **Regenerating is neither free nor deterministic.** Sampling at temperature 1 is the point — the
+   variants have to differ for the bandit to have anything to test — so a regeneration produces
+   different copy, new variant ids, and a bandit that starts over. `promptHash` is what makes that
+   visible rather than silent.
 
 ---
 
