@@ -1,0 +1,219 @@
+/**
+ * Navigation, the settings sheet, and the buttons.
+ */
+
+/* ═══════════════════════════════════════════════════════════════════════
+   NAVBAR — the shell. Sections are peers reached from here; the settings
+   that used to fill this bar now live behind one button, because a bar of
+   controls reads as a control panel and this one has to read as a way in.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.nav {
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  background: var(--bg);
+  border-bottom: 3px solid var(--line);
+}
+.nav-inner {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 13px 22px;
+  display: flex;
+  align-items: center;
+  gap: 8px 18px;
+  flex-wrap: wrap;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 19px;
+  letter-spacing: 1px;
+  margin-right: 6px;
+}
+.brand canvas {
+  display: block;
+  width: 30px;
+  height: auto;
+  image-rendering: pixelated;
+}
+.brand b {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.nav-links {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+.nav-link {
+  font-size: 14px;
+  background: none;
+  color: var(--ink-dim);
+  border: 3px solid transparent;
+  padding: 10px 13px 8px;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+}
+.nav-link:hover {
+  color: var(--ink);
+  background: var(--panel);
+}
+.nav-link[aria-current="page"] {
+  color: var(--on-accent);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.nav-link.out {
+  color: var(--ink-dim);
+  border-bottom: none;
+}
+.nav-link.out::after {
+  content: " ↗";
+}
+
+.cog {
+  font-size: 14px;
+  background: var(--panel);
+  color: var(--ink);
+  border: 3px solid var(--line);
+  box-shadow: 3px 3px 0 var(--line);
+  padding: 11px 15px 9px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.cog:hover {
+  background: var(--panel-2);
+}
+.cog[aria-expanded="true"] {
+  background: var(--accent);
+  color: var(--on-accent);
+  border-color: var(--accent);
+}
+
+.sheet {
+  position: absolute;
+  right: 22px;
+  top: 100%;
+  z-index: 210;
+  width: min(320px, calc(100vw - 44px));
+  background: var(--panel);
+  border: 3px solid var(--line);
+  box-shadow: 6px 6px 0 var(--line);
+  padding: 18px;
+}
+.sheet[hidden] {
+  display: none;
+}
+.sheet .lbl {
+  margin-bottom: 9px;
+}
+.sheet .group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+.sheet .group:last-of-type {
+  margin-bottom: 0;
+}
+
+.btn {
+  font-size: 13px;
+  background: var(--panel-2);
+  color: var(--ink);
+  border: 3px solid var(--line);
+  box-shadow: 3px 3px 0 var(--line);
+  padding: 8px 10px 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn:hover {
+  background: var(--line);
+}
+.btn:active {
+  transform: translate(3px, 3px);
+  box-shadow: none;
+}
+.btn[aria-pressed="true"] {
+  background: var(--accent);
+  color: var(--on-accent);
+  border-color: var(--accent);
+  box-shadow: 3px 3px 0 var(--ink-dim);
+}
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.chips {
+  display: flex;
+}
+.chips i {
+  width: 6px;
+  height: 12px;
+  display: block;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   VIEWS — one document, four worlds. Switching resets scroll, because a
+   view that opens halfway down is a view the reader has to re-find.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.view[hidden] {
+  display: none;
+}
+.view-head {
+  padding: 70px 0 34px;
+}
+.view-head h2 {
+  font-size: clamp(23px, 3.2vw, 34px);
+}
+.view-head h2 span {
+  color: var(--accent);
+}
+.view-head p {
+  color: var(--ink-dim);
+  max-width: 58ch;
+  margin-top: 18px;
+  font-size: 26px;
+}
+
+/* ── The tab transition ──────────────────────────────────────────────────
+   A full-screen overlay above every other layer, and inert to the pointer:
+   it covers the swap, it never intercepts a click meant for the page. */
+
+.wipe {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  pointer-events: none;
+  display: grid;
+  place-items: center;
+}
+.wipe[hidden] {
+  display: none;
+}
+.wipe canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+}
+.wipe-name {
+  position: relative;
+  font-family: "Silkscreen", monospace;
+  font-weight: 700;
+  font-size: clamp(15px, 2.4vw, 26px);
+  letter-spacing: 4px;
+  color: var(--ink);
+  opacity: 0;
+  transform: translateY(15vh);
+}

@@ -1,0 +1,153 @@
+/**
+ * The ground, the type scale, and the pieces every view shares.
+ */
+
+* {
+  box-sizing: border-box;
+  border-radius: 0;
+}
+html {
+  background: var(--bg);
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  margin: 0;
+  padding: 0;
+  font-family: "VT323", ui-monospace, "SF Mono", Consolas, monospace;
+  font-size: 27px;
+  line-height: 1.42;
+  image-rendering: pixelated;
+  -webkit-font-smoothing: none;
+  overflow-x: hidden;
+}
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.17) 0px,
+    rgba(0, 0, 0, 0.17) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+[data-scheme="blueprint"] body::after {
+  opacity: 0.45;
+}
+
+.wrap {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 22px;
+}
+
+h1,
+h2,
+h3,
+h4,
+.lbl,
+.btn,
+th,
+.tagline,
+.cue,
+.nav-link,
+.brand {
+  font-family: "Silkscreen", "VT323", monospace;
+  font-weight: 700;
+}
+h1,
+h2,
+h3,
+h4 {
+  margin: 0;
+  text-wrap: balance;
+  line-height: 1.35;
+}
+.panel h3 {
+  font-size: 13px;
+  color: var(--accent);
+  letter-spacing: 0.5px;
+  margin-bottom: 14px;
+}
+.panel > p {
+  font-size: 23px;
+  color: var(--ink-dim);
+  line-height: 1.45;
+}
+p {
+  margin: 0 0 16px;
+}
+
+p:last-child {
+  margin-bottom: 0;
+}
+a {
+  color: var(--accent);
+  text-decoration: none;
+  border-bottom: 2px solid var(--accent);
+}
+a:focus-visible,
+.btn:focus-visible,
+.nav-link:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+.hot {
+  color: var(--accent);
+}
+.lbl {
+  font-size: 15px;
+  color: var(--ink-dim);
+  display: block;
+  margin-bottom: 12px;
+  letter-spacing: 0.5px;
+}
+.lbl::before {
+  content: "▚ ";
+  color: var(--accent);
+}
+
+.panel {
+  background: var(--panel);
+  border: 3px solid var(--line);
+  box-shadow: 5px 5px 0 var(--line);
+  padding: 22px;
+  clip-path: polygon(
+    6px 0,
+    calc(100% - 6px) 0,
+    100% 6px,
+    100% calc(100% - 6px),
+    calc(100% - 6px) 100%,
+    6px 100%,
+    0 calc(100% - 6px),
+    0 6px
+  );
+}
+.panel.lit {
+  border-color: var(--accent);
+  box-shadow: 5px 5px 0 var(--accent);
+}
+.panel.flat {
+  box-shadow: none;
+}
+
+.aside {
+  font-size: 23px;
+  color: var(--ink-dim);
+  max-width: 42ch;
+  line-height: 1.48;
+  margin: 16px 0 0;
+  padding-left: 13px;
+  border-left: 3px solid var(--line);
+}
+.aside b {
+  color: var(--ink);
+  font-weight: 400;
+}

@@ -1,0 +1,511 @@
+/**
+ * The case view: hero, prologue, question posters, evidence acts, closing band.
+ */
+
+/* ═══════════════════════════════════════════════════════════════════════
+   THE CASE — hero, a short prologue, then four questions. Each question
+   owns a full screen before any evidence for it appears.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.hero {
+  position: relative;
+  min-height: calc(100vh - 70px);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  padding: 56px 22px 92px;
+}
+.hero > canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  image-rendering: pixelated;
+  z-index: 0;
+}
+.hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: radial-gradient(
+    ellipse 58% 46% at 50% 44%,
+    color-mix(in srgb, var(--bg) 76%, transparent) 0%,
+    color-mix(in srgb, var(--bg) 46%, transparent) 58%,
+    transparent 100%
+  );
+}
+.hero-copy {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  max-width: 800px;
+}
+h1 {
+  font-size: clamp(24px, 3.9vw, 41px);
+  line-height: 1.5;
+  margin: 0 auto 26px;
+  max-width: 22ch;
+}
+h1 em {
+  font-style: normal;
+  color: var(--accent);
+  text-shadow: var(--glow);
+}
+.sub {
+  font-size: 30px;
+  color: var(--ink-dim);
+  max-width: 52ch;
+  margin: 0 auto;
+}
+.sub b {
+  color: var(--ink);
+  font-weight: 400;
+}
+
+.cue {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 26px;
+  z-index: 2;
+  font-size: 11px;
+  color: var(--ink-dim);
+  text-align: center;
+}
+.cue i {
+  display: block;
+  margin-top: 8px;
+  font-style: normal;
+  color: var(--accent);
+  animation: nudge 1.6s steps(3, end) infinite;
+}
+@keyframes nudge {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(5px);
+  }
+}
+
+.act-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+  gap: 40px;
+  align-items: start;
+  padding-top: 3vh;
+}
+.art {
+  position: sticky;
+  top: 116px;
+}
+.frame {
+  position: relative;
+  line-height: 0;
+  border: 3px solid var(--line);
+  box-shadow: 6px 6px 0 var(--line);
+  background: var(--bg);
+}
+.frame canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  image-rendering: pixelated;
+}
+.frame.lit {
+  border-color: var(--accent);
+  box-shadow: 6px 6px 0 var(--accent);
+}
+.frame-cap {
+  line-height: 1.4;
+  font-family: "Silkscreen", monospace;
+  font-size: 13px;
+  color: var(--ink-dim);
+  background: var(--panel);
+  border-top: 3px solid var(--line);
+  padding: 9px 12px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+.frame-cap b {
+  color: var(--accent);
+  font-weight: 700;
+}
+.tagline {
+  position: absolute;
+  z-index: 3;
+  font-family: "Silkscreen", monospace;
+  font-size: 12px;
+  line-height: 1.35;
+  font-weight: 700;
+  color: var(--ink-dim);
+  background: color-mix(in srgb, var(--bg) 78%, transparent);
+  padding: 3px 5px;
+  pointer-events: none;
+  white-space: nowrap;
+}
+.tagline b {
+  color: var(--accent);
+  font-weight: 700;
+}
+.tagline.bad b {
+  color: var(--bad);
+}
+.tagline.good b {
+  color: var(--good);
+}
+
+.steps {
+  padding: 1vh 0 4vh;
+}
+.step {
+  min-height: 34vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  opacity: 0.26;
+  transition: opacity 0.2s linear;
+}
+.step.beat {
+  min-height: 24vh;
+}
+.step.hold {
+  min-height: 52vh;
+}
+.step[data-on] {
+  opacity: 1;
+}
+.step .tag {
+  font-family: "Silkscreen", monospace;
+  font-size: 14px;
+  color: var(--accent);
+  display: block;
+  margin-bottom: 12px;
+}
+.step p {
+  font-size: clamp(30px, 3.5vw, 46px);
+  color: var(--ink);
+  max-width: 22ch;
+  line-height: 1.22;
+  margin: 0;
+}
+.step p.huge {
+  font-size: clamp(37px, 5vw, 64px);
+  line-height: 1.1;
+  max-width: 15ch;
+}
+.step p em,
+.step p b {
+  font-style: normal;
+  font-weight: 400;
+  color: var(--accent);
+  text-shadow: var(--glow);
+}
+.step .aside {
+  font-size: 23px;
+}
+
+@media (max-width: 900px) {
+  .act-grid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+  .art {
+    top: 72px;
+    padding-top: 12px;
+    background: var(--bg);
+    z-index: 5;
+  }
+  .step {
+    min-height: 42vh;
+  }
+  .step.beat {
+    min-height: 28vh;
+  }
+  .step.hold {
+    min-height: 56vh;
+  }
+}
+
+/* ── The question, as one full screen ────────────────────────────────
+   Art behind, question on top, nothing else. It exists to make you stop.
+   No transform, no pinning, no axis change: the section that was doing all
+   three is the section that broke, and it was never the part that worked. */
+
+.qcard {
+  position: relative;
+  min-height: 78vh;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  padding: 56px 22px;
+  border-top: 3px solid var(--line);
+}
+.qcard > canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  image-rendering: pixelated;
+  z-index: 0;
+  opacity: 0.5;
+}
+.qcard::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: radial-gradient(
+    ellipse 72% 60% at 50% 50%,
+    color-mix(in srgb, var(--bg) 94%, transparent) 0%,
+    color-mix(in srgb, var(--bg) 74%, transparent) 58%,
+    transparent 100%
+  );
+}
+.qcard-copy {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  max-width: 21ch;
+}
+.qnum {
+  font-family: "Silkscreen", monospace;
+  font-size: 15px;
+  color: var(--accent);
+  display: block;
+  margin-bottom: 28px;
+  letter-spacing: 2px;
+}
+.qtext {
+  font-family: "VT323", monospace;
+  font-size: clamp(40px, 7vw, 78px);
+  line-height: 1.12;
+  color: var(--ink);
+  margin: 0;
+}
+.qtext::before {
+  content: "“";
+  color: var(--accent);
+}
+.qtext::after {
+  content: "”";
+  color: var(--accent);
+}
+
+.more {
+  margin-top: 30px;
+  font-family: "Silkscreen", monospace;
+  font-size: 14px;
+  letter-spacing: 0.5px;
+  background: none;
+  color: var(--ink-dim);
+  border: 3px solid var(--line);
+  padding: 10px 14px 8px;
+  cursor: pointer;
+}
+.more:hover {
+  color: var(--on-accent);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+/* ── What Kairos is ──────────────────────────────────────────────────────
+   The orientation band. One paragraph, one diagram, and the two lists that
+   between them define the product: what a mandate grants, and what it
+   withholds. */
+
+.lede {
+  font-size: clamp(24px, 2.5vw, 32px);
+  color: var(--ink);
+  line-height: 1.34;
+  max-width: 27ch;
+  margin: 0;
+}
+
+/* The opening row: what it is on the left, the diagram of where it sits on the right. Aligned to
+   the centre rather than the top, because a paragraph and a picture of unequal height look
+   deliberate together and ragged apart. */
+.what-top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.12fr);
+  gap: 56px;
+  align-items: center;
+}
+.what-top .art {
+  position: static;
+}
+
+/* The two halves of the mandate, side by side underneath. Wide gap on purpose: using space well is
+   not the same as filling it, and these two lists are meant to be read against each other. */
+.gates {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 56px;
+  margin-top: 66px;
+}
+.gates-note {
+  font-size: 21px;
+  color: var(--ink-dim);
+  line-height: 1.45;
+  max-width: 58ch;
+  margin: 34px 0 0;
+  padding-top: 22px;
+  border-top: 3px solid var(--line);
+}
+
+.lede em {
+  font-style: normal;
+  color: var(--accent);
+  text-shadow: var(--glow);
+}
+
+/* The two halves of the definition, and they carry equal weight: one names the authority, the
+   other names the bounds, and the bounds are the product. */
+.gate-head {
+  font-size: 22px;
+  letter-spacing: 1px;
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 3px solid var(--line);
+}
+.gate-head.yes {
+  color: var(--accent);
+}
+.gate-head.no {
+  color: var(--bad);
+}
+.rule-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+}
+.rule-list li {
+  font-size: 21px;
+  line-height: 1.35;
+  color: var(--ink-dim);
+  padding-left: 27px;
+  position: relative;
+}
+.rule-list li::before {
+  position: absolute;
+  left: 0;
+  top: 1px;
+  font-family: "Silkscreen", monospace;
+  font-size: 13px;
+}
+.rule-list.yes li::before {
+  content: "▸";
+  color: var(--accent);
+}
+.rule-list.no li::before {
+  content: "×";
+  color: var(--bad);
+}
+.rule-list.no li {
+  color: var(--ink);
+}
+
+@media (max-width: 900px) {
+  .what-top,
+  .gates {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+  .gates {
+    margin-top: 40px;
+  }
+  .lede {
+    max-width: 34ch;
+  }
+}
+
+/* ── The pitch ───────────────────────────────────────────────────────────
+   These three lines are the selling points, so they are set as headlines
+   rather than as card labels. A thirteen-pixel label above a large number
+   makes the number the argument; it is not — the sentence is. */
+
+.sell {
+  font-family: "VT323", monospace;
+  font-weight: 400;
+  font-size: clamp(27px, 2.8vw, 36px);
+  line-height: 1.15;
+  color: var(--ink);
+  letter-spacing: 0;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 3px solid var(--line);
+  max-width: 15ch;
+}
+.panel.lit .sell {
+  border-bottom-color: var(--accent);
+}
+
+/* The definition of a rail, which the rest of the site assumes and nobody
+   arriving here has. */
+.defn {
+  font-size: 21px;
+  color: var(--ink-dim);
+  line-height: 1.48;
+  margin: 26px 0 0;
+  padding-left: 15px;
+  border-left: 3px solid var(--accent);
+}
+.defn b {
+  color: var(--ink);
+  font-weight: 400;
+}
+
+/* Provenance: what produced every figure on the page. */
+.facts {
+  list-style: none;
+  margin: 0 0 18px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+.facts li {
+  font-size: 20px;
+  line-height: 1.4;
+  color: var(--ink-dim);
+  padding-left: 17px;
+  border-left: 3px solid var(--line);
+}
+.facts li b {
+  color: var(--accent);
+  font-weight: 400;
+}
+
+/* ── Section rule ────────────────────────────────────────────────────────
+   A divider carrying the mark. Cheaper than a decorative band and it does a
+   second job: the reader meets the logo half a dozen times on the way down
+   without it ever being an advertisement. */
+
+.seam {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin: 8px 0 44px;
+}
+.seam::before,
+.seam::after {
+  content: "";
+  flex: 1;
+  height: 3px;
+  background: var(--line);
+}
+.seam canvas {
+  display: block;
+  width: 26px;
+  height: auto;
+  image-rendering: pixelated;
+  flex: none;
+}

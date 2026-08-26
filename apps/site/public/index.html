@@ -1,0 +1,772 @@
+<!doctype html>
+<html lang="en" data-scheme="razorpay">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kairos — bounded autonomy for payment recovery</title>
+<meta name="description" content="Kairos reorders live checkouts and spends real money, and nobody approves it. Four questions, each answered with a measured number and a regression band.">
+<meta name="color-scheme" content="dark light">
+
+<link rel="icon" href="assets/icons/mark.svg" type="image/svg+xml">
+<link rel="icon" href="assets/icons/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+
+<meta property="og:title" content="Kairos — bounded autonomy for payment recovery">
+<meta property="og:description" content="Four questions you would ask before letting software spend your money without asking.">
+<meta property="og:image" content="assets/icons/mark-512.png">
+<meta property="og:type" content="website">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=VT323&display=swap">
+
+<link rel="stylesheet" href="assets/styles/tokens.css">
+<link rel="stylesheet" href="assets/styles/base.css">
+<link rel="stylesheet" href="assets/styles/chrome.css">
+<link rel="stylesheet" href="assets/styles/case.css">
+<link rel="stylesheet" href="assets/styles/pieces.css">
+<link rel="stylesheet" href="assets/styles/console.css">
+<link rel="stylesheet" href="assets/styles/reference.css">
+
+<script type="module" src="app/main.js"></script>
+</head>
+<body>
+
+<!-- ══════════════════ NAVBAR ══════════════════ -->
+<nav class="nav">
+  <div class="nav-inner">
+    <span class="brand">
+      <canvas id="c-logo" width="40" height="56" role="img"
+              aria-label="Kairos logo: the letter K drawn as a railway semaphore signal, its upper arm inclined to clear."></canvas>
+      KAIROS
+    </span>
+    <div class="nav-links" id="nav-links">
+      <button type="button" class="nav-link" data-view="case" aria-current="page">THE CASE</button>
+      <button type="button" class="nav-link" data-view="console">CONSOLE</button>
+      <button type="button" class="nav-link" data-view="how">HOW IT WORKS</button>
+      <button type="button" class="nav-link" data-view="benchmarks">BENCHMARKS</button>
+      <a class="nav-link out" id="demo-link" href="https://github.com/AmeyaBorkar/kairos#demo" target="_blank" rel="noopener">DEMO</a>
+    </div>
+    <button type="button" class="cog" id="cog" aria-expanded="false" aria-controls="sheet">⚙ SETTINGS</button>
+  </div>
+
+  <div class="sheet" id="sheet" hidden>
+    <span class="lbl">PALETTE</span>
+    <div class="group" id="palette-group">
+      <button type="button" class="btn" data-set="razorpay" aria-pressed="true"><span class="chips"><i style="background:#060f24"></i><i style="background:#3395ff"></i><i style="background:#e2ecff"></i></span>RAZORPAY</button>
+      <button type="button" class="btn" data-set="amber" aria-pressed="false"><span class="chips"><i style="background:#140f08"></i><i style="background:#ff9f1c"></i><i style="background:#f5cf80"></i></span>AMBER</button>
+      <button type="button" class="btn" data-set="phosphor" aria-pressed="false"><span class="chips"><i style="background:#050c06"></i><i style="background:#b6ff3c"></i><i style="background:#86f78f"></i></span>PHOSPHOR</button>
+      <button type="button" class="btn" data-set="ledger" aria-pressed="false"><span class="chips"><i style="background:#12110f"></i><i style="background:#cf9445"></i><i style="background:#ece6da"></i></span>LEDGER</button>
+      <button type="button" class="btn" data-set="blueprint" aria-pressed="false"><span class="chips"><i style="background:#d5dee7"></i><i style="background:#0b5fc0"></i><i style="background:#0d2032"></i></span>BLUEPRINT</button>
+      <button type="button" class="btn" data-set="cga" aria-pressed="false"><span class="chips"><i style="background:#08080f"></i><i style="background:#ff4fd8"></i><i style="background:#4fe8c8"></i></span>CGA</button>
+    </div>
+    <span class="lbl">PIXEL SIZE</span>
+    <div class="group" id="pixel-group">
+      <button type="button" class="btn" data-px="1" aria-pressed="true">FINE</button>
+      <button type="button" class="btn" data-px="1.6" aria-pressed="false">CHUNKY</button>
+      <button type="button" class="btn" data-px="2.4" aria-pressed="false">BLOCKY</button>
+    </div>
+    <span class="lbl">TAB TRANSITION</span>
+    <div class="group" id="wipe-group">
+      <button type="button" class="btn" data-wipe="snap" aria-pressed="false">SNAP · 260ms</button>
+      <button type="button" class="btn" data-wipe="moment" aria-pressed="true">MOMENT · 400ms</button>
+      <button type="button" class="btn" data-wipe="beat" aria-pressed="false">BEAT · 600ms</button>
+      <button type="button" class="btn" data-wipe="off" aria-pressed="false">OFF</button>
+    </div>
+  </div>
+</nav>
+
+<!-- The aperture: the mark closing over the screen between views. Above every other layer, and
+     inert to the pointer — it covers the swap, it never eats a click meant for the page. -->
+<div class="wipe" id="wipe" hidden aria-hidden="true">
+  <canvas id="c-wipe"></canvas>
+  <span class="wipe-name" id="wipe-name"></span>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     VIEW · THE CASE
+     ══════════════════════════════════════════════════════════════════════ -->
+<main class="view" id="view-case">
+
+<header class="hero">
+  <canvas id="c-hero" width="320" height="200" role="img"
+          aria-label="Pixel art: an electric train crossing a night city from left to right at 14:14 — pantograph up on the overhead wire, headlight throwing a beam down the rail, lit coaches behind it. Ahead of the train a signal stands at danger."></canvas>
+  <div class="hero-copy">
+    <h1>You are about to let software spend your money <em>without asking</em>.</h1>
+    <p class="sub">Kairos catches a failing payment method in ninety seconds, steers live checkouts off it,
+       and recovers the customers already lost. <b>Four questions first.</b></p>
+  </div>
+  <div class="cue">SCROLL<i>▼</i></div>
+</header>
+
+<!-- ── WHAT IT IS ────────────────────────────────────────────────────
+     Two rows, both of them roomy. What it is on the left with the diagram
+     beside it; then the two halves of the mandate, side by side, underneath.
+     ── -->
+<section class="wrap strip" style="margin-bottom:82px">
+  <span class="lbl">WHAT KAIROS IS</span>
+
+  <div class="what-top">
+    <div>
+      <p class="lede">A payment-health defence that runs for one merchant, under a
+         <em class="hot">mandate</em> that merchant signed — a sealed document setting out exactly
+         what it may do with their money, and what it may not.</p>
+
+      <p class="defn"><b>A payment method is one way to pay through one bank</b> — netbanking through
+         HDFC, UPI through SBI, a card on one network. A busy merchant offers dozens of them, and any
+         single one can start failing on its own while every other one looks perfectly healthy.</p>
+    </div>
+
+    <div class="art">
+      <div class="frame">
+        <canvas id="c-placement" width="320" height="150" role="img"
+                aria-label="Diagram: the payment attempt stream enters Kairos, which reaches out to Checkout, messaging, retries and the ledger. Beneath it a sealed mandate is tied into the frame, bounding everything it can do."></canvas>
+        <div class="tagline" style="left:1.5%;top:29%">PAYMENT ATTEMPTS</div>
+        <div class="tagline" style="left:35%;top:6%"><b>KAIROS</b></div>
+        <div class="tagline" style="right:13%;top:24%">CHECKOUT</div>
+        <div class="tagline" style="right:13%;top:35%">MESSAGING</div>
+        <div class="tagline" style="right:13%;top:46%">RETRY</div>
+        <div class="tagline good" style="right:13%;top:56%"><b>LEDGER</b></div>
+        <div class="tagline" style="left:6%;bottom:6%">SEALED MANDATE</div>
+      </div>
+      <div class="frame-cap"><span>WHERE IT SITS</span><span id="placement-cap">UNBOUNDED</span></div>
+    </div>
+  </div>
+
+  <div class="gates">
+    <div>
+      <h3 class="gate-head yes">IT MAY</h3>
+      <ul class="rule-list yes">
+        <li>Reorder a live checkout — move a failing method down, or off</li>
+        <li>Send a message, on the channel the customer last used</li>
+        <li>Retry a payment with nobody present</li>
+        <li>Do all of it across a fleet, concurrently</li>
+      </ul>
+    </div>
+    <div>
+      <h3 class="gate-head no">IT CANNOT</h3>
+      <ul class="rule-list no">
+        <li>Spend past the campaign budget — not by one paisa</li>
+        <li>Contact anyone past the cap: three in seven days</li>
+        <li>Act during quiet hours, 21:00 to 08:00 IST</li>
+        <li>Run at all while the kill switch is engaged</li>
+      </ul>
+    </div>
+  </div>
+
+  <p class="gates-note">The left column is what a mandate grants. The right is what it withholds —
+     and the right column is the product.</p>
+</section>
+
+<div class="seam" aria-hidden="true"><canvas class="c-seam" width="16" height="16"></canvas></div>
+
+<!-- ── PROLOGUE ──────────────────────────────────────────────────────── -->
+<section class="act wrap" data-act="pro">
+  <div class="act-grid">
+    <div class="art">
+      <div class="frame">
+        <canvas id="c-street" width="320" height="170" role="img"
+                aria-label="Pixel art: a lit shopfront at night. Customers walk past; some stop at the counter, a red cross appears, and they leave greyed out and empty-handed."></canvas>
+        <div class="tagline" style="left:6%;top:6%">CLOCK <b id="clock">14:14</b></div>
+        <div class="tagline bad" style="right:6%;top:6%">WALKED AWAY <b id="lost">0</b></div>
+        <div class="tagline" style="left:34%;bottom:26%">↑ CARD MACHINE</div>
+      </div>
+      <div class="frame-cap"><span>ONE SHOP · ONE AFTERNOON</span><span id="street-cap">TRADING NORMALLY</span></div>
+    </div>
+    <div class="steps">
+      <div class="step beat"><p>A bank's payment method starts failing. <em>One payment in three.</em></p></div>
+      <div class="step beat"><p>Customers tap Pay, get an error, and leave.</p></div>
+      <div class="step beat"><p>Nobody notices for <em>forty minutes</em>.</p></div>
+      <div class="step beat"><p>Kairos sees it in <em>93 seconds</em>.</p></div>
+      <div class="step beat"><p>Which was never the hard part.</p></div>
+    </div>
+  </div>
+</section>
+
+<div class="seam" aria-hidden="true"><canvas class="c-seam" width="16" height="16"></canvas></div>
+
+<!-- ── WHAT IT'S WORTH ───────────────────────────────────────────────
+     The business case. Rates rather than rupee totals throughout: a total
+     belongs to whatever population produced it, and nobody reading this has
+     that population. A rate travels to a merchant of any size. ── -->
+<section class="wrap strip" style="margin-bottom:76px">
+  <span class="lbl">WHAT IT'S WORTH TO THE BUSINESS</span>
+  <p class="lede">Three separate pieces of money — and only one of them is the one every recovery
+     tool talks about.</p>
+
+  <div class="grid-3">
+    <div class="panel">
+      <h3 class="sell">The loss you never take</h3>
+      <div class="stat"><span class="n">11–35</span><span class="cap">percentage points fewer failed
+        payments, among the customers who would have landed on the broken method</span></div>
+      <p class="aside">The range is two different incidents: UPI through one bank failing 42% of its attempts, and
+        netbanking through another failing 55%. The worse a method is behaving, the more there is to save.</p>
+    </div>
+
+    <div class="panel lit">
+      <h3 class="sell">The money you get back</h3>
+      <div class="stat"><span class="n">75×</span><span class="cap">recovered for every rupee spent
+        trying — and that rupee already prices every customer lost to an opt-out</span></div>
+      <p class="aside">Counted as <b>incremental</b>: what came back <em class="hot">because of</em>
+        the system, on top of what would have come back on its own. Most dunning numbers are gross,
+        which makes them roughly five times larger and not a measurement.</p>
+    </div>
+
+    <div class="panel">
+      <h3 class="sell">The customers you keep</h3>
+      <div class="stat"><span class="n">72%</span><span class="cap">fewer opt-outs than a fixed
+        reminder schedule — which sent twice as many messages and still recovered less</span></div>
+      <p class="aside">Against that schedule: <b>9% more money on 54% fewer messages</b>. An opt-out
+        is permanent, so the channel is an asset you spend, and almost nothing prices it.</p>
+    </div>
+  </div>
+
+  <div class="strip" style="margin-top:48px">
+    <span class="lbl">AND THE REASON IT CAN RUN WITH NOBODY WATCHING</span>
+    <p class="payoff">The obvious alternative doesn't just overspend. It messages one customer
+      <em class="no">fourteen times</em>.</p>
+    <div class="scroll" style="margin-top:22px">
+      <table>
+        <thead>
+          <tr>
+            <th>same budget · 64 workers running at once</th>
+            <th class="num">Kairos</th>
+            <th class="num">a plain <code>if (spent &lt; budget)</code> check</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>of the budget, spent</td><td class="num">99.6%</td><td class="num">120%</td></tr>
+          <tr><td>over budget</td><td class="num">nothing</td><td class="num">one fifth of it again</td></tr>
+          <tr><td>times it broke the contact cap</td><td class="num">0</td><td class="num">271</td></tr>
+          <tr class="win"><td>most messages to any one person, against a cap of 3</td><td class="num">3</td><td class="num">14</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="aside" style="max-width:80ch">A merchant can leave this running because it cannot spend
+      their money twice or burn a customer they will need next month. <b>That is the whole economic
+      unlock:</b> no approval queue. An approval queue is what makes every other version of this too
+      expensive to operate, because it needs a person who is awake.</p>
+  </div>
+</section>
+
+<div class="seam" aria-hidden="true"><canvas class="c-seam" width="16" height="16"></canvas></div>
+
+<!-- ── WHAT IT DOES ──────────────────────────────────────────────────── -->
+<section class="wrap strip" style="margin-bottom:74px">
+  <span class="lbl">WHAT IT DOES ABOUT IT — THREE JOBS</span>
+  <div class="grid-3">
+    <div class="panel">
+      <div class="frame" style="margin:-6px -6px 18px;box-shadow:none;border-width:2px">
+        <canvas id="c-points" width="160" height="96" role="img" aria-label="Pixel art: railway points swinging traffic off a broken track onto a healthy one."></canvas>
+        <div class="tagline bad" style="left:56%;top:22%">BROKEN</div>
+        <div class="tagline good" style="left:44%;bottom:22%">HEALTHY</div>
+      </div>
+      <h3>PREVENTION</h3>
+      <p>Moves customers off the failing method before they ever see an error.</p>
+    </div>
+    <div class="panel">
+      <div class="frame" style="margin:-6px -6px 18px;box-shadow:none;border-width:2px">
+        <canvas id="c-platform" width="160" height="96" role="img" aria-label="Pixel art: stranded passengers waiting on a platform as a later train arrives for them."></canvas>
+        <div class="tagline" style="left:6%;top:8%">STRANDED</div>
+        <div class="tagline good" style="right:6%;bottom:10%">A LATER TRAIN</div>
+      </div>
+      <h3>RECOVERY</h3>
+      <p>Knows <em class="hot">why</em> each payment died. An expired card needs a fix-link, not a retry.</p>
+    </div>
+    <div class="panel">
+      <div class="frame" style="margin:-6px -6px 18px;box-shadow:none;border-width:2px">
+        <canvas id="c-board" width="160" height="96" role="img" aria-label="Pixel art: a split-flap departure board flipping the same message between four scripts."></canvas>
+        <div class="tagline" style="right:6%;top:8%">FLIPPING</div>
+      </div>
+      <h3>LANGUAGE</h3>
+      <p>468 message variants in four languages, written once per <em class="hot">situation</em>.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ── Q1 ────────────────────────────────────────────────────────────── -->
+<section class="qcard">
+  <canvas id="c-q1" width="320" height="160" aria-hidden="true"></canvas>
+  <div class="qcard-copy">
+    <span class="qnum">QUESTION 01 OF 04</span>
+    <p class="qtext">How do I know it won't overspend?</p>
+  </div>
+</section>
+
+<section class="act wrap" data-act="q1">
+  <div class="act-grid">
+    <div class="art">
+      <div class="frame" id="lock-frame">
+        <canvas id="c-lock" width="320" height="160" role="img"
+                aria-label="Pixel art of a railway interlocking frame. Pulling one lever slides a locking bar across, and a second lever is physically jammed by it."></canvas>
+        <div class="tagline" style="left:20%;top:8%">LEVER 1</div>
+        <div class="tagline" style="right:22%;top:8%">LEVER 2</div>
+        <div class="tagline bad" id="lock-tag" style="right:6%;bottom:12%">LEVER 2 · <b>FREE</b></div>
+      </div>
+      <div class="frame-cap"><span>MECHANICAL INTERLOCKING</span><span id="lock-cap">BOTH LEVERS FREE</span></div>
+    </div>
+    <div class="steps">
+      <div class="step beat"><p>₹500 budget. 64 workers at once.</p></div>
+      <div class="step beat"><p class="huge"><em>₹0</em> over.</p></div>
+      <div class="step">
+        <p>A plain budget check spends <em class="no">₹600</em>.</p>
+        <button type="button" class="more" data-goto="benchmarks">THE SPEND BENCHMARK →</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Q2 ────────────────────────────────────────────────────────────── -->
+<section class="qcard">
+  <canvas id="c-q2" width="320" height="150" aria-hidden="true"></canvas>
+  <div class="qcard-copy">
+    <span class="qnum">QUESTION 02 OF 04</span>
+    <p class="qtext">How do I know it actually helped?</p>
+  </div>
+</section>
+
+<section class="act wrap" data-act="q2">
+  <div class="act-grid">
+    <div class="art">
+      <div class="frame">
+        <canvas id="c-holdout" width="320" height="150" role="img"
+                aria-label="Pixel art: two parallel tracks carrying identical traffic. One is switched away from a broken rail, the other is deliberately left alone, and a bracket measures the gap between them."></canvas>
+        <div class="tagline" style="left:5%;top:7%">TREATED</div>
+        <div class="tagline" style="left:5%;bottom:30%">HOLDOUT</div>
+        <div class="tagline good" id="holdout-tag" style="right:5%;bottom:8%">GAP <b>—</b></div>
+      </div>
+      <div class="frame-cap"><span>THE ONLY HONEST MEASUREMENT</span><span id="holdout-cap">BOTH ARMS EQUAL</span></div>
+    </div>
+    <div class="steps">
+      <div class="step beat"><p>A holdout is <em>always</em> kept back.</p></div>
+      <div class="step beat"><p>Counted as incremental, never gross.</p></div>
+      <div class="step">
+        <p class="huge"><em>9% more money</em> on half the messages.</p>
+        <button type="button" class="more" data-goto="benchmarks">ALL FIVE ARMS →</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Q3 ────────────────────────────────────────────────────────────── -->
+<section class="qcard">
+  <canvas id="c-q3" width="320" height="150" aria-hidden="true"></canvas>
+  <div class="qcard-copy">
+    <span class="qnum">QUESTION 03 OF 04</span>
+    <p class="qtext">How do I know what it did?</p>
+  </div>
+</section>
+
+<section class="act wrap" data-act="q3">
+  <div class="act-grid">
+    <div class="art">
+      <div class="frame">
+        <canvas id="c-box" width="320" height="150" role="img"
+                aria-label="Pixel art: the inside of a railway signal box. Four levers stand in a frame beneath a window on the night line. Nobody is at the frame."></canvas>
+        <div class="tagline" style="left:6%;top:8%">WINDOW ON THE LINE</div>
+        <div class="tagline" style="right:5%;bottom:8%">FOUR LEVERS · <b id="box-count">0</b> PULLED</div>
+      </div>
+      <div class="frame-cap"><span>SIGNAL BOX · UNMANNED</span><span id="box-cap">AT REST</span></div>
+    </div>
+    <div class="steps">
+      <div class="step beat"><p>Every action carries signed authority.</p></div>
+      <div class="step beat"><p>Every refusal <em>names the bound</em>.</p></div>
+      <div class="step">
+        <p class="huge">No figure without a record.</p>
+        <button type="button" class="more" data-goto="console">SCRUB A REAL RUN →</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Q4 ────────────────────────────────────────────────────────────── -->
+<section class="qcard">
+  <canvas id="c-q4" width="320" height="120" aria-hidden="true"></canvas>
+  <div class="qcard-copy">
+    <span class="qnum">QUESTION 04 OF 04 · THE ONE NOBODY ASKS</span>
+    <p class="qtext">What don't you know?</p>
+  </div>
+</section>
+
+<section class="act wrap" data-act="q4">
+  <div class="act-grid">
+    <div class="art">
+      <div class="frame">
+        <canvas id="c-chart" width="320" height="120" role="img"
+                aria-label="Pixel art: a chart recorder. The failure-rate trace spikes, returns to baseline, and the incident marker stays lit long after."></canvas>
+        <div class="tagline" style="left:5%;top:8%">NETBANKING · HDFC</div>
+        <div class="tagline" id="chart-tag" style="right:5%;top:8%">BASELINE</div>
+      </div>
+      <div class="frame-cap"><span>CHART RECORDER</span><span id="chart-cap">RATE 10% · QUIET</span></div>
+    </div>
+    <div class="steps">
+      <div class="step beat"><p>It opens an incident in three minutes.</p></div>
+      <div class="step beat"><p class="huge">It closes one <em class="no">six hours late</em>.</p></div>
+      <div class="step">
+        <p>Published, unfixed, asserted in a test.</p>
+        <button type="button" class="more" data-goto="benchmarks">OPEN QUESTION 19 →</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="close wrap">
+  <div class="close-grid">
+    <div>
+      <div class="frame">
+        <canvas id="c-signal" width="320" height="130" role="img"
+                aria-label="Pixel art: a semaphore signal at dawn. Its arm drops from horizontal to clear and the lamp changes from red to green."></canvas>
+        <div class="tagline" id="signal-tag" style="left:6%;bottom:12%">SIGNAL AT <b>DANGER</b></div>
+      </div>
+      <div class="frame-cap"><span>HOME SIGNAL · DAWN</span><span id="signal-cap">DANGER</span></div>
+    </div>
+    <div>
+      <span class="lbl">WHY THAT NAME</span>
+      <p class="close-line"><em>Chronos</em> is clock time. <em>Kairos</em> is the moment that still works.</p>
+      <p class="aside">Every dunning system in the world retries on chronos.</p>
+      <p style="margin:26px 0 0"><a id="repo-link" href="https://github.com/AmeyaBorkar/kairos" target="_blank" rel="noopener">github.com/AmeyaBorkar/kairos →</a></p>
+    </div>
+  </div>
+</section>
+</main>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     VIEW · CONSOLE
+     ══════════════════════════════════════════════════════════════════════ -->
+<main class="view wrap" id="view-console" hidden>
+  <div class="view-head">
+    <h2><span>02</span> &nbsp;THE OPERATOR CONSOLE</h2>
+    <p>Rail health, open incidents, which bound is binding, and the audit trail. Four sections, and deliberately no fifth — a console that grows a chart per available number becomes a thing nobody reads during an incident, which is the only time it matters.</p>
+  </div>
+
+  <div class="prov">
+    <span><b>RECORDED RUN</b></span>
+    <span>·</span>
+    <span id="prov-line">simulated traffic · seed 20260826 · replayed, not live</span>
+  </div>
+
+  <div class="deck" id="deck"></div>
+
+  <p class="aside" id="premise" style="max-width:76ch;margin:0 0 22px"></p>
+
+  <div class="transport">
+    <span class="clock" id="con-clock">--:--:--</span>
+    <input class="scrub" id="scrub" type="range" min="0" max="47" value="0" aria-label="Scrub through the recorded run">
+    <button type="button" class="btn" id="play">▶ PLAY</button>
+    <span class="tprogress" id="tprog">FRAME 1 / 48</span>
+  </div>
+
+  <div class="lcd" id="lcd">
+    <div><span>SIM CLOCK</span><b id="lcd-clock">--:--:--</b></div>
+    <div id="lcd-inc-wrap"><span>INCIDENTS OPEN</span><b id="lcd-inc">0</b></div>
+    <div><span>LEDGER RECORDS</span><b id="lcd-rec">0</b></div>
+    <div id="lcd-worst-wrap"><span>WORST RAIL</span><b id="lcd-worst">—</b></div>
+    <div><span>STEERED</span><b id="lcd-steer">0</b></div>
+    <div><span>REFUSALS</span><b id="lcd-ref">0</b></div>
+  </div>
+
+  <div class="con-grid">
+    <div>
+      <div class="panel flat" style="margin-bottom:22px">
+        <span class="lbl">RAIL HEALTH — WHAT THE DETECTOR BELIEVES</span>
+        <div class="rails" id="rails"></div>
+        <p class="aside" style="margin-top:16px">The bar under each rail is the detector's running statistic against its threshold. The simulator knows the ground truth; this panel deliberately does not show it, because an operator will never have that comparison.</p>
+      </div>
+
+      <div class="panel flat">
+        <span class="lbl">AUDIT TRAIL — NEWEST FIRST</span>
+        <div class="feed" id="feed"></div>
+        <div class="chain" id="chain">◆ LEDGER HASHES END TO END · <span id="rec-count">0</span> RECORDS</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="panel flat" style="margin-bottom:22px">
+        <span class="lbl">OPEN INCIDENTS</span>
+        <div id="incidents"></div>
+      </div>
+
+      <div class="panel flat" style="margin-bottom:22px">
+        <span class="lbl">BOUNDS IN FORCE</span>
+        <div id="bounds"></div>
+      </div>
+
+      <div class="panel flat">
+        <span class="lbl">RECOVERY</span>
+        <p class="aside" style="margin:0;border-left-color:var(--warn)">Not driven by this run. The recovery arm is measured in the benchmark, where it recovers <b>₹6,96,678</b> — but the console does not yet step it, so <b>contact-cap</b> and <b>campaign-budget</b> never bind here. That gap is why <b>budget-exhaustion</b> below never exhausts its ₹20: a steer reserves ₹3 and reconciles to zero.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="strip">
+    <span class="lbl">WHAT TO WATCH FOR</span>
+    <p id="watchfor" style="max-width:72ch;color:var(--ink-dim);font-size:21px"></p>
+  </div>
+</main>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     VIEW · ARCHITECTURE
+     ══════════════════════════════════════════════════════════════════════ -->
+<main class="view wrap" id="view-how" hidden>
+  <div class="view-head">
+    <h2><span>02</span> &nbsp;HOW IT WORKS</h2>
+    <p>One incident, from the minute a payment method starts failing to the minute the ledger closes on it. Everything
+       below happens without anybody approving anything — which is why the bounds matter more than the
+       capabilities.</p>
+  </div>
+
+  <span class="lbl">ONE INCIDENT, MINUTE BY MINUTE</span>
+  <ol class="timeline">
+    <li><b>14:14</b><span>Netbanking through HDFC starts failing about half its attempts. Nothing is down; it is
+      just losing every second customer.</span></li>
+    <li><b>14:15</b><span>The detector's statistic crosses its threshold and an incident opens.
+      <em class="hot">93 seconds</em> from the changepoint, which is the number the benchmark measures.</span></li>
+    <li><b>14:16</b><span>The controller proposes steering. It is a proposal, not an action: only the kernel
+      can authorise one.</span></li>
+    <li><b>14:16</b><span>Terminus checks the mandate, <em class="hot">reserves</em> 300 paise against the
+      campaign budget, and signs the record. The money is committed before it is spent.</span></li>
+    <li><b>14:18</b><span>Checkout reorders. UPI and cards move above netbanking for customers whose payment
+      would have landed on the failing method. A <em class="hot">holdout</em> is deliberately left on it.</span></li>
+    <li><b>14:41</b><span>The customers it did not save in time are classified by <em class="hot">why</em> they
+      failed — expired card, insufficient funds, issuer down. Only about one in eight can be retried
+      unattended; the rest need a message.</span></li>
+    <li><b>14:52</b><span>Messages compose from the library — the right words for that failure, on that method,
+      in a language the customer reads. No model is called here.</span></li>
+    <li class="stop"><b>15:30</b><span><em class="no">REFUSED.</em> A customer has already had three messages
+      in seven days. The contact cap binds and the send does not happen. The refusal is recorded with the
+      bound that caused it.</span></li>
+    <li><b>17:02</b><span>The method recovers. Steering is released and the reservation reconciles against what
+      was actually spent.</span></li>
+    <li><b>20:30</b><span>The campaign closes. Every reservation is reconciled, every action is signed, and
+      the ledger hashes end to end.</span></li>
+  </ol>
+  <p class="aside" style="max-width:76ch">Two of those steps are the whole argument. At 14:16 the money was
+    committed <b>before</b> it was spent, and at 15:30 something the system wanted to do simply did not happen.
+    <a href="#console" data-goto="console">Scrub a real run of this →</a></p>
+
+  <div class="strip">
+    <span class="lbl">WHERE THE MODEL IS — AND WHERE IT IS NOT</span>
+    <div class="grid-2">
+      <div class="panel lit">
+        <h4>OFF THE PATH · ONCE · ₹8.15</h4>
+        <p>A model writes the message library: <b>468 validated variants</b> across four languages, one call
+          per <em class="hot">situation</em> rather than per customer. 180 calls in total. The output is
+          committed to the repository and reviewed as a diff, like any other code.</p>
+        <p class="aside">It also writes the operator's explanations — and refuses to publish one if any figure
+          in it does not appear, character for character, in an audit record.</p>
+      </div>
+      <div class="panel">
+        <h4>ON THE PATH · NEVER</h4>
+        <p>At runtime, choosing what to send is a <b>lookup</b>, not a call. Nothing on the path where money
+          moves waits on a provider, a quota, or a sampled token.</p>
+        <p class="aside">A model you cannot reach at 14:14 cannot be prompt-injected, cannot rate-limit you
+          during the incident, and cannot invent a refund amount. That is not caution about AI; it is where
+          this particular tool is worth its latency and where it is not.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="strip">
+    <span class="lbl">THE PATH OF ONE ACTION</span>
+    <div class="scroll">
+      <div class="flow">
+        <span class="node">traffic</span><span class="arr">→</span>
+        <span class="node">detect</span><span class="arr">→</span>
+        <span class="node">policy</span><span class="arr">→</span>
+        <span class="node key">TERMINUS</span><span class="arr">→</span>
+        <span class="node">adapter</span><span class="arr">→</span>
+        <span class="node">ledger</span>
+      </div>
+    </div>
+    <p class="aside" style="max-width:74ch">Nothing skips Terminus. The policy layer <em class="hot">proposes</em>;
+      only the kernel can authorise, and it writes the record either way — an allowed action and a refusal
+      cost the same to audit.</p>
+  </div>
+
+  <div class="strip">
+    <span class="lbl">THE CODE — TWELVE PACKAGES</span>
+    <p class="swipe">◀ <b>DRAG</b> ▶ &nbsp;·&nbsp; TWELVE OF THEM, NONE OF THE CORE ONES IMPORTING A NETWORK CLIENT</p>
+    <div class="pkg hstrip">
+      <article><h4>@kairos/domain</h4><p>Money, ids, time, rails. Paise as a branded integer, so a rupee float cannot reach a budget.</p><span class="dep">depends on: nothing</span></article>
+      <article><h4>@kairos/detect</h4><p>One-sided CUSUM changepoint over a method's failure rate, with a frozen baseline and a rollup across slices.</p><span class="dep">depends on: domain</span></article>
+      <article class="core"><h4>@kairos/terminus</h4><p>The kernel. Sealed mandates, reservations, reconciliation, and a refusal that names its binding axis.</p><span class="dep">depends on: domain</span></article>
+      <article><h4>@kairos/policy</h4><p>Proposes steers. Declines when the failing method is no worse than where customers would land.</p><span class="dep">depends on: domain, detect</span></article>
+      <article><h4>@kairos/recover</h4><p>Classifies why each payment died and picks retry, fix-link or message accordingly.</p><span class="dep">depends on: domain, terminus, reason</span></article>
+      <article><h4>@kairos/reason</h4><p>The amortised copy library and the honesty check that verifies every figure against a record.</p><span class="dep">depends on: domain</span></article>
+      <article><h4>@kairos/explain</h4><p>Retrieve, redact, describe the bounds, ask — and refuse rather than caption.</p><span class="dep">depends on: domain, reason</span></article>
+      <article><h4>@kairos/ledger</h4><p>Hash-chained audit records, verified on read rather than remembered.</p><span class="dep">depends on: domain</span></article>
+      <article><h4>adapters/simulator</h4><p>Seeded traffic, rail degradations, a customer population with a language mix.</p><span class="dep">test surface only</span></article>
+      <article><h4>adapters/razorpay</h4><p>The real ports: Checkout ordering, messaging, retries. Template copy lives here as the control arm.</p><span class="dep">depends on: domain</span></article>
+      <article><h4>apps/bench</h4><p>Five arms, eight seeds, regression bands. The gate CI runs.</p><span class="dep">depends on: everything</span></article>
+      <article><h4>apps/console</h4><p>The read model behind the previous tab, plus <code>explain</code>.</p><span class="dep">depends on: everything</span></article>
+    </div>
+  </div>
+
+  <div class="strip">
+    <span class="lbl">RUN IT YOURSELF — NO API KEY REQUIRED</span>
+    <div class="grid-2">
+      <div>
+        <pre class="sh"><span class="c"># the console, against simulated traffic</span>
+<span class="p">$</span> export KAIROS_MANDATE_SECRET=$(openssl rand -hex 32)
+<span class="p">$</span> pnpm --filter @kairos/console run start
+<span class="p">$</span> curl localhost:8788/api/scenarios
+<span class="p">$</span> curl -X POST localhost:8788/api/step \
+    -H 'content-type: application/json' \
+    -d '{"ticks":20}'</pre>
+        <p class="aside">The client drives the clock rather than the server running a timer, so an incident can be stepped through by hand while recording.</p>
+      </div>
+      <div>
+        <pre class="sh"><span class="c"># why did it treat this one that way?</span>
+<span class="p">$</span> pnpm --filter @kairos/console run explain -- --list
+<span class="p">$</span> pnpm --filter @kairos/console run explain -- cas_9f21
+
+<span class="c"># the benchmark gate CI runs</span>
+<span class="p">$</span> pnpm bench:gate</pre>
+        <p class="aside"><code>explain</code> prints the audit records with or without a model. Prose is added only if one is configured <b>and</b> every figure in it came from a record.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="strip">
+    <span class="lbl">STANDING CONSTRAINTS</span>
+    <div class="grid-3">
+      <div class="panel"><h4 style="color:var(--accent);font-size:11px;margin-bottom:10px">NO INFERENCE ON THE MONEY PATH</h4><p style="font-size:19px;color:var(--ink-dim)">468 message variants are written once, offline, for ₹8.15 and committed as a reviewed diff. At runtime it is a lookup, not a call.</p></div>
+      <div class="panel"><h4 style="color:var(--accent);font-size:11px;margin-bottom:10px">CLEAN AND BISECTABLE</h4><p style="font-size:19px;color:var(--ink-dim)">Every commit builds, lints, typechecks and tests standalone — verified in a clean worktree, not just at HEAD.</p></div>
+      <div class="panel"><h4 style="color:var(--accent);font-size:11px;margin-bottom:10px">THE GATE IS THE SPEC</h4><p style="font-size:19px;color:var(--ink-dim)">Regression bands come from an eight-seed study. A change that moves a figure outside its band does not merge.</p></div>
+    </div>
+  </div>
+</main>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     VIEW · BENCHMARKS
+     ══════════════════════════════════════════════════════════════════════ -->
+<main class="view wrap" id="view-benchmarks" hidden>
+  <div class="view-head">
+    <h2><span>04</span> &nbsp;MEASURED, NOT ASSERTED</h2>
+    <p>Every figure here was produced by a seeded benchmark anybody can re-run, and carries a regression band derived from an eight-seed variance study. Nothing on this page is an estimate.</p>
+  </div>
+
+  <span class="lbl">DETECTION — TIMED FROM THE CHANGEPOINT, NOT THE ALARM</span>
+  <div class="grid-3">
+    <div class="panel"><div class="stat"><span class="n">93s</span><span class="cap">median detection latency</span></div></div>
+    <div class="panel"><div class="stat"><span class="n">83%</span><span class="cap">of degradations caught</span></div></div>
+    <div class="panel"><div class="stat"><span class="n">0.21</span><span class="cap">false alarms per hour — about one every five hours of healthy traffic</span></div></div>
+  </div>
+  <p class="aside" style="max-width:74ch">Measuring from the alarm rather than the changepoint would make any detector look instant. It is the single most common way this number is inflated.<br><br>The false-alarm rate rests on <b>one or two observed alarms</b> across the healthy runs, so the interval around it is wide — a later scorecard puts it at 0.14. Read it as <b>roughly one an evening</b>, not as two decimal places.</p>
+
+  <div class="strip">
+    <span class="lbl">SPEND — 64 CONCURRENT WORKERS AGAINST A ₹500 BUDGET</span>
+    <div class="grid-2">
+      <div class="panel lit"><div class="stat"><span class="n">₹0</span><span class="cap">overspend, Terminus</span></div></div>
+      <div class="panel"><div class="stat"><span class="n" style="color:var(--bad)">₹100</span><span class="cap">overspend, a plain budget check — 20% on ₹500, 185% on ₹60</span></div></div>
+    </div>
+
+    <div class="panel lit" style="margin-top:22px">
+      <span class="lbl">₹500 BUDGET · 64 CONCURRENT WORKERS · 4,000 CASUALTIES</span>
+      <div class="gauge-row">
+        <div class="gauge-head"><span>Terminus — reserve, then reconcile</span><b class="hot">₹500</b></div>
+        <div class="gauge"><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span></span><span></span></div>
+      </div>
+      <div class="gauge-row">
+        <div class="gauge-head"><span>a plain budget check</span><b style="color:var(--bad)">₹600</b></div>
+        <div class="gauge"><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="on"></span><span class="over"></span><span class="over"></span></div>
+      </div>
+      <p class="aside" style="max-width:78ch">A budget check is <b>if (spent + cost &gt; budget) return</b>. That is a rule, and rules race: two workers read the same number and both spend it. Terminus reserves before acting and reconciles against what actually happened — the software version of a locking bar that jams the conflicting lever. Not ₹524. Not "about ₹500."</p>
+    </div>
+  </div>
+
+  <div class="strip">
+    <span class="lbl">RECOVERY — FIVE ARMS, ONE POPULATION, ONE SEED</span>
+    <p class="aside" style="max-width:78ch;margin:0 0 20px">Every arm ran against the same simulated
+      merchant: <b>four hours of traffic, 300 payment attempts a minute, a pool of 12,000 customers</b>,
+      with a netbanking rail and a UPI rail degraded partway through. The rupee totals below are only
+      meaningful <b>against each other</b> — they belong to that population and to no real merchant.</p>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>arm</th><th class="num">incremental</th><th class="num">messages</th><th class="num">consent lost</th><th class="num">₹ per message</th></tr></thead>
+        <tbody>
+          <tr><td>do nothing</td><td class="num">—</td><td class="num">0</td><td class="num">0</td><td class="num">—</td></tr>
+          <tr><td>message everyone</td><td class="num">₹1,40,736</td><td class="num">5,556</td><td class="num">67</td><td class="num">₹25</td></tr>
+          <tr><td>fixed ladder</td><td class="num">₹6,41,102</td><td class="num">12,420</td><td class="num">155</td><td class="num">₹52</td></tr>
+          <tr><td>kairos · template copy</td><td class="num">₹6,32,030</td><td class="num">5,845</td><td class="num">54</td><td class="num">₹108</td></tr>
+          <tr class="win"><td>kairos · generated copy</td><td class="num">₹6,96,678</td><td class="num">5,719</td><td class="num">43</td><td class="num">₹122</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="aside" style="max-width:78ch"><b>Incremental</b> — gross, minus what came back unaided. The fixed ladder gets within 8% of Kairos by sending <b>more than twice</b> as many messages and losing <b>3.6×</b> the consent.</p>
+  </div>
+
+  <div class="strip">
+    <span class="lbl">THE FINDING WE DIDN'T WANT</span>
+    <div class="caveat" style="max-width:78ch">
+      Generated copy was expected to win on <b>writing</b> — naming the rail, saying what to do next. Swept against the readability weight it rests on, across four seeds, it wins on <b>readability alone</b>: at an illegibility penalty of 1.00 the advantage is <b>−₹1,076</b>, and its range straddles zero.
+      <br><br>
+      The generated column does not move across the sweep at all. We published the sweep rather than the headline.
+    </div>
+  </div>
+
+  <div class="strip">
+    <span class="lbl">WHAT WE DON'T KNOW — OPEN QUESTION 19</span>
+    <div class="caveat" style="max-width:78ch">
+      The detector opens an incident in about <b>three minutes</b> and closes one about <b>six hours</b> after the rail recovers. A one-sided CUSUM decays only while the rate is <b>below</b> the frozen baseline, so a rail returning to normal leaves the statistic plateaued — still above 10 against a clear threshold of 3.6, three hours later.
+      <br><br>
+      It is expensive: traffic stays steered off a healthy rail, and every retry waiting on the recovery edge is delayed. It is <b>not fixed</b>, because either repair re-baselines every published measurement on this page. So it is written down, and asserted in a test — which means it cannot be fixed quietly, and the day it is fixed every number here gets re-earned.
+    </div>
+  </div>
+
+  <div class="strip">
+    <span class="lbl">VARIANCE — WHY THE BANDS ARE THE WIDTH THEY ARE</span>
+    <div class="grid-2">
+      <div class="panel">
+        <h4 style="font-size:11px;color:var(--accent);margin-bottom:12px">recover.incrementalPaise</h4>
+        <div class="band"><span>cv</span><div class="track"><i style="left:36%;right:36%"></i><u style="left:50%"></u></div><span>4.18%</span></div>
+        <p class="aside" style="margin-top:14px">Tight enough that a real regression is visible.</p>
+      </div>
+      <div class="panel">
+        <h4 style="font-size:11px;color:var(--accent);margin-bottom:12px">recover.generatedGainPaise</h4>
+        <div class="band"><span>cv</span><div class="track"><i style="left:8%;right:8%"></i><u style="left:50%"></u></div><span>37.6%</span></div>
+        <p class="aside" style="margin-top:14px">Which is exactly why the generated-copy claim above is stated as a sweep and not a number.</p>
+      </div>
+    </div>
+    <p class="aside" style="max-width:76ch;margin-top:22px">A single-seed sweep once came out non-monotonic — a penalty of 0.25 scoring <b>4.6% below</b> a penalty of 0.00, when it should have scored above. Against a measured run-to-run variation of 4.18%, that was the noise floor and nothing else. The fix was four seeds and a reported worst case, not a better-looking chart.</p>
+  </div>
+</main>
+
+<section class="wrap strip" id="provenance" style="margin-top:70px">
+  <span class="lbl">WHERE THESE NUMBERS COME FROM</span>
+  <div class="grid-2">
+    <div class="panel flat">
+      <p style="font-size:22px;color:var(--ink);line-height:1.45">Every figure on this site was
+        produced by a benchmark in the repository, against <b>simulated</b> payment traffic. None
+        of it is from a live merchant. This is a Razorpay AI Buildathon project and it will not
+        pretend otherwise.</p>
+      <p class="aside" style="margin-top:18px">Simulated does not mean invented. The traffic is
+        seeded, so the same seed gives the same run on any machine; the components under test are
+        the real detector, the real kernel and the real ledger; and the harness is in the repo for
+        anybody who wants to disagree with it.</p>
+    </div>
+    <div class="panel flat">
+      <ul class="facts">
+        <li><b>Recovery</b> — 4 hours of traffic, 300 attempts a minute, a pool of 12,000 customers,
+          with two of those methods degraded partway through</li>
+        <li><b>Prevention</b> — 45 minutes observed per incident, 400 attempts a minute, 20,000
+          customers</li>
+        <li><b>Detection</b> — 6 failure shapes × 4 seeds, plus 12 runs where nothing is wrong at
+          all, which is how the false-alarm rate is measured</li>
+        <li><b>Spend</b> — the same campaign replayed at 1, 2, 8, 32 and 64 workers at once</li>
+        <li><b>Every figure</b> carries a band from an eight-seed variance study, and CI refuses a
+          change that moves one outside it</li>
+      </ul>
+      <p class="aside"><a href="#benchmarks" data-goto="benchmarks">All of it, with the caveats →</a></p>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+  <footer>
+    <span>KAIROS · Razorpay AI Buildathon · Track 03 — AI Revenue Recovery</span>
+    <span>RECORDED CONSOLE RUN · SIMULATED TRAFFIC · SEED 20260826</span>
+  </footer>
+</div>
+</body>
+</html>

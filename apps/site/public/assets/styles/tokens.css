@@ -1,0 +1,102 @@
+/**
+ * Palettes.
+ *
+ * Six schemes, ten roles each, declared once here and read back by the artwork through
+ * getComputedStyle. That is why switching scheme recolours the drawings and the interface together,
+ * and why there is no second list of hex codes in TypeScript to fall out of step with this one.
+ */
+
+/* ═══════════════════════════════════════════════════════════════════════
+   PALETTES — six schemes, ten roles each. Every canvas reads these same
+   variables, so the artwork recolours with the chrome.
+
+   Razorpay blue is the default; the rest live under ⚙ SETTINGS. The page
+   deliberately ignores the OS light/dark preference: the palette is a
+   control the reader owns, and a host override would fight it.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+:root,
+[data-scheme="razorpay"] {
+  --bg: #060f24;
+  --panel: #0d1b34;
+  --panel-2: #142544;
+  --line: #24457a;
+  --ink: #e2ecff;
+  --ink-dim: #7d95bd;
+  --accent: #3395ff;
+  --on-accent: #060f24;
+  --good: #3ddc97;
+  --warn: #ffc93c;
+  --bad: #ff6161;
+  --glow: 0 0 14px rgba(51, 149, 255, 0.35);
+}
+[data-scheme="amber"] {
+  --bg: #140f08;
+  --panel: #1e1710;
+  --panel-2: #2a2117;
+  --line: #4c3a23;
+  --ink: #f5cf80;
+  --ink-dim: #a8834a;
+  --accent: #ff9f1c;
+  --on-accent: #140f08;
+  --good: #7ac47f;
+  --warn: #ffcf56;
+  --bad: #e5544d;
+  --glow: 0 0 14px rgba(255, 159, 28, 0.35);
+}
+[data-scheme="phosphor"] {
+  --bg: #050c06;
+  --panel: #0b170d;
+  --panel-2: #122413;
+  --line: #224526;
+  --ink: #86f78f;
+  --ink-dim: #418f4a;
+  --accent: #b6ff3c;
+  --on-accent: #050c06;
+  --good: #5fd46b;
+  --warn: #f5e663;
+  --bad: #ff6b6b;
+  --glow: 0 0 14px rgba(182, 255, 60, 0.3);
+}
+[data-scheme="ledger"] {
+  --bg: #12110f;
+  --panel: #1c1a17;
+  --panel-2: #262320;
+  --line: #423c34;
+  --ink: #ece6da;
+  --ink-dim: #968e80;
+  --accent: #cf9445;
+  --on-accent: #12110f;
+  --good: #6aa886;
+  --warn: #d4a03c;
+  --bad: #c05f47;
+  --glow: none;
+}
+[data-scheme="blueprint"] {
+  --bg: #d5dee7;
+  --panel: #e9eef3;
+  --panel-2: #c3d0dc;
+  --line: #1b3b57;
+  --ink: #0d2032;
+  --ink-dim: #52697d;
+  --accent: #0b5fc0;
+  --on-accent: #e9eef3;
+  --good: #14663f;
+  --warn: #8a5a00;
+  --bad: #99271a;
+  --glow: none;
+}
+[data-scheme="cga"] {
+  --bg: #08080f;
+  --panel: #131327;
+  --panel-2: #1d1d3a;
+  --line: #3d3d75;
+  --ink: #ecebff;
+  --ink-dim: #8b8bc9;
+  --accent: #ff4fd8;
+  --on-accent: #08080f;
+  --good: #4fe8c8;
+  --warn: #ffd24f;
+  --bad: #ff5470;
+  --glow: 0 0 16px rgba(255, 79, 216, 0.4);
+}

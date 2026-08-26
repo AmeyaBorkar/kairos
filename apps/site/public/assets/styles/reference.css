@@ -1,0 +1,252 @@
+/**
+ * Architecture and benchmarks — the two reference views.
+ */
+
+/* ═══════════════════════════════════════════════════════════════════════
+   ARCHITECTURE
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.pkg {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(232px, 1fr));
+  gap: 12px;
+}
+.pkg article {
+  background: var(--panel);
+  border: 3px solid var(--line);
+  padding: 15px 16px;
+}
+.pkg article.core {
+  border-color: var(--accent);
+}
+.pkg h4 {
+  font-size: 14px;
+  color: var(--accent);
+  margin-bottom: 9px;
+  letter-spacing: 0.5px;
+}
+.pkg p {
+  font-size: 23px;
+  color: var(--ink-dim);
+  line-height: 1.5;
+  margin: 0;
+}
+.pkg .dep {
+  font-family: "Silkscreen", monospace;
+  font-size: 12px;
+  color: var(--ink-dim);
+  margin-top: 10px;
+  display: block;
+}
+
+.flow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 0;
+  margin: 0 0 8px;
+}
+.flow .node {
+  background: var(--panel);
+  border: 3px solid var(--line);
+  padding: 11px 14px;
+  font-family: "Silkscreen", monospace;
+  font-size: 11px;
+  color: var(--ink);
+}
+.flow .node.key {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.flow .arr {
+  display: flex;
+  align-items: center;
+  padding: 0 9px;
+  color: var(--accent);
+  font-size: 19px;
+}
+
+pre.sh {
+  background: var(--bg);
+  border: 3px solid var(--line);
+  border-left: 5px solid var(--accent);
+  padding: 17px 19px;
+  font-family: "VT323", monospace;
+  font-size: 24px;
+  line-height: 1.55;
+  color: var(--ink);
+  overflow-x: auto;
+  margin: 0;
+}
+pre.sh .c {
+  color: var(--ink-dim);
+}
+pre.sh .p {
+  color: var(--accent);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   BENCHMARKS
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.band {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 21px;
+  color: var(--ink-dim);
+  margin-top: 8px;
+}
+.band .track {
+  flex: 1;
+  height: 11px;
+  background: var(--panel-2);
+  border: 2px solid var(--line);
+  position: relative;
+  min-width: 110px;
+}
+.band .track i {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: color-mix(in srgb, var(--accent) 34%, transparent);
+}
+.band .track u {
+  position: absolute;
+  top: -3px;
+  bottom: -3px;
+  width: 3px;
+  background: var(--accent);
+  text-decoration: none;
+}
+
+.caveat {
+  background: var(--panel-2);
+  border-left: 5px solid var(--warn);
+  padding: 20px 23px;
+  font-size: 25px;
+  line-height: 1.48;
+}
+.caveat b {
+  color: var(--warn);
+  font-weight: 400;
+}
+
+/* Slide strips — same idea, but reader-driven and native. */
+.hstrip {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding-bottom: 16px;
+  scroll-snap-type: x proximity;
+  scrollbar-width: thin;
+}
+.hstrip > * {
+  flex: 0 0 min(340px, 84vw);
+  scroll-snap-align: start;
+}
+.hstrip::-webkit-scrollbar {
+  height: 10px;
+}
+.hstrip::-webkit-scrollbar-track {
+  background: var(--panel-2);
+}
+.hstrip::-webkit-scrollbar-thumb {
+  background: var(--line);
+}
+.swipe {
+  font-family: "Silkscreen", monospace;
+  font-size: 10px;
+  color: var(--ink-dim);
+  margin-bottom: 12px;
+}
+.swipe b {
+  color: var(--accent);
+}
+
+/* ── One incident, minute by minute ──────────────────────────────────────
+   The operating loop, which is also the console's story and the demo's
+   spine. A numbered list would imply the steps are interchangeable; they
+   are timestamps, and the times are the point. */
+
+.timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-left: 3px solid var(--line);
+}
+.timeline li {
+  display: grid;
+  grid-template-columns: 7ch minmax(0, 1fr);
+  gap: 20px;
+  padding: 0 0 22px 22px;
+  position: relative;
+}
+.timeline li::before {
+  content: "";
+  position: absolute;
+  left: -8px;
+  top: 9px;
+  width: 13px;
+  height: 13px;
+  background: var(--panel-2);
+  border: 3px solid var(--line);
+}
+.timeline li b {
+  font-family: "Silkscreen", monospace;
+  font-size: 14px;
+  color: var(--accent);
+  padding-top: 5px;
+}
+.timeline li span {
+  font-size: 22px;
+  line-height: 1.42;
+  color: var(--ink-dim);
+  max-width: 62ch;
+}
+.timeline li span em {
+  font-style: normal;
+  color: var(--accent);
+}
+.timeline li span em.no {
+  color: var(--bad);
+}
+.timeline li span b {
+  font-size: inherit;
+  font-family: inherit;
+  color: var(--ink);
+  font-weight: 400;
+  padding: 0;
+}
+
+/* The one step where something the system wanted to do simply did not happen. */
+.timeline li.stop::before {
+  background: var(--bad);
+  border-color: var(--bad);
+}
+.timeline li.stop span {
+  color: var(--ink);
+}
+
+.grid-2 .panel h4 {
+  font-size: 13px;
+  color: var(--accent);
+  letter-spacing: 0.5px;
+  margin-bottom: 14px;
+}
+.grid-2 .panel p {
+  font-size: 21px;
+  color: var(--ink-dim);
+  line-height: 1.45;
+}
+.grid-2 .panel p b {
+  color: var(--ink);
+  font-weight: 400;
+}
+
+@media (max-width: 700px) {
+  .timeline li {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+}
