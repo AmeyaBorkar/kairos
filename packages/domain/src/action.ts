@@ -16,6 +16,21 @@ export const ACTION_KINDS = [
   "contact-whatsapp",
   "contact-email",
   "escalate",
+  /**
+   * Asking a language model something.
+   *
+   * An inference call spends money, so it is an action, so it is admitted against a mandate and
+   * reconciled against what the provider says it consumed — exactly like a message. A system whose
+   * whole thesis is that no rupee leaves without signed authority cannot have one channel of spend
+   * that nobody counts, and "it is only a few cents" is where every unbounded cost begins.
+   *
+   * Two consequences, and both are the point rather than a side effect. A merchant can switch model
+   * use off through `allowedActions` without a deploy, because that is the same lever that governs
+   * SMS. And when the model runs on a provider's free tier the call is still priced at the model's
+   * published rate: a free tier is a development convenience, and an accounting of zero would be a
+   * true statement about this month and a false one about the first month anybody deployed.
+   */
+  "reason",
 ] as const;
 
 export type ActionKind = (typeof ACTION_KINDS)[number];

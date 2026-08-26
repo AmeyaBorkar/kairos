@@ -812,3 +812,64 @@ describe("steering actions", () => {
     expect(h.ledger.records[0]?.target).toBe(`customer:${CUSTOMER}`);
   });
 });
+
+describe("a model call is an action", () => {
+  it("is admitted only where the mandate says so", async () => {
+    // The whole reason `reason` is in the action vocabulary rather than beside it. Inference spends
+    // money, so it is governed by the lever that governs every other spend — and a merchant turns
+    // model use off by editing `allowedActions`, not by shipping a deploy.
+    const allowed = harness({}, { allowedActions: ["reason"] });
+    const admission = await allowed.terminus.admit({
+      action: action({ kind: "reason", casualty: null, incident: null, estimatedCost: paise(600) }),
+      status: CLEAN_STATUS,
+      attemptNo: 1,
+    });
+    expect(admission.allowed).toBe(true);
+
+    const denied = harness({}, { allowedActions: ["contact-sms"] });
+    const refused = await denied.terminus.admit({
+      action: action({ kind: "reason", casualty: null, incident: null, estimatedCost: paise(600) }),
+      status: CLEAN_STATUS,
+      attemptNo: 1,
+    });
+    expect(refused.allowed).toBe(false);
+  });
+
+  it("does not count against a contact cap, because nobody is contacted", async () => {
+    const h = harness({}, { allowedActions: ["reason"], contactCap: { limit: 1, windowMs: 1000 } });
+    for (let i = 0; i < 5; i++) {
+      const admission = await h.terminus.admit({
+        action: action({ kind: "reason", casualty: null, incident: null, estimatedCost: paise(1) }),
+        status: CLEAN_STATUS,
+        attemptNo: 1,
+      });
+      expect(admission.allowed).toBe(true);
+    }
+  });
+
+  it("draws on the same budget as the postage it is spent to improve", async () => {
+    // Asking a model and sending an SMS come out of one campaign budget, so a merchant cannot be
+    // surprised by an inference bill sitting outside the number they authorised.
+    const h = harness(
+      {},
+      {
+        budgetPaise: rupees(6),
+        allowedActions: ["reason"],
+        contactCap: { limit: 99, windowMs: DAY },
+      },
+    );
+    const thinking = action({ kind: "reason", casualty: null, incident: null });
+
+    expect(await spend(h, 1, rupees(3), thinking)).toBe(true);
+    expect(await spend(h, 2, rupees(3), thinking)).toBe(true);
+
+    const admission = await h.terminus.admit({
+      action: thinking,
+      status: CLEAN_STATUS,
+      attemptNo: 3,
+    });
+    expect(admission.allowed).toBe(false);
+    if (admission.allowed) return;
+    expect(admission.axis).toBe("budget");
+  });
+});
