@@ -1,0 +1,366 @@
+{
+  "recordedAt": "2026-08-26",
+  "note": "Recorded against the live API. Regenerate with `pnpm --filter @kairos/scribe run record`.",
+  "entries": [
+    {
+      "key": "28b64a41a3b99434",
+      "label": "a Hindi SMS telling a customer to approve with their UPI PIN",
+      "model": "gemini-3.1-flash-lite",
+      "response": {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "{\n  \"variants\": [\n    {\n      \"body\": \"{amount} के लिए आपकी UPI भुगतान प्रक्रिया अधूरी है। कृपया अपना UPI ऐप खोलें और पिन डालकर पूरा करें {link}\"\n    },\n    {\n      \"body\": \"आपका {amount} का भुगतान रुका हुआ है। इसे पूरा करने के लिए अपने UPI ऐप में जाकर अनुरोध स्वीकार करें {link}\"\n    },\n    {\n      \"body\": \"आपका {amount} का भुगतान अधूरा रह गया। कृपया UPI ऐप खोलें और अपना पिन दर्ज करके इसे पूरा कर लें {link}\"\n    }\n  ]\n}",
+                  "thoughtSignature": "EnEKbwERTTIPL4wqRIZUeo7kjLSuGNrhrm7mwYXan4TTpqxiBuVBTDyYRllh1uM2D/Tna8TfOqFSiMF9FIl3d9daEWtvRx93TxfiIjhtIlpsQOHjRKFbCOjQmAEsxDZhvyWDvoGdD075BQ4CsB0bBm65qg=="
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "STOP",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 776,
+          "candidatesTokenCount": 127,
+          "totalTokenCount": 903,
+          "promptTokensDetails": [
+            {
+              "modality": "TEXT",
+              "tokenCount": 776
+            }
+          ],
+          "serviceTier": "standard"
+        },
+        "modelVersion": "gemini-3.1-flash-lite",
+        "responseId": "LrOOaonoLIDEg8UPtredoAU"
+      }
+    },
+    {
+      "key": "36e26473665d33ba",
+      "label": "a Marathi SMS for a low-balance failure, which must never say so",
+      "model": "gemini-3.1-flash-lite",
+      "response": {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "{\"variants\": [{\"body\": \"{amount} चे पेमेंट पूर्ण होऊ शकले नाही. पुन्हा प्रयत्न करण्यासाठी येथे क्लिक करा: {link}\"}, {\"body\": \"{amount} पेमेंट सध्या अपूर्ण आहे. पूर्ण करण्यासाठी ही लिंक वापरा: {link}\"}, {\"body\": \"तुमचे {amount} पेमेंट पूर्ण झाले नाही. {link} वर जाऊन प्रक्रिया पुन्हा पूर्ण करा.\"}]}",
+                  "thoughtSignature": "EnEKbwERTTIPCrgu4BQi55Qv78YwcVcxrx8oGdgnpMU5DjRNOqEW6gPdB8Mhg3CN8RQJe0MPsIxUW6Xj9TcD3TGGoUCOi2yDeYkoYdq9Pysj6at3EsOdzINmPZloZWC8zMmJ2wQfrzVLGXmZpfEIMpCR+A=="
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "STOP",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 800,
+          "candidatesTokenCount": 75,
+          "totalTokenCount": 875,
+          "promptTokensDetails": [
+            {
+              "modality": "TEXT",
+              "tokenCount": 800
+            }
+          ],
+          "serviceTier": "standard"
+        },
+        "modelVersion": "gemini-3.1-flash-lite",
+        "responseId": "N7OOavDkOvO3g8UP4ZOm-Ak"
+      }
+    },
+    {
+      "key": "42a898451e211d4e",
+      "label": "an English SMS for a transient bank outage",
+      "model": "gemini-3.1-flash-lite",
+      "response": {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "{\n  \"variants\": [\n    {\n      \"body\": \"{institution} had a temporary outage while you were paying {amount}. The issue is resolved, please try again at {link}.\"\n    },\n    {\n      \"body\": \"Your {amount} payment failed because {institution} was temporarily down. The system is back, please complete it at {link}.\"\n    },\n    {\n      \"body\": \"The connection to {institution} timed out during your {amount} payment. You can now complete the transaction via {link}.\"\n    }\n  ]\n}",
+                  "thoughtSignature": "EnEKbwERTTIPBT+0wD1tE+EGJzpSpAPI1cxoF1svGX0CKsK2ZCw5lK3HGgRiV664xn213YBGQJqK4+I/A0FCw4lpsrSN2By4GI5L6Zp5Z/wSRDpZW84mHeTHuP1Z7eD1CK5CImWHNF99YCu5hqZ4MAOzrQ=="
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "STOP",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 670,
+          "candidatesTokenCount": 127,
+          "totalTokenCount": 797,
+          "promptTokensDetails": [
+            {
+              "modality": "TEXT",
+              "tokenCount": 670
+            }
+          ],
+          "serviceTier": "standard"
+        },
+        "modelVersion": "gemini-3.1-flash-lite",
+        "responseId": "KrOOaufFEazSqfkPlYysyAs"
+      }
+    },
+    {
+      "key": "5c9a84049b53c84d",
+      "label": "an English WhatsApp message for a netbanking login",
+      "model": "gemini-3.1-flash-lite",
+      "response": {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "{\n  \"variants\": [\n    {\n      \"body\": \"Your payment of {amount} stalled. Please log in to {institution} at {link} to authorize it.\"\n    },\n    {\n      \"body\": \"We could not verify your {amount} payment. Log in to {institution} via {link} to complete it.\"\n    },\n    {\n      \"body\": \"Your netbanking payment of {amount} is pending. Authorize it at {institution} using {link} now.\"\n    }\n  ]\n}",
+                  "thoughtSignature": "EnEKbwERTTIPTMVCPIiZ18wnNqK+QXIouTFA1JLZojIJxWWHnrnTqHgqXwgZsVm3O5D7unTPz5ii8nLvbAtIBOEMstSdbtH9N1mtCm6E+W281+yuVfvrZYjh4JPZCfYT8RZCaPq94bP5QcQUUILKCtOcHg=="
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "STOP",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 715,
+          "candidatesTokenCount": 119,
+          "totalTokenCount": 834,
+          "promptTokensDetails": [
+            {
+              "modality": "TEXT",
+              "tokenCount": 715
+            }
+          ],
+          "serviceTier": "standard"
+        },
+        "modelVersion": "gemini-3.1-flash-lite",
+        "responseId": "QbOOar-kDNDFg8UPs5WUuAI"
+      }
+    },
+    {
+      "key": "6d906a85d69a7bb2",
+      "label": "an operator asking why a customer was never contacted",
+      "model": "gemini-3.1-flash-lite",
+      "response": {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "The first message was sent successfully on 2026-08-24. A subsequent attempt on 2026-08-25 was refused because it fell within the quiet hours of 21:00-09:00 IST. A final attempt later that morning was refused because the campaign budget of 5,000.00 rupees was exhausted.",
+                  "thoughtSignature": "EnEKbwERTTIP4JxJbDDBQ+3R6At4wKNPAkdguQPJy5u7dMcZDk/+stgEaPlZznrp95EfJNE7mwdBUkxIdFRTWQ8jQTMhabWNF4kEBDcKezGB1ayOWApEyuo5Du+RZDVcroohutWcifACoT0pG0BeiCuRYQ=="
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "STOP",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 386,
+          "candidatesTokenCount": 84,
+          "totalTokenCount": 470,
+          "promptTokensDetails": [
+            {
+              "modality": "TEXT",
+              "tokenCount": 386
+            }
+          ],
+          "serviceTier": "standard"
+        },
+        "modelVersion": "gemini-3.1-flash-lite",
+        "responseId": "U7OOau3zJJL1g8UPubyRoQY"
+      }
+    },
+    {
+      "key": "70b0afc024152301",
+      "label": "a gateway error the rule table could not name",
+      "model": "gemini-3.1-flash-lite",
+      "response": {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "transient",
+                  "thoughtSignature": "EnEKbwERTTIPWHKGQDp4WrO9cbbYku62EeTZlVFMtukDW4FhppWOXquAFNuizcV5PT0/e/I76XKJ58ICALw4ZIukBGzRgsAnFny4/WK5jzLQPELTNfIRaEf6rgmqgkMffFRBUFpSuK6oZBpeW1eflXP5FQ=="
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "STOP",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 305,
+          "candidatesTokenCount": 2,
+          "totalTokenCount": 307,
+          "promptTokensDetails": [
+            {
+              "modality": "TEXT",
+              "tokenCount": 305
+            }
+          ],
+          "serviceTier": "standard"
+        },
+        "modelVersion": "gemini-3.1-flash-lite",
+        "responseId": "RbOOaoLMMvmjqfkP486tiAU"
+      }
+    },
+    {
+      "key": "72d03b1e686475ae",
+      "label": "a Tamil SMS for a card that needs updating",
+      "model": "gemini-3.1-flash-lite",
+      "response": {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "{\n  \"variants\": [\n    {\n      \"body\": \"{institution} அட்டை காலாவதியாகிவிட்டது. புதிய அட்டையை இணைத்து {amount} செலுத்த {link} செல்லுங்கள்.\"\n    },\n    {\n      \"body\": \"{institution} அட்டை விவரங்களை {link} மூலம் புதுப்பிக்கவும். பின் OTP உள்ளிட்டு {amount} செலுத்துங்கள்.\"\n    },\n    {\n      \"body\": \"{institution} அட்டை மூலம் பணம் செலுத்த தவறியது. {link} சென்று புதிய அட்டையை கொண்டு {amount} செலுத்துங்கள்.\"\n    }\n  ]\n}",
+                  "thoughtSignature": "EnEKbwERTTIPlYlGonkKMVyugQ4M+6ldbGgtYVkTNKgrY33fOeX0pDzQlyu4modsibAkoBXZK9zI1Y8JcYoeSvJ13i/8hKvzmu9D3894hpkzrttwqmCyFPK778rQXT4S+Tpkj7zewMh7sCueOCXl9NsC2w=="
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "STOP",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 765,
+          "candidatesTokenCount": 124,
+          "totalTokenCount": 889,
+          "promptTokensDetails": [
+            {
+              "modality": "TEXT",
+              "tokenCount": 765
+            }
+          ],
+          "serviceTier": "standard"
+        },
+        "modelVersion": "gemini-3.1-flash-lite",
+        "responseId": "M7OOatn7E-6lg8UP2PSY2As"
+      }
+    },
+    {
+      "key": "8aca9a5f670fd6de",
+      "label": "an English email for a failure nobody could classify",
+      "model": "gemini-3.1-flash-lite",
+      "response": {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "{\n  \"variants\": [\n    {\n      \"subject\": \"Payment status for your recent order\",\n      \"body\": \"Your payment of {amount} did not complete. Please use this {link} to try the transaction again.\"\n    },\n    {\n      \"subject\": \"Update on your recent purchase\",\n      \"body\": \"The payment of {amount} for your order is still pending. Click {link} to finish the transaction.\"\n    },\n    {\n      \"subject\": \"Action required: Complete your payment\",\n      \"body\": \"We were unable to process the payment of {amount}. You can finalize the purchase through this {link}.\"\n    }\n  ]\n}",
+                  "thoughtSignature": "EnEKbwERTTIPPcuAqme4eCX7/UoW2KxSoLrPbc3JxcBGJJMhVxQjOIjelEqeQgCtD8EURq1Rrdh+VO/3lYjiOTYZ7eEfGrsXIpcVm+ZZFRH2Gn6aoPYFxuBylcXxt0blPX2bB2j8I400299WiSWXVfqLag=="
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "STOP",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 614,
+          "candidatesTokenCount": 152,
+          "totalTokenCount": 766,
+          "promptTokensDetails": [
+            {
+              "modality": "TEXT",
+              "tokenCount": 614
+            }
+          ],
+          "serviceTier": "standard"
+        },
+        "modelVersion": "gemini-3.1-flash-lite",
+        "responseId": "PLOOaumVLYy_g8UPstD_4Ag"
+      }
+    },
+    {
+      "key": "933e7f7808206b89",
+      "label": "a cancelled payment, which is the classifier's easy case",
+      "model": "gemini-3.1-flash-lite",
+      "response": {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "customer-retry",
+                  "thoughtSignature": "EnEKbwERTTIPD/PH6PK1bzHZF2IR94iO0oQ+E/N6U3K7HUUVZs02K3zuCqFM2f+eH1V3e/6baeXRQEac+NbsmSpjbiNitSYpx105u6UScuPYYLdsno2dKwh9SW1o8SnChk2C0D8GJ1/XZeDT3fT5ybp48w=="
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "STOP",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 308,
+          "candidatesTokenCount": 3,
+          "totalTokenCount": 311,
+          "promptTokensDetails": [
+            {
+              "modality": "TEXT",
+              "tokenCount": 308
+            }
+          ],
+          "serviceTier": "standard"
+        },
+        "modelVersion": "gemini-3.1-flash-lite",
+        "responseId": "SrOOasf2G7awg8UP_6bM2AM"
+      }
+    },
+    {
+      "key": "a47cad405d236ae0",
+      "label": "an injection attempt hidden in a gateway description",
+      "model": "gemini-3.1-flash-lite",
+      "response": {
+        "candidates": [
+          {
+            "content": {
+              "parts": [
+                {
+                  "text": "unknown",
+                  "thoughtSignature": "EnEKbwERTTIPWSsNbj1iqdDYmBfC/nbr2TYnrgbhrJBm+Vc3jGLxWuAu63kZOfMUBgwfqByyInpmV7EeupsOR/IrUaH9N8u4+Wx8Ir4q20pRKb4khZxdGvw+RhYotN4w1UUWbo4tsyIRmbPipzDB3DVOqg=="
+                }
+              ],
+              "role": "model"
+            },
+            "finishReason": "STOP",
+            "index": 0
+          }
+        ],
+        "usageMetadata": {
+          "promptTokenCount": 306,
+          "candidatesTokenCount": 1,
+          "totalTokenCount": 307,
+          "promptTokensDetails": [
+            {
+              "modality": "TEXT",
+              "tokenCount": 306
+            }
+          ],
+          "serviceTier": "standard"
+        },
+        "modelVersion": "gemini-3.1-flash-lite",
+        "responseId": "TrOOarfbPNS3g8UP2vrckQk"
+      }
+    }
+  ]
+}

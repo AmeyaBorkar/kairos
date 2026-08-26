@@ -43,6 +43,28 @@ importers:
         specifier: ^22.10.0
         version: 22.20.1
 
+  adapters/reasoner-gemini:
+    dependencies:
+      '@kairos/domain':
+        specifier: workspace:*
+        version: link:../../packages/domain
+      '@kairos/reason':
+        specifier: workspace:*
+        version: link:../../packages/reason
+      '@kairos/recover':
+        specifier: workspace:*
+        version: link:../../packages/recover
+      throttlekit:
+        specifier: ^1.7.0
+        version: 1.7.0(fastify@5.12.1)
+      zod:
+        specifier: ^4.1.0
+        version: 4.4.3
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.0
+        version: 22.20.1
+
   adapters/simulator:
     dependencies:
       '@kairos/domain':
@@ -97,6 +119,34 @@ importers:
       '@kairos/razorpay':
         specifier: workspace:*
         version: link:../../adapters/razorpay
+      '@kairos/recover':
+        specifier: workspace:*
+        version: link:../../packages/recover
+      '@kairos/terminus':
+        specifier: workspace:*
+        version: link:../../packages/terminus
+      throttlekit:
+        specifier: ^1.7.0
+        version: 1.7.0(fastify@5.12.1)
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.0
+        version: 22.20.1
+
+  apps/scribe:
+    dependencies:
+      '@kairos/domain':
+        specifier: workspace:*
+        version: link:../../packages/domain
+      '@kairos/ledger':
+        specifier: workspace:*
+        version: link:../../packages/ledger
+      '@kairos/reason':
+        specifier: workspace:*
+        version: link:../../packages/reason
+      '@kairos/reasoner-gemini':
+        specifier: workspace:*
+        version: link:../../adapters/reasoner-gemini
       '@kairos/recover':
         specifier: workspace:*
         version: link:../../packages/recover

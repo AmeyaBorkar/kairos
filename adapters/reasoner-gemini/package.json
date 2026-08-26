@@ -1,0 +1,33 @@
+{
+  "name": "@kairos/reasoner-gemini",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Google Gemini behind the reasoner ports. The only place in the repository that knows what a `generateContent` request looks like.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@kairos/domain": "workspace:*",
+    "@kairos/reason": "workspace:*",
+    "@kairos/recover": "workspace:*",
+    "throttlekit": "^1.7.0",
+    "zod": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0"
+  }
+}
