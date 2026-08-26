@@ -16,11 +16,24 @@
  * That is also what makes a provider's free tier acceptable for this. Free tiers generally reserve
  * the right to train on what they are sent. There is nothing here to learn.
  *
- * ## Structure
+ * ## Structure, and a claim that did not survive measurement
  *
  * The system half is identical for every call and comes first; the situation is small and comes
- * last. Providers that cache a prompt prefix cache on an exact byte match from the start, so the
- * ordering is what makes about a hundred and eighty calls cost roughly one prompt's worth of input.
+ * last. That ordering is what a provider's prompt cache wants, since caches key on an exact byte
+ * match from the start of the prompt.
+ *
+ * This file used to go on to say that the ordering "is what makes about a hundred and eighty calls
+ * cost roughly one prompt's worth of input". **It is not, and the claim was never measured.** Given
+ * a key and an afternoon: sixteen consecutive calls sharing an identical 829-token prefix reported
+ * `cachedContentTokenCount` on none of them. Gemini's free tier has explicit context caching, which
+ * this does not use, and implicit caching did not engage at this prefix length. Every call is
+ * billed for the whole prompt.
+ *
+ * The ordering stays, because it costs nothing and is right the day caching does engage. What was
+ * removed is the *reason* attached to it, which was reasoning about a provider rather than about
+ * this one. What actually makes a copy library affordable needs no cache and is arithmetic anybody
+ * can check: **a hundred and eighty calls instead of 5,719**, because the model writes for a
+ * situation and never for a customer. That argument was always the load-bearing one.
  */
 
 import { createHash } from "node:crypto";

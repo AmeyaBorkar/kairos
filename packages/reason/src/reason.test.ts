@@ -520,7 +520,12 @@ describe("prompts", () => {
     expect(composePrompt(request).user).toContain("no subject line");
   });
 
-  it("keeps the varying half small, which is what makes a cached prefix worth having", () => {
+  it("keeps the constant half first and the varying half small", () => {
+    // Worth doing and not worth a claim. A prompt cache keys on an exact byte match from the start,
+    // so constant-first is the shape that could be cached — but sixteen consecutive live calls
+    // sharing an identical 829-token prefix reported no cached tokens at all. The ordering is kept
+    // because it is free and correct; what a library actually costs is settled by there being 180
+    // calls rather than 5,719.
     const { system, user } = composePrompt(request);
     expect(user.length).toBeLessThan(system.length);
   });
