@@ -2,6 +2,7 @@ export {
   ACTION_KINDS,
   type ActionKind,
   expectedNetValue,
+  hasExpectedReturn,
   isActionKind,
   isContact,
   isWorthDoing,

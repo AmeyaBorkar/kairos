@@ -872,4 +872,39 @@ describe("a model call is an action", () => {
     if (admission.allowed) return;
     expect(admission.axis).toBe("budget");
   });
+
+  it("is not weighed against a recovery it was never attempting", async () => {
+    // Asking a model what a failure was does not recover a rupee under any outcome — it changes
+    // which message gets sent, and that message is weighed on its own merits a moment later. So
+    // there is no expected return to put in the numerator, and the honest thing is to say so
+    // rather than to invent a plausible one and round it upward until it passes.
+    const h = harness({}, { allowedActions: ["reason"] });
+    const admission = await h.terminus.admit({
+      action: action({
+        kind: "reason",
+        casualty: null,
+        incident: null,
+        estimatedCost: paise(39),
+        expectedValue: paise(0),
+        successProbability: 0,
+      }),
+      status: CLEAN_STATUS,
+      attemptNo: 1,
+    });
+    expect(admission.allowed).toBe(true);
+  });
+
+  it("still weighs every action that is attempting one", async () => {
+    // The exemption is one kind wide. A message with no expected return is still measurable waste
+    // and is still refused, which is what makes the gate worth having at all.
+    const h = harness({}, { allowedActions: ["contact-sms"] });
+    const admission = await h.terminus.admit({
+      action: action({ estimatedCost: paise(39), expectedValue: paise(0), successProbability: 0 }),
+      status: CLEAN_STATUS,
+      attemptNo: 1,
+    });
+    expect(admission.allowed).toBe(false);
+    if (admission.allowed) return;
+    expect(admission.axis).toBe("expected-value");
+  });
 });

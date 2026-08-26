@@ -67,12 +67,45 @@ export interface ProposedAction {
 }
 
 /**
+ * Whether an action is the thing that recovers the money, or an input to deciding how.
+ *
+ * Every kind but one is the former: a message, a retry, a steer and an escalation are all attempts
+ * at a recovery, and each can be weighed against the recovery it is attempting. `reason` is the
+ * latter. Asking a model what a failure was does not recover a rupee under any outcome — it changes
+ * which message gets sent, and *that* message is weighed on its own merits a moment later.
+ *
+ * So there is no expected return to put in the numerator, and the honest thing is to say so rather
+ * than to invent a plausible one. A caller that had to satisfy the gate would end up attributing a
+ * share of a campaign's recovery to one classification call, which is a number nobody could derive
+ * and everybody would round upward until it passed.
+ */
+export function hasExpectedReturn(kind: ActionKind): boolean {
+  return kind !== "reason";
+}
+
+/**
  * The expected-value test: act only when the probability-weighted return beats the cost.
  *
  * This is where the false-positive cost becomes concrete. Every action taken below this line is
  * measurable waste, and the harness reports it in rupees rather than as a rate.
+ *
+ * ## What exempting `reason` does and does not remove
+ *
+ * It removes nothing that bounds money. A model call is still admitted against `allowedActions`,
+ * still reserved at `maxActionCostPaise`, still limited by `maxInFlight`, still drawn from the
+ * campaign budget, and still stopped by either kill switch. The expected-value gate is not what
+ * makes spend finite — the budget is — and Kairos's overspend bound is stated in terms of the
+ * budget and the per-action ceiling, neither of which this touches.
+ *
+ * What it does remove is one check on *waste*, and the gap is worth naming rather than glossing:
+ * nothing here stops a caller asking a model about a casualty too small to be worth chasing. That
+ * responsibility sits with the caller, because only the caller knows the casualty's value —
+ * `refineResidual` consults a model only for failures no rule could name, and the message it
+ * informs faces the full gate afterwards. A cheap classification followed by a refused message is
+ * the money that can be lost this way, and it is bounded by the same budget as everything else.
  */
 export function isWorthDoing(a: ProposedAction): boolean {
+  if (!hasExpectedReturn(a.kind)) return true;
   return a.successProbability * a.expectedValue > a.estimatedCost;
 }
 
