@@ -60,4 +60,5 @@ export {
   type Executor,
   RecoverWorker,
   type RecoverWorkerOptions,
+  UNKNOWN_LANGUAGE,
 } from "./worker.js";

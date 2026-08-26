@@ -2,6 +2,7 @@ import {
   applyOutcome,
   type Casualty,
   type CustomerRef,
+  type Language,
   markOptedOut,
   paise,
   type RecoveryAttempt,
@@ -18,7 +19,7 @@ import {
   type ScheduleConfig,
   schedule,
 } from "./schedule.js";
-import type { CasualtyStore, CustomerDirectory } from "./store.js";
+import type { CasualtyStore, CustomerDirectory, CustomerProfile } from "./store.js";
 
 /**
  * Something the worker can actually do to a casualty, once Terminus has authorised it.
@@ -31,6 +32,18 @@ export interface Executor {
   execute(request: ExecuteRequest): Promise<ExecuteResult>;
 }
 
+/**
+ * What language to write in when the directory could not say.
+ *
+ * English, and there is no better answer available — but it is a named constant rather than an
+ * inline fallback because it is precisely the assumption the copy library exists to stop making,
+ * and it should be greppable. Every message sent under this constant is one where the system did
+ * not know who it was writing to and guessed the majority language. A directory outage therefore
+ * degrades a Tamil customer's message to English rather than dropping it, which is the right
+ * trade — and it is a *degradation*, visible in `copy.legibleRate`, not a neutral default.
+ */
+export const UNKNOWN_LANGUAGE: Language = "en";
+
 export interface ExecuteRequest {
   readonly grant: Grant;
   readonly casualty: Casualty;
@@ -38,6 +51,8 @@ export interface ExecuteRequest {
   /** Resolved once, here, so nothing downstream has to ask for personal data. */
   readonly firstName: string | null;
   readonly token: string | null;
+  /** What the customer reads, resolved from the directory. See {@link UNKNOWN_LANGUAGE}. */
+  readonly language: Language;
   readonly at: number;
 }
 
@@ -227,6 +242,7 @@ export class RecoverWorker {
         classification,
         firstName: profile?.firstName ?? null,
         token: profile?.token ?? null,
+        language: profile?.language ?? UNKNOWN_LANGUAGE,
         at: now,
       });
     } catch (cause) {
@@ -297,7 +313,7 @@ export class RecoverWorker {
   async #profile(
     customer: CustomerRef,
     directory: CustomerDirectory,
-  ): Promise<{ firstName: string | null; token: string | null } | null> {
+  ): Promise<CustomerProfile | null> {
     try {
       return await directory.lookup(customer);
     } catch {

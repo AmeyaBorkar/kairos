@@ -91,6 +91,42 @@ export function parseSegmentKey(key: string): CopySegment | null {
   };
 }
 
+/**
+ * The situation a real message is being sent into, before it is reduced to a segment.
+ *
+ * Distinct from {@link CopySegment} in exactly one way, and it is the way that matters: a payment
+ * always has a method. Whether the *copy* names it is a decision this module makes, not a fact
+ * about the payment.
+ */
+export interface Situation {
+  readonly recoverability: RecoverabilityClass;
+  readonly method: PaymentMethod;
+  readonly language: Language;
+  readonly channel: ContactChannel;
+}
+
+/**
+ * The segment whose copy serves this situation.
+ *
+ * This exists because {@link METHOD_SPECIFIC} was previously known only to
+ * {@link requiredSegments}, which meant the rule that decides whether a segment names a rail lived
+ * in the function that *writes* the library and nowhere near the one that would *read* it. A caller
+ * looking up copy for a `timed` UPI casualty would have built `timed/upi/hi/contact-sms`, found
+ * nothing, and fallen back to a template — for a segment that was written, covered and sitting in
+ * the file under `timed/any/hi/contact-sms`.
+ *
+ * That is a silent miss: no error, no gap in coverage, just quietly worse copy. So the rule is
+ * applied in one function that both sides call, and the two can no longer disagree.
+ */
+export function segmentFor(situation: Situation): CopySegment {
+  return {
+    recoverability: situation.recoverability,
+    method: METHOD_SPECIFIC.has(situation.recoverability) ? situation.method : null,
+    language: situation.language,
+    channel: situation.channel,
+  };
+}
+
 export interface Coverage {
   readonly languages: readonly Language[];
   readonly methods: readonly PaymentMethod[];

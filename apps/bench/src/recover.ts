@@ -622,6 +622,10 @@ async function runLadder(run: LadderRun): Promise<ArmResult> {
       classification: generic,
       firstName: null,
       token: null,
+      // Everyone in this population reads English, which is what the benchmark has always
+      // assumed. Giving customers a language of their own is a change to the world model and
+      // belongs with the arm that measures it, not with the plumbing that makes it expressible.
+      language: "en",
       at,
     });
 
@@ -704,7 +708,9 @@ async function runKairos(run: KairosRun): Promise<{
   const worker = new RecoverWorker({
     terminus,
     store,
-    directory: { lookup: () => Promise.resolve({ firstName: "Rohit", token: "tok" }) },
+    directory: {
+      lookup: () => Promise.resolve({ firstName: "Rohit", token: "tok", language: "en" }),
+    },
     gauge,
     model,
     executor: recording,

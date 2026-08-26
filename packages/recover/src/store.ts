@@ -1,4 +1,4 @@
-import type { Casualty, CasualtyId, CustomerRef } from "@kairos/domain";
+import type { Casualty, CasualtyId, CustomerRef, Language } from "@kairos/domain";
 
 /**
  * Where casualties live between the moment they are lost and the moment they are given up on.
@@ -50,6 +50,20 @@ export interface CustomerDirectory {
 export interface CustomerProfile {
   /** Used only to address a message. Never written to the ledger. */
   readonly firstName: string | null;
+  /**
+   * The language this customer reads.
+   *
+   * Required, and deliberately not defaulted. A `language?: Language` would resolve to English
+   * wherever a caller forgot it, and a system that quietly assumes everyone reads English is
+   * exactly what four languages of validated copy exist to stop being — it would typecheck, pass
+   * its tests, and send Latin script to every customer while reporting full library coverage.
+   * Making it required means every place that constructs a profile had to state an answer, which
+   * is how the simulator came to have a language distribution at all.
+   *
+   * It is a property of the person, not of the payment or the merchant's own preference, and like
+   * {@link firstName} it never reaches the ledger.
+   */
+  readonly language: Language;
   /**
    * The token or mandate this customer's payments can be charged against, if any.
    *

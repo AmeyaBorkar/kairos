@@ -6,6 +6,7 @@ import {
   type SmsCost,
   smsCost,
 } from "@kairos/domain";
+import type { CopySource } from "@kairos/reason";
 
 export interface ComposedMessage {
   readonly text: string;
@@ -103,3 +104,33 @@ export function compose(
 ): ComposedMessage {
   return TEMPLATES[recoverability](variables);
 }
+
+/**
+ * The templates above, behind the `CopySource` port.
+ *
+ * Three properties of this source are worth stating explicitly, because they are the baseline every
+ * generated-copy claim is measured against and a reader should not have to infer them from the
+ * table above:
+ *
+ * 1. **It is English, whatever language it is asked for.** `request.language` is accepted and
+ *    ignored. That is not an oversight to be fixed here — it is what the system did before the copy
+ *    library existed, and a benchmark arm that quietly upgraded the baseline would be measuring
+ *    generated copy against something no merchant was ever running.
+ * 2. **It is channel-blind.** The same sentence goes to SMS, WhatsApp and email, and email gets no
+ *    subject line. Templates written to fit 160 GSM-7 characters are the reason.
+ * 3. **It never names the rail.** One template per failure class means `customer-action` says "your
+ *    saved payment method has expired" to a card holder and to somebody whose UPI mandate was
+ *    revoked. Naming the rail requires a segment keyed by it, which is what the library has and
+ *    this does not.
+ *
+ * Each of those is a way the baseline loses points under `scoreMessage`, and each is a real
+ * property of the hand-written copy rather than a handicap introduced to flatter the comparison.
+ */
+export const templateCopy: CopySource = {
+  name: "hand-written templates (English)",
+
+  select(request) {
+    const message = compose(request.recoverability, request.variables);
+    return { text: message.text, subject: null, cost: message.cost, variantId: null };
+  },
+};

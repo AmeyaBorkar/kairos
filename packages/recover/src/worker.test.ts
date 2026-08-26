@@ -99,7 +99,7 @@ function gauge(degraded: readonly string[] = []): RailGauge {
 }
 
 const directory: CustomerDirectory = {
-  lookup: () => Promise.resolve({ firstName: "Rohit", token: "token_1" }),
+  lookup: () => Promise.resolve({ firstName: "Rohit", token: "token_1", language: "en" }),
 };
 
 /** Records every execution and returns whatever the test told it to. */
@@ -240,7 +240,7 @@ describe("one pass", () => {
     const counting: CustomerDirectory = {
       lookup: () => {
         lookups++;
-        return Promise.resolve({ firstName: "Priya", token: null });
+        return Promise.resolve({ firstName: "Priya", token: null, language: "hi" });
       },
     };
     const h = harness({ directory: counting });

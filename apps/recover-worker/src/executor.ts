@@ -1,5 +1,6 @@
 import { type ActionKind, acceptableFirstName, type Paise, smsCostPaise } from "@kairos/domain";
-import { compose, type Gateway, type MessageChannel, type Messenger } from "@kairos/razorpay";
+import { type Gateway, type MessageChannel, type Messenger, templateCopy } from "@kairos/razorpay";
+import type { CopySource } from "@kairos/reason";
 import type { ExecuteRequest, ExecuteResult, Executor } from "@kairos/recover";
 
 export interface RecoveryExecutorOptions {
@@ -11,6 +12,15 @@ export interface RecoveryExecutorOptions {
   readonly smsSegmentPaise: number;
   /** Human names for institutions, for the copy that mentions one. */
   readonly institutionName?: (issuer: string | null) => string | null;
+  /**
+   * Where the words come from. Defaults to the hand-written English templates.
+   *
+   * The default is the conservative one on purpose. A generated library is a file that has to be
+   * present, parsed and current, and an executor that silently required one would turn a missing
+   * artifact into a system that cannot send at all. Wiring `libraryCopy(...)` in is a decision
+   * somebody makes at construction, and the fallback inside it is the same templates as here.
+   */
+  readonly copy?: CopySource;
 }
 
 /**
@@ -83,13 +93,25 @@ export class RecoveryExecutor implements Executor {
    * differently is a discrepancy worth seeing in the ledger rather than one worth hiding.
    */
   async #message(request: ExecuteRequest, channel: MessageChannel): Promise<ExecuteResult> {
-    const message = compose(request.classification.recoverability, {
-      // Rejected rather than sanitised: a "name" carrying a URL is a phishing campaign sent over the
-      // merchant's own sender id.
-      firstName: acceptableFirstName(request.firstName),
-      amount: request.casualty.amount as Paise,
-      link: this.#options.linkFor(request),
-      institution: this.#institution(request.casualty.slice.issuer),
+    const source = this.#options.copy ?? templateCopy;
+    const message = source.select({
+      recoverability: request.classification.recoverability,
+      method: request.casualty.slice.method,
+      language: request.language,
+      channel,
+      // Keyed on the grant, which Terminus derives from the casualty and the attempt number. A
+      // replayed attempt therefore composes the *same* variant, so the text a reservation was
+      // sized against is the text that gets sent. Keying on anything clock- or random-derived
+      // would make a retry a different message at a different price.
+      pick: request.grant.id,
+      variables: {
+        // Rejected rather than sanitised: a "name" carrying a URL is a phishing campaign sent over
+        // the merchant's own sender id.
+        firstName: acceptableFirstName(request.firstName),
+        amount: request.casualty.amount as Paise,
+        link: this.#options.linkFor(request),
+        institution: this.#institution(request.casualty.slice.issuer),
+      },
     });
 
     const result = await this.#options.messenger.send({
@@ -97,6 +119,7 @@ export class RecoveryExecutor implements Executor {
       channel,
       customer: request.casualty.customer,
       text: message.text,
+      subject: message.subject,
       segments: message.cost.segments,
     });
 

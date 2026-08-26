@@ -22,7 +22,8 @@
   },
   "dependencies": {
     "@kairos/domain": "workspace:*",
-    "@kairos/policy": "workspace:*"
+    "@kairos/policy": "workspace:*",
+    "@kairos/reason": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^22.10.0"

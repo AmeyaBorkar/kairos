@@ -51,8 +51,16 @@ export {
   parseSegmentKey,
   requiredSegments,
   SENDING_CLASSES,
+  type Situation,
+  segmentFor,
   segmentKey,
 } from "./segment.js";
+export {
+  type CopyRequest,
+  type CopySource,
+  libraryCopy,
+  type SelectedCopy,
+} from "./source.js";
 export {
   type BodyBudget,
   bodyBudget,

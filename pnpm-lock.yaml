@@ -38,6 +38,9 @@ importers:
       '@kairos/policy':
         specifier: workspace:*
         version: link:../../packages/policy
+      '@kairos/reason':
+        specifier: workspace:*
+        version: link:../../packages/reason
     devDependencies:
       '@types/node':
         specifier: ^22.10.0
@@ -91,6 +94,9 @@ importers:
       '@kairos/razorpay':
         specifier: workspace:*
         version: link:../../adapters/razorpay
+      '@kairos/reason':
+        specifier: workspace:*
+        version: link:../../packages/reason
       '@kairos/recover':
         specifier: workspace:*
         version: link:../../packages/recover
@@ -119,6 +125,9 @@ importers:
       '@kairos/razorpay':
         specifier: workspace:*
         version: link:../../adapters/razorpay
+      '@kairos/reason':
+        specifier: workspace:*
+        version: link:../../packages/reason
       '@kairos/recover':
         specifier: workspace:*
         version: link:../../packages/recover
@@ -202,6 +211,22 @@ importers:
         version: link:../domain
 
   packages/domain: {}
+
+  packages/explain:
+    dependencies:
+      '@kairos/domain':
+        specifier: workspace:*
+        version: link:../domain
+      '@kairos/ledger':
+        specifier: workspace:*
+        version: link:../ledger
+      '@kairos/reason':
+        specifier: workspace:*
+        version: link:../reason
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.0
+        version: 22.20.1
 
   packages/ledger:
     devDependencies:

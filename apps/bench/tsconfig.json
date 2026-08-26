@@ -12,7 +12,8 @@
       "@kairos/terminus": ["../../packages/terminus/src/index.ts"],
       "@kairos/policy": ["../../packages/policy/src/index.ts"],
       "@kairos/recover": ["../../packages/recover/src/index.ts"],
-      "@kairos/razorpay": ["../../adapters/razorpay/src/index.ts"]
+      "@kairos/razorpay": ["../../adapters/razorpay/src/index.ts"],
+      "@kairos/reason": ["../../packages/reason/src/index.ts"]
     }
   },
   "include": ["src/**/*"]

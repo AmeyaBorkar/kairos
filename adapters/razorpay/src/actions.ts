@@ -53,6 +53,15 @@ export interface MessageRequest {
   readonly customer: CustomerRef;
   /** The composed text. Composition happens before dispatch so its cost can be measured first. */
   readonly text: string;
+  /**
+   * The subject line, for email, and `null` on every channel that has no such thing.
+   *
+   * Added when the copy library was wired in and worth noting as a gap that existed until then:
+   * the hand-written templates are SMS-shaped, so every email the system could previously send went
+   * out with a body and no subject at all. The library writes one per email segment and the
+   * gauntlet enforces that it is present there and absent everywhere else.
+   */
+  readonly subject: string | null;
   /** Segments, for the channels that bill by them. */
   readonly segments: number;
 }
