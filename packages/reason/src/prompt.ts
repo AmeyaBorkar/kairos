@@ -65,6 +65,9 @@ const SITUATION: Readonly<Record<RecoverabilityClass, string>> = {
     "the most delicate case: never say or imply that they were short of funds, never mention a",
     "balance, and never suggest they check one. Say the payment did not complete and that they can",
     "finish it whenever they are ready.",
+    "Do not offer a different explanation either. Do NOT say it was a technical problem, a server",
+    "issue, an error, or anything at the bank's end — none of that is true, and a comforting",
+    "invention is still a false statement made in the merchant's name. Name no cause at all.",
   ].join(" "),
   "customer-action": [
     "Something about their saved payment method needs fixing before any payment can succeed — an",
@@ -79,7 +82,9 @@ const SITUATION: Readonly<Record<RecoverabilityClass, string>> = {
   ].join(" "),
   unknown: [
     "The payment did not go through and we do not know why. Do not guess, do not name a cause, and",
-    "do not imply anything is wrong with their account. Say it did not complete and offer the link.",
+    "do not imply anything is wrong with their account. In particular do NOT say it was a technical",
+    "problem, a server issue or an error — that is the guess everybody reaches for and we have no",
+    "evidence for it. Say it did not complete and offer the link.",
   ].join(" "),
   dead: "Never sent. If you are reading this, something is wrong upstream.",
 };
