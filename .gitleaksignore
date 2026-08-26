@@ -25,3 +25,15 @@
 # Gemini credential never reaches a cassette at all: it travels as an `x-goog-api-key` header, and a
 # cassette holds bodies. There is a test asserting that.
 ce557ec9677c0b2241345a16a44a5ec69bb2ad86:adapters/reasoner-gemini/src/fixtures/gemini.cassette.json:generic-api-key:222
+#
+# ── 8cc9b09, .gitleaksignore:11 ─────────────────────────────────────────────────────────────────
+#
+# The same rule, on the version of this file that quoted the finding above rather than describing
+# it. The quotation is gone from the working tree, and it is still in that commit, and a scan of
+# history is right to keep finding it there — that is the whole point of scanning history rather
+# than the checkout.
+#
+# Rewriting a pushed commit to make an embarrassing intermediate state disappear is the wrong
+# instrument for this. The value is the same truncated SHA-256 as the entry above, cleared for the
+# same reason, and the commit that removed it explains what happened. Both stay.
+8cc9b09db7ee17da85fc32818961f15c094d889a:.gitleaksignore:generic-api-key:11
