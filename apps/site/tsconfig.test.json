@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    // Tests read the built page off disk, so they get node. Kept in a separate project so that
+    // permission does not leak into the browser bundle.
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "types": ["node"],
+    "paths": {}
+  },
+  "include": ["src/**/*.test.ts", "src/**/*.ts"]
+}

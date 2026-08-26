@@ -1,0 +1,26 @@
+{
+  "name": "@kairos/site",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The public site: the case in four questions, a recorded console run, the architecture and the benchmarks.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/make-icons.mjs && tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.test.json",
+    "icons": "node scripts/make-icons.mjs",
+    "capture": "node scripts/capture-run.mjs",
+    "dev": "node scripts/serve.mjs",
+    "start": "node scripts/serve.mjs",
+    "preview": "node scripts/preview-scene.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0"
+  },
+  "dependencies": {
+    "@kairos/console": "workspace:*",
+    "@kairos/detect": "workspace:*",
+    "@kairos/domain": "workspace:*",
+    "@kairos/terminus": "workspace:*"
+  }
+}

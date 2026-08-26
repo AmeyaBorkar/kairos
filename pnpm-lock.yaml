@@ -244,6 +244,25 @@ importers:
         specifier: ^22.10.0
         version: 22.20.1
 
+  apps/site:
+    dependencies:
+      '@kairos/console':
+        specifier: workspace:*
+        version: link:../console
+      '@kairos/detect':
+        specifier: workspace:*
+        version: link:../../packages/detect
+      '@kairos/domain':
+        specifier: workspace:*
+        version: link:../../packages/domain
+      '@kairos/terminus':
+        specifier: workspace:*
+        version: link:../../packages/terminus
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.0
+        version: 22.20.1
+
   packages/detect:
     dependencies:
       '@kairos/domain':
