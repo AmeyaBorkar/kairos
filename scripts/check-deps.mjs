@@ -175,6 +175,46 @@ for (const [name, pkg] of packages) {
   }
 }
 
+/**
+ * Compiled output must never sit beside the source it was compiled from.
+ *
+ * A misconfigured `tsconfig.build.json` — one whose `paths` reach another package's `src` while
+ * `rootDir` does not — makes tsc emit that package's `.js` next to its `.ts`. Nothing fails: the
+ * build succeeds, the tests run, and every `import "./thing.js"` in the workspace now resolves to a
+ * stale artifact instead of the file being edited. Tests then pass or fail against code that is not
+ * the code under review, and the only symptom is that an edit appears to have no effect.
+ *
+ * That happened once, and the hour it cost is the reason this check exists. It is cheap and it is
+ * absolute: there is no situation in this repository where a `.js` or `.d.ts` belongs under a
+ * `src/` directory.
+ */
+{
+  const shadows = [];
+  const walk = (dir) => {
+    let entries;
+    try {
+      entries = readdirSync(dir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      if (entry.name === "node_modules") continue;
+      const path = join(dir, entry.name);
+      if (entry.isDirectory()) walk(path);
+      else if (/\.(js|d\.ts|js\.map|d\.ts\.map)$/.test(entry.name)) shadows.push(path);
+    }
+  };
+  for (const [, pkg] of packages) walk(join(pkg.dir, "src"));
+
+  if (shadows.length > 0) {
+    problems.push(
+      `compiled output is shadowing source in ${shadows.length} file(s), starting with ` +
+        `${shadows[0]} — every import of these resolves to the artifact rather than the .ts. ` +
+        "Delete them, then fix the build config that emitted them (check `rootDir` against `paths`).",
+    );
+  }
+}
+
 if (problems.length > 0) {
   process.stderr.write(`${problems.join("\n")}\n`);
   process.stderr.write(
