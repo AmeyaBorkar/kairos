@@ -1,0 +1,3755 @@
+{
+  "provenance": {
+    "model": "gemini-3.1-flash-lite",
+    "generatedAt": "2026-08-26",
+    "promptHash": "9957036d353cca3b",
+    "spentPaise": 815,
+    "calls": 190
+  },
+  "variants": [
+    {
+      "id": "customer-action/card/en/contact-email#30961194",
+      "segment": "customer-action/card/en/contact-email",
+      "body": "Your payment of {amount} was declined because your saved card needs to be re-authorized. Please visit {link} to update your payment method and enter the OTP from {institution} when prompted.",
+      "subject": "Payment issue with your saved card",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-action/card/en/contact-email#529e9b18",
+      "segment": "customer-action/card/en/contact-email",
+      "body": "We could not process {amount} because your saved card details are no longer valid. Go to {link} to update your card, and be ready to enter the OTP from {institution} to finalize your purchase.",
+      "subject": "Action needed for your saved card",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-action/card/en/contact-email#b2bbfc2e",
+      "segment": "customer-action/card/en/contact-email",
+      "body": "Your saved card has expired, preventing the payment of {amount}. Please update your card information and follow the prompt to enter the OTP sent by {institution} to complete the transaction via {link}.",
+      "subject": "Update your card details to complete payment",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-action/card/en/contact-sms#69a95514",
+      "segment": "customer-action/card/en/contact-sms",
+      "body": "Your card has expired, preventing the {amount} charge. Please update your card details and enter the bank OTP at {link} to pay.",
+      "subject": null,
+      "typicalSegments": 1,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/card/en/contact-sms#d4166c05",
+      "segment": "customer-action/card/en/contact-sms",
+      "body": "Your saved card failed to process {amount}. Update your payment method at {link} and complete the bank OTP verification to finish.",
+      "subject": null,
+      "typicalSegments": 1,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/card/en/contact-whatsapp#48cce4ad",
+      "segment": "customer-action/card/en/contact-whatsapp",
+      "body": "Your saved card failed. Please use {link} to re-enter details and approve {amount} via OTP.",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "customer-action/card/en/contact-whatsapp#807df6ae",
+      "segment": "customer-action/card/en/contact-whatsapp",
+      "body": "Your card has expired. Update your details at {link} to pay {amount} using your bank OTP.",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "customer-action/card/en/contact-whatsapp#894a5f9f",
+      "segment": "customer-action/card/en/contact-whatsapp",
+      "body": "Update your card at {link} to complete the {amount} payment. Watch for an OTP from your bank.",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "customer-action/card/hi/contact-email#90750d8e",
+      "segment": "customer-action/card/hi/contact-email",
+      "body": "पुराने या अमान्य कार्ड के कारण {amount} का भुगतान पूरा नहीं हुआ। कृपया {link} पर अपनी कार्ड जानकारी फिर से भरें। बैंक से आने वाले ओटीपी के माध्यम से लेनदेन पूरा करें।",
+      "subject": "कार्ड जानकारी अपडेट करें",
+      "typicalSegments": 3,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-action/card/hi/contact-email#cc015f1e",
+      "segment": "customer-action/card/hi/contact-email",
+      "body": "आपका कार्ड समाप्त हो चुका है या जानकारी अपडेट करने की आवश्यकता है। कृपया {link} पर जाकर नया कार्ड विवरण दर्ज करें। बैंक द्वारा भेजे गए ओटीपी को दर्ज करके {amount} का भुगतान पूरा करें।",
+      "subject": "आपका कार्ड पेमेंट पूरा नहीं हो सका",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-action/card/hi/contact-sms#2a99dded",
+      "segment": "customer-action/card/hi/contact-sms",
+      "body": "{amount} के भुगतान के लिए आपका कार्ड अपडेट करना होगा। {link} पर जाएँ और बैंक का OTP इस्तेमाल करें।",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/card/hi/contact-sms#dcf1b85e",
+      "segment": "customer-action/card/hi/contact-sms",
+      "body": "{link} पर कार्ड अपडेट करें। पेमेंट पूरा करने के लिए बैंक द्वारा भेजा गया OTP दर्ज करना होगा। {amount}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/card/hi/contact-whatsapp#72ef720b",
+      "segment": "customer-action/card/hi/contact-whatsapp",
+      "body": "आपका कार्ड समाप्त हो गया है। नया कार्ड जोड़कर {amount} का भुगतान करें और बैंक का OTP डालें। {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/card/hi/contact-whatsapp#9dd618c7",
+      "segment": "customer-action/card/hi/contact-whatsapp",
+      "body": "{amount} के लिए आपका कार्ड अपडेट करना होगा। नया कार्ड जोड़ें, भुगतान करें और बैंक का OTP डालें। {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/card/mr/contact-email#0ef9cbfb",
+      "segment": "customer-action/card/mr/contact-email",
+      "body": "तुमचे कार्ड कालबाह्य झाले आहे किंवा त्यामध्ये बदल झाला आहे. कृपया नवीन माहिती भरून {amount} चे पेमेंट पुन्हा पूर्ण करा आणि बँकेकडून येणारा OTP प्रविष्ट करा. पेमेंट पूर्ण करण्यासाठी इथे क्लिक करा: {link}",
+      "subject": "तुमच्या कार्ड पेमेंटमध्ये अडचण आली आहे",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-action/card/mr/contact-email#7062ea84",
+      "segment": "customer-action/card/mr/contact-email",
+      "body": "तुमच्या कार्ड पेमेंटमध्ये तांत्रिक त्रुटी आली आहे. कृपया {link} वर जाऊन पुन्हा प्रयत्न करा. पेमेंट यशस्वी करण्यासाठी तुम्हाला बँकेचा OTP प्रविष्ट करावा लागेल, ज्याची रक्कम {amount} असेल.",
+      "subject": "कार्ड पेमेंट प्रक्रिया पूर्ण करा",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-action/card/mr/contact-email#70c17517",
+      "segment": "customer-action/card/mr/contact-email",
+      "body": "तुमच्या सेव्ह केलेल्या कार्डची माहिती अद्ययावत नसल्यामुळे पेमेंट अपयशी ठरले. {link} वर जाऊन कार्डचा तपशील पुन्हा भरा आणि बँकेद्वारे पाठवलेला OTP वापरून {amount} ची प्रक्रिया पूर्ण करा.",
+      "subject": "पेमेंट पूर्ण करण्यासाठी नवीन कार्ड तपशील जोडा",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-action/card/mr/contact-sms#75f625d0",
+      "segment": "customer-action/card/mr/contact-sms",
+      "body": "तुमचे कार्ड अपडेट करावे लागेल. पुन्हा {amount} भरताना बँक OTP पाठवेल. येथे क्लिक करा: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/card/mr/contact-whatsapp#6804b732",
+      "segment": "customer-action/card/mr/contact-whatsapp",
+      "body": "तुमचे कार्ड कालबाह्य झाले आहे. {link} वर नवीन कार्ड जोडा आणि बँकेचे ओटीपी वापरून {amount} भरा.",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/card/mr/contact-whatsapp#836a421d",
+      "segment": "customer-action/card/mr/contact-whatsapp",
+      "body": "कार्डची मुदत संपली आहे. {link} वर नवीन कार्ड माहिती द्या आणि बँकेचे ओटीपी टाकून {amount} पूर्ण करा.",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/card/mr/contact-whatsapp#bbc28406",
+      "segment": "customer-action/card/mr/contact-whatsapp",
+      "body": "{amount} भरण्यासाठी तुमचे कार्ड अपडेट करणे आवश्यक आहे. {link} वर जाऊन तपशील बदला आणि ओटीपी द्या.",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/card/ta/contact-email#d6bb8420",
+      "segment": "customer-action/card/ta/contact-email",
+      "body": "நீங்கள் பயன்படுத்திய கார்டு தற்போது செல்லாது. {amount} தொகையைச் செலுத்த, புதிய கார்டு விவரங்களை இந்த இணைப்பில் உள்ளிடவும்: {link}. வங்கி அனுப்பும் OTP எண்ணை உள்ளிட்டு கட்டணத்தை முடிக்கவும்.",
+      "subject": "கார்டு விவரங்களை புதுப்பிக்கவும்",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-action/card/ta/contact-email#e64f2d56",
+      "segment": "customer-action/card/ta/contact-email",
+      "body": "உங்கள் கார்டு காலாவதியானதால் {amount} தொகைக்கான கட்டணம் தோல்வியடைந்தது. புதிய கார்டு விவரங்களை இங்கே புதுப்பிக்கவும்: {link}. உங்கள் வங்கியிலிருந்து வரும் OTP எண்ணைப் பயன்படுத்தி பணம் செலுத்துவதை உறுதி செய்யவும்.",
+      "subject": "உங்கள் கார்டு காலாவதியாகிவிட்டது",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-action/card/ta/contact-email#fc227f91",
+      "segment": "customer-action/card/ta/contact-email",
+      "body": "கார்டு விவரங்கள் காலாவதியானதால் {amount} ரூபாய்க்கான பரிவர்த்தனை தடைபட்டுள்ளது. {link} மூலம் சரியான கார்டு விவரங்களைப் பதிவிட்டு மீண்டும் முயலவும். பரிவர்த்தனையை முடிக்க உங்கள் வங்கி அனுப்பும் OTP தேவைப்படும்.",
+      "subject": "செலுத்துதல் தோல்வி - கார்டு விவரங்கள்",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-action/card/ta/contact-sms#209ec160",
+      "segment": "customer-action/card/ta/contact-sms",
+      "body": "{institution} அட்டை காலாவதியாகிவிட்டது. புதிய அட்டை மூலம் {amount} செலுத்த {link} கிளிக் செய்யவும்.",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/card/ta/contact-sms#60e69b83",
+      "segment": "customer-action/card/ta/contact-sms",
+      "body": "{amount} செலுத்த உங்கள் {institution} அட்டை விவரம் காலாவதியாகிவிட்டது. {link} மூலம் புதுப்பிக்கவும்.",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/card/ta/contact-sms#d159e6d7",
+      "segment": "customer-action/card/ta/contact-sms",
+      "body": "{institution} அட்டை விவரங்களை மாற்ற வேண்டும். {amount} செலுத்த {link} சென்று புதிய விவரம் சேர்க்கவும்.",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/card/ta/contact-whatsapp#b1bc6b06",
+      "segment": "customer-action/card/ta/contact-whatsapp",
+      "body": "உங்கள் கார்டு காலாவதியாகிவிட்டது. {link} மூலம் புதிய கார்டில் {amount} செலுத்த வங்கி OTP பெறுங்கள்.",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/card/ta/contact-whatsapp#b2440309",
+      "segment": "customer-action/card/ta/contact-whatsapp",
+      "body": "{amount} செலுத்த உங்கள் கார்டை புதுப்பிக்க வேண்டும். {link} சென்று புதிய கார்டு மூலம் OTP பெறுங்கள்.",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/card/ta/contact-whatsapp#ba3e4c45",
+      "segment": "customer-action/card/ta/contact-whatsapp",
+      "body": "கார்டு விவரங்கள் மாறிவிட்டன. {link} மூலம் புதிய கார்டை இணைத்து OTP பெற்று {amount} செலுத்துங்கள்.",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/emi/en/contact-email#0e29e119",
+      "segment": "customer-action/emi/en/contact-email",
+      "body": "Your {amount} payment is pending because the EMI plan requires re-confirmation. You can finish the setup by visiting {link}.",
+      "subject": "Update required for your EMI payment",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/emi/en/contact-email#a658e4fc",
+      "segment": "customer-action/emi/en/contact-email",
+      "body": "We could not process your EMI request because your bank needs you to re-authorize the plan. Use {link} to finalize the {amount} transaction.",
+      "subject": "Complete your EMI setup",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/emi/en/contact-email#f069457c",
+      "segment": "customer-action/emi/en/contact-email",
+      "body": "Your bank requires you to re-confirm the EMI details for your purchase of {amount}. Please open {link} to complete this verification.",
+      "subject": "Action needed for your EMI plan",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/emi/en/contact-sms#48cd7e14",
+      "segment": "customer-action/emi/en/contact-sms",
+      "body": "Your EMI plan for {amount} requires bank re-authorization. Please update your details at {link} to finish your purchase.",
+      "subject": null,
+      "typicalSegments": 1,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/emi/en/contact-sms#4e01810d",
+      "segment": "customer-action/emi/en/contact-sms",
+      "body": "To proceed with the {amount} EMI, re-confirm the plan via {link}. Your bank needs this to finalize the transaction.",
+      "subject": null,
+      "typicalSegments": 1,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/emi/en/contact-sms#78fda51f",
+      "segment": "customer-action/emi/en/contact-sms",
+      "body": "Your bank requires re-confirmation of the EMI plan for {amount}. Visit {link} to complete your payment request.",
+      "subject": null,
+      "typicalSegments": 1,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/emi/en/contact-whatsapp#06bca3da",
+      "segment": "customer-action/emi/en/contact-whatsapp",
+      "body": "We could not process your {institution} EMI. Please re-confirm your plan for {amount} at {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/emi/en/contact-whatsapp#fcc82415",
+      "segment": "customer-action/emi/en/contact-whatsapp",
+      "body": "Your {institution} EMI setup is incomplete. To complete your {amount} payment, authorize at {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/emi/hi/contact-email#11623023",
+      "segment": "customer-action/emi/hi/contact-email",
+      "body": "आपका {amount} का भुगतान बैंक द्वारा लंबित है। कृपया {link} पर जाएं और अपने EMI प्लान को दोबारा कन्फर्म करें ताकि यह लेनदेन सफल हो सके।",
+      "subject": "भुगतान के लिए EMI री-वेरिफिकेशन",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/emi/hi/contact-email#1d049e59",
+      "segment": "customer-action/emi/hi/contact-email",
+      "body": "आपका {amount} का EMI लेनदेन अधूरा रह गया है क्योंकि आपके बैंक ने इसे मंजूरी नहीं दी है। कृपया {link} पर जाकर अपने बैंक के साथ EMI प्लान को फिर से कन्फर्म करें।",
+      "subject": "EMI भुगतान पूरा नहीं हो सका",
+      "typicalSegments": 3,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-action/emi/hi/contact-sms#37e7b064",
+      "segment": "customer-action/emi/hi/contact-sms",
+      "body": "{amount} के लिए {institution} पर ईएमआई पुनः कन्फर्म करें। भुगतान पूरा करने हेतु जाएँ: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/emi/hi/contact-sms#49bf8b21",
+      "segment": "customer-action/emi/hi/contact-sms",
+      "body": "{institution} के साथ ईएमआई प्लान अपडेट नहीं हो पाया। {amount} के भुगतान के लिए यहाँ क्लिक करें: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/emi/hi/contact-sms#fdea8eb6",
+      "segment": "customer-action/emi/hi/contact-sms",
+      "body": "{institution} पर आपका ईएमआई कन्फर्मेशन अधूरा है। पूरा करने के लिए यहाँ क्लिक करें: {link} {amount}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/emi/hi/contact-whatsapp#a0e53f10",
+      "segment": "customer-action/emi/hi/contact-whatsapp",
+      "body": "{institution} पर आपका {amount} का ईएमआई कन्फर्मेशन रुक गया है। यहाँ से पुनः प्रयास करें: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/emi/hi/contact-whatsapp#daf736b2",
+      "segment": "customer-action/emi/hi/contact-whatsapp",
+      "body": "आपका {amount} का ईएमआई भुगतान अधूरा है। बैंक से इसे दोबारा कन्फर्म करने के लिए यहाँ जाएँ: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/emi/mr/contact-email#449979fd",
+      "segment": "customer-action/emi/mr/contact-email",
+      "body": "तुमची EMI प्रक्रिया बँक स्तरावर अडकली आहे. ही योजना पुन्हा अधिकृत करण्यासाठी {link} वर क्लिक करून {amount} साठी प्रक्रिया पूर्ण करा.",
+      "subject": "EMI साठी पुन्हा बँक पडताळणी हवी",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/emi/mr/contact-sms#52e9314a",
+      "segment": "customer-action/emi/mr/contact-sms",
+      "body": "तुमचा {amount} चा ईएमआय पर्याय बँक स्तरावर थांबला आहे. या लिंकवरून योजना पुन्हा निवडा: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/emi/mr/contact-whatsapp#f3173af0",
+      "segment": "customer-action/emi/mr/contact-whatsapp",
+      "body": "{amount} साठी तुमची ईएमआय विनंती अद्याप बँकेने मंजूर केली नाही. पुन्हा प्रयत्न करा: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/emi/ta/contact-email#40acb8d8",
+      "segment": "customer-action/emi/ta/contact-email",
+      "body": "உங்கள் EMI கட்டணத்தை வங்கியில் அங்கீகரிப்பதில் சிக்கல் ஏற்பட்டுள்ளது. இந்த {link} இணைப்பைப் பயன்படுத்தி {institution} வங்கி மூலம் {amount} தொகைக்கு உங்கள் EMI முறையை மீண்டும் உறுதி செய்யவும்.",
+      "subject": "EMI பணம் செலுத்துவதில் சிக்கல்",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-action/emi/ta/contact-email#612ba45a",
+      "segment": "customer-action/emi/ta/contact-email",
+      "body": "{institution} வழங்கிய உங்கள் EMI விருப்பம் தற்போது செயலிழந்துள்ளது. இந்த {link} இணைப்பிற்குச் சென்று உங்கள் EMI திட்டத்தை மீண்டும் தேர்வு செய்து {amount} கட்டணத்தைச் செலுத்தவும்.",
+      "subject": "EMI திட்டத்தை மீண்டும் உறுதிப்படுத்தவும்",
+      "typicalSegments": 3,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-action/emi/ta/contact-email#fb79c770",
+      "segment": "customer-action/emi/ta/contact-email",
+      "body": "{institution} வழியாக நீங்கள் தேர்ந்தெடுத்த EMI திட்டம் காலாவதியாகிவிட்டது. அதை மீண்டும் உறுதிப்படுத்த இந்த {link} இணைப்பைப் பயன்படுத்தி {amount} தொகைக்கான பரிவர்த்தனையை நிறைவு செய்யவும்.",
+      "subject": "உங்கள் EMI பரிவர்த்தனையை முடிக்கவும்",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-action/emi/ta/contact-sms#30e59c8a",
+      "segment": "customer-action/emi/ta/contact-sms",
+      "body": "{institution} வங்கியின் தவணை முறையை உறுதிப்படுத்த தவறியது. {amount} செலுத்த {link} கிளிக் செய்யவும்.",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/emi/ta/contact-sms#33b662cb",
+      "segment": "customer-action/emi/ta/contact-sms",
+      "body": "{institution} தவணை முறை புதுப்பிப்பு தேவை. {amount} செலுத்த உங்கள் நிலுவையை {link} மூலம் முடிக்கவும்.",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/emi/ta/contact-sms#4b3e923b",
+      "segment": "customer-action/emi/ta/contact-sms",
+      "body": "{institution} தவணை முறையை மீண்டும் உறுதிப்படுத்துங்கள். {amount} தொகையை செலுத்த {link} செல்லவும்.",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/emi/ta/contact-whatsapp#ed536115",
+      "segment": "customer-action/emi/ta/contact-whatsapp",
+      "body": "{amount} பணத்தை செலுத்த {institution} EMI-ஐ மீண்டும் சரிபார்க்கவும். தொடர இங்கே கிளிக் செய்யவும்: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/netbanking/en/contact-email#390d519f",
+      "segment": "customer-action/netbanking/en/contact-email",
+      "body": "We could not process your {amount} payment as the connection to {institution} was interrupted. Please open this link to re-initiate your login and complete the authorization: {link}.",
+      "subject": "Netbanking authorization needed",
+      "typicalSegments": 3,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-action/netbanking/en/contact-email#45eb05f1",
+      "segment": "customer-action/netbanking/en/contact-email",
+      "body": "Your payment of {amount} requires you to manually approve the request through {institution}. Click here to log in and confirm the transaction: {link}.",
+      "subject": "Update on your payment",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/netbanking/en/contact-email#48feca69",
+      "segment": "customer-action/netbanking/en/contact-email",
+      "body": "Your payment of {amount} is pending because your netbanking session timed out. Please log in to {institution} via this link to authorize the transaction: {link}.",
+      "subject": "Action required: Complete your netbanking payment",
+      "typicalSegments": 3,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-action/netbanking/en/contact-sms#cb1ead08",
+      "segment": "customer-action/netbanking/en/contact-sms",
+      "body": "We could not verify your {institution} payment. Please visit {link} to retry the {amount} transaction.",
+      "subject": null,
+      "typicalSegments": 1,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/netbanking/en/contact-sms#e2b3de1b",
+      "segment": "customer-action/netbanking/en/contact-sms",
+      "body": "Your {institution} netbanking session timed out. Please login to {link} to re-authorise the {amount} payment.",
+      "subject": null,
+      "typicalSegments": 1,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/netbanking/en/contact-sms#f7928a17",
+      "segment": "customer-action/netbanking/en/contact-sms",
+      "body": "The {amount} payment failed because your {institution} mandate needs re-authorisation. Complete it at {link}.",
+      "subject": null,
+      "typicalSegments": 1,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/netbanking/en/contact-whatsapp#5a064651",
+      "segment": "customer-action/netbanking/en/contact-whatsapp",
+      "body": "The {institution} session expired. Please complete the {amount} payment by logging in at {link}.",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/netbanking/en/contact-whatsapp#62387e25",
+      "segment": "customer-action/netbanking/en/contact-whatsapp",
+      "body": "Your {institution} login timed out. Log in to your bank via {link} to authorize {amount} now.",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/netbanking/en/contact-whatsapp#95960dff",
+      "segment": "customer-action/netbanking/en/contact-whatsapp",
+      "body": "Authorize {amount} via {institution}. To finish, log into your banking portal through {link}.",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/netbanking/hi/contact-email#0f2c291a",
+      "segment": "customer-action/netbanking/hi/contact-email",
+      "body": "{institution} की साइट पर आपका नेटबैंकिंग ऑथराइजेशन अधूरा रह गया है। पेमेंट को सफलतापूर्वक पूरा करने के लिए अपनी बैंक वेबसाइट पर लॉग-इन करने हेतु इस लिंक पर जाएं: {link}। {amount} का भुगतान पूरा करने के लिए यह आवश्यक है।",
+      "subject": "पेमेंट पूरा करने के लिए लॉग-इन करें",
+      "typicalSegments": 4,
+      "worstCaseSegments": 5
+    },
+    {
+      "id": "customer-action/netbanking/hi/contact-email#1b770f89",
+      "segment": "customer-action/netbanking/hi/contact-email",
+      "body": "{amount} के भुगतान के लिए आपको {institution} के पोर्टल पर जाकर मैन्युअल रूप से ऑथराइज करना होगा। कृपया {link} का उपयोग करें और अपने बैंक क्रेडेंशियल्स का उपयोग करके पेमेंट प्रक्रिया पूरी करें।",
+      "subject": "नेटबैंकिंग से भुगतान के लिए कार्रवाई करें",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-action/netbanking/hi/contact-email#c1c85612",
+      "segment": "customer-action/netbanking/hi/contact-email",
+      "body": "{institution} के माध्यम से किया जा रहा आपका {amount} का भुगतान अभी प्रमाणित नहीं हुआ है। कृपया {link} पर जाकर अपने बैंक खाते में लॉग-इन करें और ट्रांजेक्शन को पूरा करने के लिए ऑथराइज करें।",
+      "subject": "आपका नेटबैंकिंग ट्रांजेक्शन अधूरा है",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-action/netbanking/hi/contact-sms#1c5ca585",
+      "segment": "customer-action/netbanking/hi/contact-sms",
+      "body": "{institution} पर ऑथोराइज़ेशन बाकी है। {amount} का पेमेंट पूरा करने के लिए यहाँ जाएँ: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/netbanking/hi/contact-whatsapp#780c7723",
+      "segment": "customer-action/netbanking/hi/contact-whatsapp",
+      "body": "{institution} के जरिए {amount} का पेमेंट अधूरा है। बैंक साइट पर जाकर इसे पूरा करें: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/netbanking/mr/contact-email#ed993e5a",
+      "segment": "customer-action/netbanking/mr/contact-email",
+      "body": "{institution} द्वारे तुमचे {amount} चे पेमेंट सध्या प्रलंबित आहे. व्यवहार पूर्ण करण्यासाठी कृपया या लिंकवर क्लिक करा: {link}. बँकेच्या पेजवर जाऊन पेमेंटची पुष्टी करणे आवश्यक आहे.",
+      "subject": "पेमेंट पूर्ण करण्यासाठी कृती आवश्यक",
+      "typicalSegments": 3,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-action/netbanking/mr/contact-email#f32f2ecf",
+      "segment": "customer-action/netbanking/mr/contact-email",
+      "body": "{institution} कडून पेमेंटला मंजुरी मिळाली नाही. कृपया लिंकवर जाऊन पुन्हा प्रयत्न करा: {link}. {amount} चे पेमेंट यशस्वी करण्यासाठी बँकेच्या पोर्टलवर अधिकृत करणे आवश्यक आहे.",
+      "subject": "तुमच्या पेमेंटमध्ये तांत्रिक अडचण आली आहे",
+      "typicalSegments": 3,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-action/netbanking/mr/contact-email#f74ca323",
+      "segment": "customer-action/netbanking/mr/contact-email",
+      "body": "{institution} ने पेमेंट नाकारले आहे, कारण व्यवहार अधिकृत करण्याची गरज आहे. कृपया येथे जाऊन प्रक्रिया पूर्ण करा: {link}. एकदा का तुम्ही बँकेच्या साइटवर लॉग इन करून अधिकृत केले की {amount} चे पेमेंट पूर्ण होईल.",
+      "subject": "पेमेंट प्रक्रियेत अडथळा",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-action/netbanking/mr/contact-sms#065524ce",
+      "segment": "customer-action/netbanking/mr/contact-sms",
+      "body": "{institution} ने {amount} चे पेमेंट नाकारले. पुन्हा प्रयत्न करण्यासाठी येथे लॉग इन करा: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/netbanking/mr/contact-whatsapp#4d810b45",
+      "segment": "customer-action/netbanking/mr/contact-whatsapp",
+      "body": "{institution} खात्याची पडताळणी बाकी आहे. {amount} भरण्यासाठी या लिंकचा वापर करा: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/netbanking/mr/contact-whatsapp#5219670e",
+      "segment": "customer-action/netbanking/mr/contact-whatsapp",
+      "body": "{institution} कडून पेमेंटला मंजुरी हवी आहे. व्यवहार पूर्ण करण्यासाठी इथे क्लिक करा: {link} {amount}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/netbanking/mr/contact-whatsapp#9385480c",
+      "segment": "customer-action/netbanking/mr/contact-whatsapp",
+      "body": "{institution} वर ऑथोरायझेशन अपूर्ण आहे. पेमेंट पूर्ण करण्यासाठी खालील लिंकवर जा: {link} {amount}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/netbanking/ta/contact-email#cbc19383",
+      "segment": "customer-action/netbanking/ta/contact-email",
+      "body": "{institution} வழியாக நீங்கள் செய்த கட்டணம் தோல்வியடைந்துள்ளது. உங்கள் வங்கியின் வலைதளத்தில் உள்நுழைந்து மீண்டும் {amount} மதிப்பிலான கட்டணத்தை அங்கீகரிக்கவும். இங்கே கிளிக் செய்யவும்: {link}",
+      "subject": "உங்கள் பணப் பரிவர்த்தனை தோல்வியடைந்தது",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-action/netbanking/ta/contact-email#d90c0424",
+      "segment": "customer-action/netbanking/ta/contact-email",
+      "body": "{institution} நெட்பேங்கிங் மூலம் நீங்கள் முயன்ற {amount} பணப் பரிவர்த்தனை பாதியில் நின்றது. உங்கள் வங்கியின் பக்கத்திற்குச் சென்று கட்டணத்தை உறுதிப்படுத்த கீழே உள்ள இணைப்பைப் பயன்படுத்தவும்: {link}",
+      "subject": "கட்டணத்தை நிறைவு செய்ய உதவுங்கள்",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-action/netbanking/ta/contact-email#f2005afe",
+      "segment": "customer-action/netbanking/ta/contact-email",
+      "body": "{institution} வலைதளத்தில் உங்கள் கட்டணத்தை அங்கீகரிக்கத் தவறியதால் {amount} செலுத்துதல் முற்றுப்பெறவில்லை. கட்டணத்தை முடிக்க இந்த இணைப்பைப் பயன்படுத்தவும்: {link}",
+      "subject": "மீண்டும் ஒருமுறை முயலவும்",
+      "typicalSegments": 3,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-action/netbanking/ta/contact-sms#9269cc3a",
+      "segment": "customer-action/netbanking/ta/contact-sms",
+      "body": "{institution} வழியாக {amount} செலுத்த முயன்றது தோல்வி. அங்கீகரிக்க இந்த இணைப்பைச் சொடுக்கவும்: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/netbanking/ta/contact-sms#d08e8f10",
+      "segment": "customer-action/netbanking/ta/contact-sms",
+      "body": "{institution} இணையவங்கி சரிபார்ப்பு தோல்வியடைந்தது. பணம் செலுத்த மீண்டும் முயற்சிக்கவும்: {link} {amount}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/netbanking/ta/contact-whatsapp#53b2411e",
+      "segment": "customer-action/netbanking/ta/contact-whatsapp",
+      "body": "{institution} வங்கி ஒப்புதல் கிடைக்கவில்லை. {link} கிளிக் செய்து {amount} பணத்தை செலுத்தவும்.",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/netbanking/ta/contact-whatsapp#64e34eaa",
+      "segment": "customer-action/netbanking/ta/contact-whatsapp",
+      "body": "{institution} இணையதளத்தில் பணபரிமாற்றத்தை உறுதிப்படுத்தவில்லை. {link} மூலம் {amount} செலுத்தவும்.",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/netbanking/ta/contact-whatsapp#bebef8bb",
+      "segment": "customer-action/netbanking/ta/contact-whatsapp",
+      "body": "{amount} பரிவர்த்தனை தோல்வியடைந்தது. {institution} தளத்தில் உள்நுழைந்து மீண்டும் முயலவும்: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/paylater/en/contact-email#64a0dfc2",
+      "segment": "customer-action/paylater/en/contact-email",
+      "body": "Your {institution} pay-later account needs a fresh authorization to process your payment of {amount}. Please visit {link} to resolve this and complete your purchase.",
+      "subject": "Update your payment settings",
+      "typicalSegments": 3,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-action/paylater/en/contact-email#a9b38f0b",
+      "segment": "customer-action/paylater/en/contact-email",
+      "body": "Your pay-later authorization from {institution} did not go through. Please update your payment mandate settings at {link} to complete the transaction of {amount}.",
+      "subject": "Action required for your recent payment",
+      "typicalSegments": 3,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-action/paylater/en/contact-email#d00720a6",
+      "segment": "customer-action/paylater/en/contact-email",
+      "body": "The payment of {amount} is pending because your {institution} pay-later account requires re-authorization. Click here {link} to confirm the mandate and finish your order.",
+      "subject": "Complete your pay-later purchase",
+      "typicalSegments": 3,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-action/paylater/en/contact-sms#9ed0d9a2",
+      "segment": "customer-action/paylater/en/contact-sms",
+      "body": "Your pay-later account needs re-authorization to process {amount}. Please update your account status at {link}.",
+      "subject": null,
+      "typicalSegments": 1,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/paylater/en/contact-sms#bfc8409a",
+      "segment": "customer-action/paylater/en/contact-sms",
+      "body": "We could not charge your pay-later account for {amount} as it requires manual authorization. Visit {link} to complete.",
+      "subject": null,
+      "typicalSegments": 1,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/paylater/en/contact-sms#f663a576",
+      "segment": "customer-action/paylater/en/contact-sms",
+      "body": "Your pay-later session for {amount} is pending. Please authorize the transaction via your account settings at {link}.",
+      "subject": null,
+      "typicalSegments": 1,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/paylater/en/contact-whatsapp#121e48b4",
+      "segment": "customer-action/paylater/en/contact-whatsapp",
+      "body": "The paylater mandate is pending. Re-authorise the {amount} transaction at {link} to complete it.",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/paylater/en/contact-whatsapp#2e479ea6",
+      "segment": "customer-action/paylater/en/contact-whatsapp",
+      "body": "Payment of {amount} is stuck. Please open {link} and authorise the paylater request to finish.",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "customer-action/paylater/en/contact-whatsapp#85518a36",
+      "segment": "customer-action/paylater/en/contact-whatsapp",
+      "body": "Your paylater authorisation timed out. Please visit {link} to re-approve the {amount} payment.",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "customer-action/paylater/hi/contact-email#41060cb7",
+      "segment": "customer-action/paylater/hi/contact-email",
+      "body": "{amount} का भुगतान अभी तक पूरा नहीं हुआ है क्योंकि आपका पे-लेटर मैंडेट फिर से प्रमाणित करना होगा। कृपया इस लिंक पर जाकर अपनी जानकारी अपडेट करें: {link}।",
+      "subject": "भुगतान को अधिकृत करें",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/paylater/hi/contact-email#c0d8b5e5",
+      "segment": "customer-action/paylater/hi/contact-email",
+      "body": "आपके पे-लेटर खाते का प्रमाणीकरण अधूरा रहने के कारण {amount} का भुगतान रुक गया है। कृपया अपने पे-लेटर ऐप पर जाकर इसे अधिकृत करें: {link}।",
+      "subject": "पे-लेटर भुगतान पूरा नहीं हो सका",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/paylater/hi/contact-email#e273f86d",
+      "segment": "customer-action/paylater/hi/contact-email",
+      "body": "{institution} पर आपका पे-लेटर खाता अभी सक्रिय नहीं है। {amount} का भुगतान पूरा करने के लिए पहले यहाँ जाकर अपना खाता अपडेट करें: {link}।",
+      "subject": "पे-लेटर से भुगतान में समस्या",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/paylater/hi/contact-sms#3afb997d",
+      "segment": "customer-action/paylater/hi/contact-sms",
+      "body": "{amount} के भुगतान हेतु {institution} पे-लेटर को पुनः ऑथराइज करें। लिंक यहाँ है: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/paylater/hi/contact-sms#3e656d09",
+      "segment": "customer-action/paylater/hi/contact-sms",
+      "body": "{institution} पर आपका पे-लेटर ऑथराइजेशन अधूरा रह गया। {amount} के भुगतान के लिए यहाँ जाएं: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/paylater/hi/contact-sms#7fb02c56",
+      "segment": "customer-action/paylater/hi/contact-sms",
+      "body": "{institution} पे-लेटर का प्रमाणीकरण लंबित है। {amount} का भुगतान पूरा करने के लिए यहाँ क्लिक करें: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/paylater/hi/contact-whatsapp#92994773",
+      "segment": "customer-action/paylater/hi/contact-whatsapp",
+      "body": "{institution} ने {amount} का भुगतान नहीं लिया। अपनी सेटिंग में जाकर इसे ऑथोराइज़ करें: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/paylater/hi/contact-whatsapp#a30ed1de",
+      "segment": "customer-action/paylater/hi/contact-whatsapp",
+      "body": "{institution} पर आपका {amount} का भुगतान रुक गया है। कृपया ऐप खोलकर इसे फिर से ऑथोराइज़ करें: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/paylater/hi/contact-whatsapp#a7a7af4f",
+      "segment": "customer-action/paylater/hi/contact-whatsapp",
+      "body": "{institution} पर आपका {amount} का पेमेंट अधूरा है। लिंक पर जाकर इसे अभी ऑथोराइज़ करें: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/paylater/mr/contact-email#46e4d71f",
+      "segment": "customer-action/paylater/mr/contact-email",
+      "body": "तुमच्या पे-लेटर खात्याचे अधिकृत प्रमाणीकरण पूर्ण झाले नसल्याने पेमेंट अपयशी ठरले आहे. कृपया {link} वर जाऊन तुमची पे-लेटर सुविधा पुन्हा ऑथोराईज करा आणि {amount} भरण्यासाठी प्रयत्न करा.",
+      "subject": "तुमच्या पे-लेटर पेमेंटबाबत अपडेट",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-action/paylater/mr/contact-email#561a0d40",
+      "segment": "customer-action/paylater/mr/contact-email",
+      "body": "पे-लेटर अकाउंट सक्रिय नसल्यामुळे {amount} चे पेमेंट थांबले आहे. कृपया {link} वर भेट देऊन तुमची पे-लेटर सुविधा ऑथोराईज करा जेणेकरून पेमेंट पूर्ण करता येईल.",
+      "subject": "पे-लेटर पेमेंटसाठी ऑथोरायझेशन अपूर्ण",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/paylater/mr/contact-email#dd5b4e7a",
+      "segment": "customer-action/paylater/mr/contact-email",
+      "body": "तुमचे पे-लेटर पेमेंट पूर्ण करण्यासाठी अद्याप आवश्यक अधिकृत परवानगी दिलेली नाही. {amount} चा व्यवहार यशस्वी करण्यासाठी कृपया {link} वर जाऊन पे-लेटर खात्याची पडताळणी करा.",
+      "subject": "पे-लेटर पेमेंट पूर्ण करण्यासाठी कृती आवश्यक",
+      "typicalSegments": 3,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-action/paylater/mr/contact-sms#1b8ac38b",
+      "segment": "customer-action/paylater/mr/contact-sms",
+      "body": "तुमच्या {institution} खात्यातील पेमेंटची अधिकृतता बाकी आहे. पूर्ण करण्यासाठी येथे क्लिक करा: {link} {amount}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/paylater/mr/contact-sms#42fe048b",
+      "segment": "customer-action/paylater/mr/contact-sms",
+      "body": "{institution} कडून पेमेंट अयशस्वी झाले. तुमची माहिती अपडेट करण्यासाठी येथे क्लिक करा: {link} {amount}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/paylater/mr/contact-sms#da2ddfc5",
+      "segment": "customer-action/paylater/mr/contact-sms",
+      "body": "{amount} चे पेमेंट पूर्ण करण्यासाठी {institution} खात्यातील माहिती तपासा. येथे क्लिक करा: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/paylater/mr/contact-whatsapp#3fa45abc",
+      "segment": "customer-action/paylater/mr/contact-whatsapp",
+      "body": "{amount} साठीचे पे-लेटर पेमेंट अपूर्ण आहे. {institution} वर अधिकृत मंजुरी द्या: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/paylater/ta/contact-email#05ab706d",
+      "segment": "customer-action/paylater/ta/contact-email",
+      "body": "உங்கள் Pay-later கணக்கில் நிலுவையில் உள்ள அங்கீகாரத்தை முடித்தால்தான் {amount} பரிவர்த்தனை பூர்த்தியாகும். இந்த இணைப்பின் மூலம் உங்கள் கணக்கில் உள்நுழைந்து அனுமதியளியுங்கள்: {link}.",
+      "subject": "Pay-later முறையை உறுதிப்படுத்துங்கள்",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-action/paylater/ta/contact-email#9f819272",
+      "segment": "customer-action/paylater/ta/contact-email",
+      "body": "{amount} மதிப்பிலான உங்கள் பரிவர்த்தனை, Pay-later கணக்கில் நீங்கள் சரிபார்ப்பு செய்யாததால் தோல்வியடைந்தது. தடையின்றி கட்டணத்தை முடிக்க இந்த இணைப்பைப் பயன்படுத்தி உங்கள் Pay-later கணக்கை சரிபார்க்கவும்: {link}.",
+      "subject": "கட்டணத்தை முடிக்க கூடுதல் அனுமதி தேவை",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-action/paylater/ta/contact-sms#6d3225a8",
+      "segment": "customer-action/paylater/ta/contact-sms",
+      "body": "{amount} செலுத்தும் முயற்சியில் {institution} அனுமதி மறுக்கப்பட்டுள்ளது. முழுமையாகப் பூர்த்தி செய்ய: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/paylater/ta/contact-whatsapp#1d22acd5",
+      "segment": "customer-action/paylater/ta/contact-whatsapp",
+      "body": "{institution} கட்டண முறை காலாவதியாகிவிட்டது. கட்டணத்தை முடிக்க {link} மூலம் மாற்றவும். {amount}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/paylater/ta/contact-whatsapp#c1cb1df6",
+      "segment": "customer-action/paylater/ta/contact-whatsapp",
+      "body": "{amount} செலுத்த உங்கள் {institution} முறையை புதுப்பிக்கவும். தொடர இங்கே கிளிக் செய்யவும்: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/paylater/ta/contact-whatsapp#fc997454",
+      "segment": "customer-action/paylater/ta/contact-whatsapp",
+      "body": "{institution} கணக்கில் அனுமதி தேவை. {amount} செலுத்த {link} வழியாக ஒப்புதல் அளிக்கவும்.",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/upi/en/contact-email#21a6b806",
+      "segment": "customer-action/upi/en/contact-email",
+      "body": "We could not process {amount} because your saved UPI details are no longer valid. Visit {link} to update your information, then approve the transaction in your UPI app with your UPI PIN.",
+      "subject": "Update your payment method",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-action/upi/en/contact-email#52d32981",
+      "segment": "customer-action/upi/en/contact-email",
+      "body": "Your UPI mandate requires re-authorization to complete the payment of {amount}. Please open your UPI app, check the pending requests, and approve the payment with your UPI PIN at {link}.",
+      "subject": "Action needed for your payment",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-action/upi/en/contact-email#ad1c84a3",
+      "segment": "customer-action/upi/en/contact-email",
+      "body": "The payment of {amount} is currently paused because your UPI mandate needs to be updated. Follow {link} to refresh your payment method and confirm the request in your UPI app using your UPI PIN.",
+      "subject": "Finish your transaction",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-action/upi/en/contact-sms#d3457bdc",
+      "segment": "customer-action/upi/en/contact-sms",
+      "body": "To complete your {amount} payment via {institution}, check your UPI app and approve the request with your UPI PIN: {link}",
+      "subject": null,
+      "typicalSegments": 1,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/upi/en/contact-whatsapp#36ab9f3e",
+      "segment": "customer-action/upi/en/contact-whatsapp",
+      "body": "Your UPI payment of {amount} is pending. Open your UPI app and enter your PIN to complete it: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/upi/en/contact-whatsapp#ba588396",
+      "segment": "customer-action/upi/en/contact-whatsapp",
+      "body": "To finish your {amount} payment, please open your UPI app and approve the request with your PIN: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/upi/en/contact-whatsapp#e129e48a",
+      "segment": "customer-action/upi/en/contact-whatsapp",
+      "body": "The payment of {amount} needs your approval. Open your UPI app and enter your PIN to proceed: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/upi/hi/contact-email#bf678639",
+      "segment": "customer-action/upi/hi/contact-email",
+      "body": "आपका UPI मैंडेट सक्रिय नहीं है या उसमें तकनीकी समस्या है। कृपया अपने UPI ऐप में जाकर इसे अपडेट करें और {amount} के भुगतान को मंजूरी देने के लिए अपना UPI पिन दर्ज करें। आप इस लिंक का उपयोग करें: {link}",
+      "subject": "UPI भुगतान पूरा नहीं हो सका",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-action/upi/hi/contact-email#e8583d0d",
+      "segment": "customer-action/upi/hi/contact-email",
+      "body": "आपका UPI भुगतान अटक गया है क्योंकि मैंडेट विवरण अमान्य है। {link} पर जाकर इसे ठीक करें और अपने UPI ऐप में प्राप्त अनुरोध को अपने UPI पिन के साथ स्वीकृत करें, जो {amount} के लिए है।",
+      "subject": "भुगतान के लिए कार्रवाई जरूरी",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-action/upi/hi/contact-sms#5a96f196",
+      "segment": "customer-action/upi/hi/contact-sms",
+      "body": "यूपीआई मैंडेट विफल रहा। {link} खोलें और भुगतान के लिए नया मैंडेट अधिकृत करें ताकि {amount} मिल सके।",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/upi/hi/contact-sms#78450bcf",
+      "segment": "customer-action/upi/hi/contact-sms",
+      "body": "आपका यूपीआई मैंडेट अमान्य है। {link} पर जाकर नया मैंडेट सेट करें और {amount} का भुगतान पूरा करें।",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/upi/hi/contact-sms#c1680762",
+      "segment": "customer-action/upi/hi/contact-sms",
+      "body": "{amount} के भुगतान के लिए यूपीआई पिन की पुष्टि जरूरी है। कृपया {link} पर जाकर इसे अभी पूर्ण करें।",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/upi/hi/contact-whatsapp#de3c04b2",
+      "segment": "customer-action/upi/hi/contact-whatsapp",
+      "body": "भुगतान पूरा करने के लिए {institution} ऐप में पिन डालें और {amount} के लंबित अनुरोध को स्वीकारें {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/upi/hi/contact-whatsapp#f6f7af7c",
+      "segment": "customer-action/upi/hi/contact-whatsapp",
+      "body": "{institution} पर UPI अनुरोध लंबित है। अपने UPI ऐप में {amount} का भुगतान पिन डालकर पूरा करें {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/upi/hi/contact-whatsapp#fbc953ae",
+      "segment": "customer-action/upi/hi/contact-whatsapp",
+      "body": "आपका {amount} का भुगतान अटका है। UPI ऐप खोलें और पिन डालकर अनुरोध स्वीकृत करें {link} पर।",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "customer-action/upi/mr/contact-email#33974713",
+      "segment": "customer-action/upi/mr/contact-email",
+      "body": "तुमचे पेमेंट अपूर्ण राहिले आहे कारण तुमच्या UPI ॲपवर पेमेंट रिक्वेस्ट मंजूर केलेली नाही. कृपया {link} वर जाऊन तुमची UPI ॲप उघडा आणि {amount} भरण्यासाठी तुमचा UPI PIN प्रविष्ट करा.",
+      "subject": "तुमचे UPI पेमेंट प्रलंबित आहे",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-action/upi/mr/contact-email#7b67e540",
+      "segment": "customer-action/upi/mr/contact-email",
+      "body": "तुमचे {amount} रुपयांचे पेमेंट पूर्ण झाले नाही कारण तुमच्या UPI ॲपमधील विनंती अद्याप प्रलंबित आहे. पेमेंट पूर्ण करण्यासाठी {link} द्वारे तुमच्या UPI ॲपवर जाऊन तुमचा UPI PIN टाका.",
+      "subject": "पेमेंट पूर्ण करण्यासाठी कृती करा",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-action/upi/mr/contact-email#c8496889",
+      "segment": "customer-action/upi/mr/contact-email",
+      "body": "तुमचे {amount} पेमेंट पूर्ण करण्यासाठी तुमच्या UPI ॲपमध्ये तुमची मान्यता आवश्यक आहे. कृपया {link} वापरून तुमच्या ॲपमधील पेमेंट रिक्वेस्ट तपासा आणि तुमचा UPI PIN वापरून व्यवहार पूर्ण करा.",
+      "subject": "UPI पेमेंट पूर्ण करण्याची सूचना",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-action/upi/mr/contact-sms#7882296e",
+      "segment": "customer-action/upi/mr/contact-sms",
+      "body": "तुमचा {amount} चा UPI व्यवहार प्रलंबित आहे. पुढील प्रक्रिया पूर्ण करण्यासाठी येथे क्लिक करा: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/upi/mr/contact-sms#c0752110",
+      "segment": "customer-action/upi/mr/contact-sms",
+      "body": "तुमचा {amount} चा UPI व्यवहार सध्या थांबला आहे. पेमेंट पूर्ण करण्यासाठी हे लिंक उघडा: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/upi/mr/contact-sms#e15a7dd6",
+      "segment": "customer-action/upi/mr/contact-sms",
+      "body": "{amount} साठीचा UPI व्यवहार अपूर्ण आहे. कृपया UPI ॲप उघडून PIN टाकून पेमेंट पूर्ण करा: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/upi/mr/contact-whatsapp#15f3ca4d",
+      "segment": "customer-action/upi/mr/contact-whatsapp",
+      "body": "{institution} द्वारे केलेले {amount} चे पेमेंट थांबले आहे. {link} उघडून यूपीआय पिनसह पूर्ण करा.",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/upi/ta/contact-email#29a0b32e",
+      "segment": "customer-action/upi/ta/contact-email",
+      "body": "உங்கள் யுபிஐ ஆப் செயலில் உள்ள சிக்கலால் {amount} மதிப்பிலான கட்டணம் செலுத்த முடியவில்லை. உங்கள் யுபிஐ செயலியைத் திறந்து புதிய கோரிக்கையை ஏற்றுக்கொண்டு, உங்கள் யுபிஐ பின்னைப் பயன்படுத்தி கட்டணத்தை முடிக்கவும்: {link}",
+      "subject": "உங்கள் யுபிஐ (UPI) பரிவர்த்தனை தோல்வியடைந்தது",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-action/upi/ta/contact-email#f0c4be33",
+      "segment": "customer-action/upi/ta/contact-email",
+      "body": "உங்கள் யுபிஐ கணக்கில் உள்ள பழைய விவரங்களால் {amount} பரிவர்த்தனை நடைபெறவில்லை. இந்த இணைப்பிற்குச் சென்று விவரங்களைச் சரிபார்க்கவும்: {link}. பின்னர் உங்கள் யுபிஐ ஆப்பில் வரும் கோரிக்கைக்கு உங்கள் யுபிஐ பின்னை உள்ளிட்டு பணத்தைச் செலுத்தவும்.",
+      "subject": "யுபிஐ கட்டணம் குறித்த முக்கியத் தகவல்",
+      "typicalSegments": 5,
+      "worstCaseSegments": 5
+    },
+    {
+      "id": "customer-action/upi/ta/contact-sms#63a06b80",
+      "segment": "customer-action/upi/ta/contact-sms",
+      "body": "{institution} UPI அங்கீகாரம் தேவைப்படுகிறது. {link} மூலம் உங்கள் கட்டணத்தை மீண்டும் உறுதி செய்யவும் {amount}.",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/upi/ta/contact-sms#93cbf934",
+      "segment": "customer-action/upi/ta/contact-sms",
+      "body": "{institution} UPI தற்காலிகமாக செயலிழந்துள்ளது. உங்கள் UPI செயலியில் {amount} க்கான கோரிக்கையை ஏற்கவும்: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/upi/ta/contact-whatsapp#001a31e3",
+      "segment": "customer-action/upi/ta/contact-whatsapp",
+      "body": "{amount} செலுத்தும் உங்கள் UPI கோரிக்கை காலாவதியாகிவிட்டது. மீண்டும் முயல {link} செல்லவும்.",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/upi/ta/contact-whatsapp#9a07e1d2",
+      "segment": "customer-action/upi/ta/contact-whatsapp",
+      "body": "{amount}க்கான உங்கள் UPI பரிவர்த்தனை தோல்வியடைந்தது. மீண்டும் முயற்சித்து பின்னை உள்ளிடவும் {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/wallet/en/contact-email#28472550",
+      "segment": "customer-action/wallet/en/contact-email",
+      "body": "Your payment of {amount} did not go through because your wallet balance is insufficient. Please top up your wallet or re-link your payment source at {link} to proceed.",
+      "subject": "Action needed for your wallet payment",
+      "typicalSegments": 3,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-action/wallet/en/contact-email#59f09bfd",
+      "segment": "customer-action/wallet/en/contact-email",
+      "body": "We could not process your payment of {amount} through {institution} because your wallet requires a refresh. Complete your payment by updating your wallet settings at {link}.",
+      "subject": "Wallet payment incomplete",
+      "typicalSegments": 3,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-action/wallet/en/contact-email#d4eafe7c",
+      "segment": "customer-action/wallet/en/contact-email",
+      "body": "The wallet transaction for {amount} failed as your linked payment method needs re-authorization. Please update your wallet details at {link} to complete the payment.",
+      "subject": "Payment update required",
+      "typicalSegments": 3,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-action/wallet/en/contact-sms#15e7116e",
+      "segment": "customer-action/wallet/en/contact-sms",
+      "body": "We could not process {amount} because your wallet access has expired. Re-authenticate your wallet account at {link}.",
+      "subject": null,
+      "typicalSegments": 1,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/wallet/en/contact-sms#607e4c67",
+      "segment": "customer-action/wallet/en/contact-sms",
+      "body": "Your wallet needs to be re-linked to complete the payment of {amount}. Please update your wallet settings at {link}.",
+      "subject": null,
+      "typicalSegments": 1,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/wallet/en/contact-sms#e1da069d",
+      "segment": "customer-action/wallet/en/contact-sms",
+      "body": "Your wallet payment for {amount} failed because it requires a balance top-up. Add funds and try again at {link}.",
+      "subject": null,
+      "typicalSegments": 1,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/wallet/en/contact-whatsapp#0647704f",
+      "segment": "customer-action/wallet/en/contact-whatsapp",
+      "body": "Your wallet needs to be topped up to process {amount}. Please update your balance here: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "customer-action/wallet/en/contact-whatsapp#8f9552d0",
+      "segment": "customer-action/wallet/en/contact-whatsapp",
+      "body": "Your wallet is inactive. To pay {amount}, please re-activate your wallet account via {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "customer-action/wallet/en/contact-whatsapp#b0475b3c",
+      "segment": "customer-action/wallet/en/contact-whatsapp",
+      "body": "Payment for {amount} failed as your wallet is disconnected. Please re-link your wallet at {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/wallet/hi/contact-email#2423acf9",
+      "segment": "customer-action/wallet/hi/contact-email",
+      "body": "{institution} वॉलेट का लिंक एक्सपायर हो गया है या बैलेंस कम है। भुगतान सफल बनाने के लिए कृपया अपने वॉलेट को फिर से लिंक करें और {amount} के लिए यहाँ क्लिक करें: {link}।",
+      "subject": "वॉलेट पेमेंट में समस्या",
+      "typicalSegments": 3,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-action/wallet/hi/contact-email#43553df0",
+      "segment": "customer-action/wallet/hi/contact-email",
+      "body": "{institution} वॉलेट में बैलेंस कम होने के कारण {amount} का भुगतान रुक गया है। कृपया अपने वॉलेट में बैलेंस जोड़ें और यहाँ से भुगतान पूरा करें: {link}।",
+      "subject": "पेमेंट पूरा नहीं हो सका",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/wallet/hi/contact-email#49a119ca",
+      "segment": "customer-action/wallet/hi/contact-email",
+      "body": "{institution} वॉलेट से {amount} ट्रांसफर करने में तकनीकी बाधा आई है। कृपया अपने वॉलेट में लॉग-इन करके उसे अपडेट करें और यहाँ दोबारा प्रयास करें: {link}।",
+      "subject": "पेमेंट अधूरा रह गया",
+      "typicalSegments": 3,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-action/wallet/hi/contact-sms#174106a3",
+      "segment": "customer-action/wallet/hi/contact-sms",
+      "body": "{institution} वॉलेट से भुगतान विफल रहा क्योंकि यह लिंक नहीं है। पुनः लिंक करें और भुगतान करें: {link} {amount}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/wallet/hi/contact-sms#32058b73",
+      "segment": "customer-action/wallet/hi/contact-sms",
+      "body": "{institution} वॉलेट में बैलेंस कम है। कृपया इसे टॉप-अप करें और भुगतान पूरा करें: {link} {amount}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/wallet/hi/contact-sms#786814e8",
+      "segment": "customer-action/wallet/hi/contact-sms",
+      "body": "{institution} वॉलेट में राशि कम है। भुगतान पूरा करने के लिए पहले वॉलेट में पैसा जोड़ें: {link} {amount}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/wallet/hi/contact-whatsapp#51c5b653",
+      "segment": "customer-action/wallet/hi/contact-whatsapp",
+      "body": "{institution} वॉलेट में बैलेंस कम है। कृपया {link} पर जाकर वॉलेट टॉप-अप करें और {amount} का भुगतान करें।",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/wallet/hi/contact-whatsapp#684dac12",
+      "segment": "customer-action/wallet/hi/contact-whatsapp",
+      "body": "{institution} वॉलेट की लिमिट समाप्त हो गई है। फिर से भुगतान करने के लिए इस लिंक पर जाएँ: {link} {amount}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/wallet/hi/contact-whatsapp#90cf3cd0",
+      "segment": "customer-action/wallet/hi/contact-whatsapp",
+      "body": "{institution} वॉलेट का लिंक टूट गया है। दोबारा पेमेंट करने के लिए {link} पर जाकर वॉलेट अपडेट करें। {amount}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/wallet/mr/contact-email#0a4a06f2",
+      "segment": "customer-action/wallet/mr/contact-email",
+      "body": "{institution} वॉलेटमधील शिल्लक रक्कम {amount} साठी अपुरी आहे. पेमेंट पूर्ण करण्यासाठी खालील लिंकवर जाऊन वॉलेट टॉप-अप करा: {link}",
+      "subject": "वॉलेट पेमेंट पूर्ण करण्यासाठी मदत",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/wallet/mr/contact-email#60c239a4",
+      "segment": "customer-action/wallet/mr/contact-email",
+      "body": "{institution} वॉलेट लिंक करण्याची प्रक्रिया पूर्ण न झाल्यामुळे {amount} चे पेमेंट अयशस्वी झाले आहे. पेमेंट पूर्ण करण्यासाठी कृपया इथे भेट द्या: {link}",
+      "subject": "पेमेंट अपूर्ण राहिल्याबद्दल सूचना",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/wallet/mr/contact-email#b70e5d78",
+      "segment": "customer-action/wallet/mr/contact-email",
+      "body": "तुमच्या {institution} वॉलेटची मर्यादा संपल्यामुळे {amount} चे पेमेंट पूर्ण झाले नाही. कृपया लिंकवर जाऊन वॉलेट रिचार्ज करा आणि पुन्हा प्रयत्न करा: {link}",
+      "subject": "तुमच्या वॉलेट पेमेंटमध्ये समस्या",
+      "typicalSegments": 3,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-action/wallet/mr/contact-sms#60a5c6ec",
+      "segment": "customer-action/wallet/mr/contact-sms",
+      "body": "{amount} भरताना वॉलेट व्यवहार अयशस्वी झाला. वॉलेट पुन्हा लिंक करण्यासाठी इथे जा: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "customer-action/wallet/mr/contact-sms#a465d3ff",
+      "segment": "customer-action/wallet/mr/contact-sms",
+      "body": "वॉलेटमधील रकमेअभावी {amount} पेमेंट झाले नाही. वॉलेट टॉप-अप करून पुन्हा प्रयत्न करा: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/wallet/mr/contact-sms#c07befab",
+      "segment": "customer-action/wallet/mr/contact-sms",
+      "body": "तुमच्या वॉलेटची लिंक संपली आहे. पुन्हा जोडण्यासाठी येथे टॅप करा आणि {amount} भरा: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "customer-action/wallet/mr/contact-whatsapp#b08cd50f",
+      "segment": "customer-action/wallet/mr/contact-whatsapp",
+      "body": "{institution} वॉलेट पेमेंट अयशस्वी झाले. {amount} भरण्यासाठी येथे रिफ्रेश करा: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/wallet/ta/contact-email#72c6f362",
+      "segment": "customer-action/wallet/ta/contact-email",
+      "body": "வாலட் கணக்கில் ஏற்பட்ட மாற்றங்களால் உங்கள் {amount} பணம் செலுத்தல் தடைபட்டது. உங்கள் வாலட்டை சரிபார்த்து புதுப்பித்த பிறகு, இந்த {link} மூலம் மீண்டும் கட்டணம் செலுத்தவும்.",
+      "subject": "பரிவர்த்தனையை நிறைவு செய்ய வாலட்டை புதுப்பிக்கவும்",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-action/wallet/ta/contact-email#d53a1103",
+      "segment": "customer-action/wallet/ta/contact-email",
+      "body": "உங்கள் வாலட்டில் போதிய இருப்பு இல்லாததால் {amount} செலுத்தும் முயற்சி தோல்வியடைந்தது. தயவுசெய்து உங்கள் வாலட்டை டாப்-அப் செய்துவிட்டு, இந்த {link} வழியாக மீண்டும் முயற்சிக்கவும்.",
+      "subject": "உங்கள் வாலட் பரிவர்த்தனை தோல்வியடைந்தது",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-action/wallet/ta/contact-email#d8bd62f1",
+      "segment": "customer-action/wallet/ta/contact-email",
+      "body": "வாலட் இணைப்பு காலாவதியாகிவிட்டதால் உங்கள் கட்டணத்தை முடிக்க முடியவில்லை. உங்கள் வாலட்டை மீண்டும் இணைத்து, {link} மூலம் {amount} செலுத்தி ஆர்டரை உறுதி செய்யவும்.",
+      "subject": "வாலட் மூலம் பணம் செலுத்துவதில் சிக்கல்",
+      "typicalSegments": 3,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-action/wallet/ta/contact-sms#73a6f690",
+      "segment": "customer-action/wallet/ta/contact-sms",
+      "body": "{institution} வாலட் காலாவதியாகிவிட்டது. அதை மீண்டும் இணைத்து {amount} செலுத்த {link} கிளிக் செய்யவும்.",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/wallet/ta/contact-sms#866eac1d",
+      "segment": "customer-action/wallet/ta/contact-sms",
+      "body": "{amount} செலுத்த உங்கள் {institution} வாலட்டை டாப்-அப் செய்ய வேண்டும். தொடர இங்கே அழுத்தவும்: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/wallet/ta/contact-sms#d3c1bb3e",
+      "segment": "customer-action/wallet/ta/contact-sms",
+      "body": "{institution} வாலட்டில் போதிய பணம் இல்லை. பேலன்ஸ் சேர்த்துவிட்டு {link} மூலம் {amount} செலுத்துங்கள்.",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/wallet/ta/contact-whatsapp#0f31e67a",
+      "segment": "customer-action/wallet/ta/contact-whatsapp",
+      "body": "உங்கள் வாலட் இணைப்பில் சிக்கல் உள்ளது. {amount} செலுத்த மீண்டும் இங்கே இணைக்கவும்: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "customer-action/wallet/ta/contact-whatsapp#41af335f",
+      "segment": "customer-action/wallet/ta/contact-whatsapp",
+      "body": "{amount} செலுத்த உங்கள் வாலட் கணக்கை புதுப்பிக்க வேண்டும். இந்த இணைப்பைச் சரிபார்க்கவும்: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-action/wallet/ta/contact-whatsapp#7595cb50",
+      "segment": "customer-action/wallet/ta/contact-whatsapp",
+      "body": "உங்கள் வாலட் இருப்பு குறைவாக உள்ளது. {amount} செலுத்த இந்த இணைப்பைத் தொடவும்: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "customer-retry/card/en/contact-email#4d6c6317",
+      "segment": "customer-retry/card/en/contact-email",
+      "body": "It looks like you didn't finish your {amount} transaction. To complete it, restart the payment at {link} and ensure you have the OTP from your bank ready for verification.",
+      "subject": "Need help finishing your payment?",
+      "typicalSegments": 3,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-retry/card/en/contact-email#6e714183",
+      "segment": "customer-retry/card/en/contact-email",
+      "body": "Your payment of {amount} was not completed. You can finish the request by going to {link} and entering the OTP sent to your phone by your bank to verify the card charge.",
+      "subject": "Restarting your payment",
+      "typicalSegments": 3,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-retry/card/en/contact-email#7845ac1e",
+      "segment": "customer-retry/card/en/contact-email",
+      "body": "Your previous attempt to pay {amount} was cancelled before completion. Please try the payment again here: {link} and be ready to enter the OTP sent by your bank.",
+      "subject": "Complete your payment for {amount}",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/card/en/contact-sms#03d5a066",
+      "segment": "customer-retry/card/en/contact-sms",
+      "body": "Your card payment of {amount} did not go through. Complete the process at {link} using the OTP your bank will send.",
+      "subject": null,
+      "typicalSegments": 1,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/card/en/contact-sms#8b3239cb",
+      "segment": "customer-retry/card/en/contact-sms",
+      "body": "Your payment for {amount} was cancelled. Please try again at {link} and enter the OTP from your bank to complete it.",
+      "subject": null,
+      "typicalSegments": 1,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/card/en/contact-sms#e4ffad15",
+      "segment": "customer-retry/card/en/contact-sms",
+      "body": "You left your payment of {amount} unfinished. Tap {link} to restart and verify the transaction with your bank OTP.",
+      "subject": null,
+      "typicalSegments": 1,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/card/en/contact-whatsapp#2d635c17",
+      "segment": "customer-retry/card/en/contact-whatsapp",
+      "body": "Your card payment for {amount} was interrupted. Please try again at {link} and enter your bank OTP.",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/card/en/contact-whatsapp#c63d3648",
+      "segment": "customer-retry/card/en/contact-whatsapp",
+      "body": "Your payment of {amount} is incomplete. Resume at {link} to finish by entering your bank-sent OTP.",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/card/en/contact-whatsapp#d88d7c30",
+      "segment": "customer-retry/card/en/contact-whatsapp",
+      "body": "You left your {amount} payment pending. Complete the transaction at {link} using your bank OTP.",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/card/hi/contact-email#38308005",
+      "segment": "customer-retry/card/hi/contact-email",
+      "body": "ऐसा लगता है कि कार्ड भुगतान के दौरान प्रक्रिया रुक गई थी। आप {amount} का भुगतान करने के लिए फिर से प्रयास कर सकते हैं। अपना बैंक ओटीपी तैयार रखें और यहां क्लिक करें: {link}",
+      "subject": "कार्ड से भुगतान की स्थिति",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-retry/card/hi/contact-email#4e0c048a",
+      "segment": "customer-retry/card/hi/contact-email",
+      "body": "आपका कार्ड भुगतान पूरा नहीं हुआ है। लेनदेन को फिर से शुरू करने के लिए {link} पर जाएं और अपने बैंक से प्राप्त ओटीपी दर्ज करें। कुल राशि {amount} है।",
+      "subject": "भुगतान के लिए शेष प्रक्रिया",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/card/hi/contact-email#c37f43f5",
+      "segment": "customer-retry/card/hi/contact-email",
+      "body": "आपका कार्ड लेनदेन अधूरा रह गया था। कृपया फिर से प्रयास करें और बैंक द्वारा भेजे गए ओटीपी का उपयोग करके {amount} का भुगतान पूरा करें। यहाँ क्लिक करें: {link}",
+      "subject": "आपका भुगतान पूरा नहीं हो सका",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/card/hi/contact-sms#379e9e0e",
+      "segment": "customer-retry/card/hi/contact-sms",
+      "body": "{amount} के लिए भुगतान रुक गया है। {link} पर जाएं, कार्ड का विवरण भरें और बैंक का ओटीपी डालें।",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/card/hi/contact-whatsapp#4613a535",
+      "segment": "customer-retry/card/hi/contact-whatsapp",
+      "body": "कार्ड भुगतान अधूरा है। कृपया {link} पर जाकर कार्ड से {amount} का भुगतान और ओटीपी डालें।",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "customer-retry/card/hi/contact-whatsapp#4b2cac7a",
+      "segment": "customer-retry/card/hi/contact-whatsapp",
+      "body": "{amount} चुकाने के लिए कार्ड का उपयोग करें। बैंक ओटीपी भेज देगा, उसे {link} पर डालें।",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "customer-retry/card/hi/contact-whatsapp#87fc9e6e",
+      "segment": "customer-retry/card/hi/contact-whatsapp",
+      "body": "{amount} के भुगतान के लिए कार्ड से फिर प्रयास करें और बैंक का ओटीपी दर्ज करें। {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "customer-retry/card/mr/contact-email#4bc44f70",
+      "segment": "customer-retry/card/mr/contact-email",
+      "body": "तुम्ही पेमेंट प्रक्रिया अर्धवट सोडल्यामुळे ते पूर्ण झाले नाही. {amount} भरण्यासाठी पुन्हा कार्ड वापरून प्रयत्न करा. बँक तुम्हाला एक ओटीपी पाठवेल, तो प्रविष्ट करून व्यवहार पूर्ण करा: {link}",
+      "subject": "तुमची पेमेंट प्रक्रिया अपूर्ण आहे",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-retry/card/mr/contact-email#ba312a98",
+      "segment": "customer-retry/card/mr/contact-email",
+      "body": "तुमचे {amount} रुपयांचे पेमेंट पूर्ण झाले नाही. कृपया पुन्हा एकदा कार्ड वापरून प्रयत्न करा आणि बँकेकडून येणारा ओटीपी तपासा. येथे जाऊन प्रक्रिया पूर्ण करा: {link}",
+      "subject": "पेमेंट पूर्ण करण्यासाठी सूचना",
+      "typicalSegments": 3,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-retry/card/mr/contact-email#ffd6559d",
+      "segment": "customer-retry/card/mr/contact-email",
+      "body": "कार्डद्वारे केलेले {amount} चे पेमेंट पूर्ण झाले नाही. कृपया पुन्हा एकदा पेमेंट पेजवर जाऊन कार्डचा तपशील भरा आणि बँकेचा ओटीपी प्रविष्ट करा. पेमेंट पूर्ण करण्यासाठी येथे क्लिक करा: {link}",
+      "subject": "कार्ड पेमेंट पुन्हा सुरू करा",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-retry/card/mr/contact-sms#221597b7",
+      "segment": "customer-retry/card/mr/contact-sms",
+      "body": "{amount} साठी तुमचे कार्ड पेमेंट अपूर्ण राहिले. पूर्ण करण्यासाठी इथे क्लिक करा {link} आणि ओटीपी टाका.",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/card/mr/contact-sms#d73d75a0",
+      "segment": "customer-retry/card/mr/contact-sms",
+      "body": "{amount} भरण्यासाठी कार्ड पेमेंट पुन्हा करा. {link} वर क्लिक करा आणि बँकेकडून आलेला ओटीपी वापरा.",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/card/mr/contact-whatsapp#2f4a7322",
+      "segment": "customer-retry/card/mr/contact-whatsapp",
+      "body": "{amount} देयकासाठी कार्ड वापरा आणि बँकेकडून येणारा ओटीपी टाकून व्यवहार पूर्ण करा: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "customer-retry/card/mr/contact-whatsapp#8faa2488",
+      "segment": "customer-retry/card/mr/contact-whatsapp",
+      "body": "{amount} चे पेमेंट पूर्ण झाले नाही. कार्डने पुन्हा पैसे भरा आणि बँकेचा ओटीपी प्रविष्ट करा: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/card/mr/contact-whatsapp#bdde2862",
+      "segment": "customer-retry/card/mr/contact-whatsapp",
+      "body": "{amount} साठी तुमचे कार्ड पेमेंट थांबले आहे. पुन्हा प्रयत्न करा आणि बँकेचा ओटीपी वापरा: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/card/ta/contact-email#b869e158",
+      "segment": "customer-retry/card/ta/contact-email",
+      "body": "{amount} மதிப்பிலான உங்கள் கட்டண நடவடிக்கை நிறைவடையவில்லை. மீண்டும் கார்டு மூலம் செலுத்த {link} பக்கத்திற்குச் செல்லவும். உங்கள் வங்கி அனுப்பும் OTP-யைப் பயன்படுத்தி பரிவர்த்தனையை முடிக்கலாம்.",
+      "subject": "கட்டணத்தை மீண்டும் தொடரவும்",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-retry/card/ta/contact-sms#3156e60b",
+      "segment": "customer-retry/card/ta/contact-sms",
+      "body": "{amount} செலுத்தும் முயற்சியை பாதியில் நிறுத்திவிட்டீர்கள். கார்டு மூலம் செலுத்த {link} தொடரவும்.",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/card/ta/contact-whatsapp#228b7413",
+      "segment": "customer-retry/card/ta/contact-whatsapp",
+      "body": "{amount} செலுத்த கார்டு பரிவர்த்தனை முழுமையடையவில்லை. மீண்டும் முயற்சி செய்ய {link} செல்லுங்கள்.",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/card/ta/contact-whatsapp#fb7ab2f4",
+      "segment": "customer-retry/card/ta/contact-whatsapp",
+      "body": "{amount} செலுத்தும் உங்கள் கார்டு பரிவர்த்தனை பாதியில் நின்றது. முடிக்க {link} சொடுக்கவும்.",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/emi/en/contact-email#8dd0ca5e",
+      "segment": "customer-retry/emi/en/contact-email",
+      "body": "The payment for {amount} was not completed because the EMI plan needs to be re-confirmed with {institution}. Please restart the payment at {link} to select your plan and finish the transaction.",
+      "subject": "Complete your EMI payment",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-retry/emi/en/contact-email#cc745375",
+      "segment": "customer-retry/emi/en/contact-email",
+      "body": "To finalize your {amount} purchase, {institution} requires a fresh confirmation of your EMI plan. You can restart the process by clicking {link}.",
+      "subject": "Action needed for your payment",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/emi/en/contact-email#cda2bb89",
+      "segment": "customer-retry/emi/en/contact-email",
+      "body": "Your transaction for {amount} was interrupted before the EMI details could be verified by {institution}. If you still wish to proceed, please visit {link} to re-confirm your EMI plan.",
+      "subject": "EMI plan confirmation pending",
+      "typicalSegments": 3,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-retry/emi/en/contact-sms#50482e25",
+      "segment": "customer-retry/emi/en/contact-sms",
+      "body": "Your EMI request for {amount} was cancelled. Please restart the transaction at {link} to re-confirm the plan with your bank.",
+      "subject": null,
+      "typicalSegments": 1,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/emi/en/contact-sms#97bcbbe2",
+      "segment": "customer-retry/emi/en/contact-sms",
+      "body": "We could not confirm your EMI plan for {amount}. Please try the payment again at {link} to select your plan with the bank.",
+      "subject": null,
+      "typicalSegments": 1,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/emi/en/contact-sms#a4237db0",
+      "segment": "customer-retry/emi/en/contact-sms",
+      "body": "To complete your {amount} payment, please re-confirm your EMI plan with your bank using this link: {link}",
+      "subject": null,
+      "typicalSegments": 1,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/emi/en/contact-whatsapp#9b9a654a",
+      "segment": "customer-retry/emi/en/contact-whatsapp",
+      "body": "To complete your {amount} payment, please re-confirm your EMI plan with {institution} via {link}.",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/emi/en/contact-whatsapp#cec167f7",
+      "segment": "customer-retry/emi/en/contact-whatsapp",
+      "body": "The EMI setup for {amount} is pending. Open {link} to re-confirm your plan with {institution} now.",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/emi/hi/contact-email#7895fc2a",
+      "segment": "customer-retry/emi/hi/contact-email",
+      "body": "आपका {amount} का ईएमआई भुगतान अधूरा रह गया है। कृपया {institution} के साथ अपनी ईएमआई योजना की पुष्टि करने के लिए यहाँ क्लिक करें: {link}।",
+      "subject": "ईएमआई भुगतान को पूरा करें",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/emi/hi/contact-email#d99896f0",
+      "segment": "customer-retry/emi/hi/contact-email",
+      "body": "आपका {amount} का ईएमआई भुगतान पूरा नहीं हो सका। इसे पूरा करने के लिए {institution} पर अपने विवरणों की पुनः पुष्टि करें: {link}।",
+      "subject": "अपूर्ण ईएमआई लेनदेन",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/emi/hi/contact-email#fb9db0f1",
+      "segment": "customer-retry/emi/hi/contact-email",
+      "body": "आपका {amount} का ईएमआई अनुरोध अधूरा है। कृपया {link} पर जाकर {institution} के साथ ईएमआई प्रक्रिया पूरी करें।",
+      "subject": "भुगतान के लिए कार्रवाई की आवश्यकता है",
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/emi/hi/contact-sms#b5f8d7f6",
+      "segment": "customer-retry/emi/hi/contact-sms",
+      "body": "{institution} पर आपका EMI प्लान अधूरा है। भुगतान पूरा करने के लिए यहाँ क्लिक करें: {link} {amount}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/emi/hi/contact-sms#e27e6ace",
+      "segment": "customer-retry/emi/hi/contact-sms",
+      "body": "आपका {amount} का EMI ट्रांजैक्शन रुक गया है। इसे पूरा करने हेतु {institution} पर जाएँ: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/emi/hi/contact-sms#e5c2e611",
+      "segment": "customer-retry/emi/hi/contact-sms",
+      "body": "{amount} के भुगतान के लिए {institution} पर EMI चयन को दोबारा कन्फर्म करें। यहाँ क्लिक करें: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/emi/hi/contact-whatsapp#0a5987e4",
+      "segment": "customer-retry/emi/hi/contact-whatsapp",
+      "body": "आपका {amount} का EMI भुगतान अधूरा है। बैंक के साथ अपना प्लान कन्फर्म करने के लिए देखें: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/emi/hi/contact-whatsapp#7697c993",
+      "segment": "customer-retry/emi/hi/contact-whatsapp",
+      "body": "बैंक के साथ EMI कन्फर्म नहीं हो सकी। {amount} के भुगतान को पूरा करने के लिए यहाँ जाएँ: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/emi/hi/contact-whatsapp#9816c7fa",
+      "segment": "customer-retry/emi/hi/contact-whatsapp",
+      "body": "{amount} के लिए EMI प्लान बैंक के साथ दोबारा कन्फर्म करना है। भुगतान पूरा करें: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "customer-retry/emi/mr/contact-email#1729d0d6",
+      "segment": "customer-retry/emi/mr/contact-email",
+      "body": "तुमचा {amount} रुपयांचा व्यवहार अद्याप प्रलंबित आहे. पुढील पायरी म्हणून {institution} वर ईएमआय प्लॅन पुन्हा एकदा निवडून कन्फर्म करणे आवश्यक आहे. पेमेंट पूर्ण करण्यासाठी ही लिंक वापरा: {link}",
+      "subject": "ईएमआय व्यवहार पूर्ण करणे",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-retry/emi/mr/contact-email#4fac0a4d",
+      "segment": "customer-retry/emi/mr/contact-email",
+      "body": "तुम्ही निवडलेला {amount} चा ईएमआय पर्याय पूर्ण झाला नाही. व्यवहार पूर्ण करण्यासाठी कृपया {institution} वर जाऊन पुन्हा एकदा ईएमआय कन्फर्म करा. पेमेंट सुरू ठेवण्यासाठी येथे जा: {link}",
+      "subject": "ईएमआय पेमेंट पूर्ण करण्याबाबत",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-retry/emi/mr/contact-email#fb6527f1",
+      "segment": "customer-retry/emi/mr/contact-email",
+      "body": "तुम्ही तुमची ईएमआय प्रक्रिया अर्धवट सोडली होती. तुमची {amount} ची खरेदी पूर्ण करण्यासाठी कृपया {institution} च्या पेजवर जाऊन ईएमआय प्लॅन पुन्हा एकदा कन्फर्म करा. येथे क्लिक करा: {link}",
+      "subject": "तुमच्या ईएमआय पेमेंटबद्दल माहिती",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-retry/emi/mr/contact-sms#38a5dc99",
+      "segment": "customer-retry/emi/mr/contact-sms",
+      "body": "{amount} साठी तुमचा EMI निवडताना प्रक्रिया अर्धवट राहिली. पुन्हा प्रयत्न करण्यासाठी येथे जा: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/emi/mr/contact-sms#84087c73",
+      "segment": "customer-retry/emi/mr/contact-sms",
+      "body": "{amount} चे EMI पेमेंट पूर्ण करण्यासाठी कृपया आपली निवड पुन्हा एकदा बँकेकडून प्रमाणित करा: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/emi/mr/contact-sms#866ef80f",
+      "segment": "customer-retry/emi/mr/contact-sms",
+      "body": "{amount} च्या EMI पेमेंटसाठी बँकेची अधिकृत मंजुरी आवश्यक आहे. पूर्ण करण्यासाठी येथे क्लिक करा: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/emi/mr/contact-whatsapp#20f69093",
+      "segment": "customer-retry/emi/mr/contact-whatsapp",
+      "body": "{amount} साठीचा ईएमआय पर्याय निवडला होता, पण तो पूर्ण झाला नाही. इथे पुन्हा प्रयत्न करा: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/emi/mr/contact-whatsapp#5a6f0c92",
+      "segment": "customer-retry/emi/mr/contact-whatsapp",
+      "body": "{institution} द्वारे ईएमआय प्रक्रिया अर्धवट राहिली. पेमेंट पूर्ण करण्यासाठी लिंकवर क्लिक करा: {link} {amount}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/emi/mr/contact-whatsapp#e16d32ed",
+      "segment": "customer-retry/emi/mr/contact-whatsapp",
+      "body": "{institution} कडून ईएमआय कन्फर्म झाला नाही. पेमेंट पूर्ण करण्यासाठी इथे पुन्हा प्रयत्न करा: {link} {amount}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/emi/ta/contact-email#316361d9",
+      "segment": "customer-retry/emi/ta/contact-email",
+      "body": "{amount} மதிப்பிலான உங்கள் EMI கோரிக்கையை முடிக்க, வங்கியின் இணையதளத்தில் அந்தத் திட்டத்தை மீண்டும் உறுதிப்படுத்த வேண்டும். தொடர {link} இணைப்பைச் சொடுக்கவும்.",
+      "subject": "EMI செயல்முறை இடைநிறுத்தப்பட்டுள்ளது",
+      "typicalSegments": 3,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-retry/emi/ta/contact-email#62bdf7c4",
+      "segment": "customer-retry/emi/ta/contact-email",
+      "body": "நீங்கள் EMI மூலம் செலுத்தத் தொடங்கிய தொகை {amount} இன்னும் முடிவடையவில்லை. உங்கள் வங்கியில் அந்தத் திட்டத்தை மீண்டும் உறுதி செய்ய இந்த {link} இணைப்பைப் பயன்படுத்தவும்.",
+      "subject": "EMI கட்டணத்தை முடிக்கவும்",
+      "typicalSegments": 3,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-retry/emi/ta/contact-email#e3b8ddae",
+      "segment": "customer-retry/emi/ta/contact-email",
+      "body": "EMI மூலம் செலுத்த விரும்பிய {amount} இன்னும் உங்கள் வங்கியில் உறுதி செய்யப்படவில்லை. மீண்டும் முயற்சி செய்ய {link} இணைப்பிற்குச் சென்று வங்கியின் விதிமுறைகளை உறுதிப்படுத்தவும்.",
+      "subject": "EMI பரிவர்த்தனை நிலுவையில் உள்ளது",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-retry/emi/ta/contact-sms#4d52c4f3",
+      "segment": "customer-retry/emi/ta/contact-sms",
+      "body": "{amount} செலுத்துவதற்கான இஎம்ஐ தேர்வை {institution} தளத்தில் மீண்டும் உறுதிப்படுத்தவும். இங்கே: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/emi/ta/contact-sms#e16b7fbb",
+      "segment": "customer-retry/emi/ta/contact-sms",
+      "body": "{institution} இஎம்ஐ தேர்வு தடைபட்டுள்ளது. {amount} தொகையை முடிக்க இந்த இணைப்பை அழுத்தவும்: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/emi/ta/contact-whatsapp#1aac7b96",
+      "segment": "customer-retry/emi/ta/contact-whatsapp",
+      "body": "{institution} EMI விண்ணப்பம் முழுமையடையவில்லை. கட்டணத்தை மீண்டும் முடிக்க: {link} {amount}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/emi/ta/contact-whatsapp#70c3809f",
+      "segment": "customer-retry/emi/ta/contact-whatsapp",
+      "body": "{amount} பணத்திற்கான EMI பரிவர்த்தனை பாதியில் நின்றது. இதை முடிக்க: {link} தொடரவும்.",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "customer-retry/emi/ta/contact-whatsapp#930d527f",
+      "segment": "customer-retry/emi/ta/contact-whatsapp",
+      "body": "{institution}-இல் உங்கள் EMI உறுதிப்படுத்தப்படவில்லை. மீண்டும் முயற்சி செய்ய: {link} {amount}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/netbanking/en/contact-email#031cdab1",
+      "segment": "customer-retry/netbanking/en/contact-email",
+      "body": "The payment for {amount} is currently incomplete because the login session with {institution} was closed. You can finalize your purchase by heading to {link}.",
+      "subject": "Finishing your transaction",
+      "typicalSegments": 3,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-retry/netbanking/en/contact-email#8d8e3a11",
+      "segment": "customer-retry/netbanking/en/contact-email",
+      "body": "To proceed with your order of {amount}, you need to authorize the transaction on your {institution} netbanking page. Use {link} to reopen the payment gateway.",
+      "subject": "Payment status: Action required",
+      "typicalSegments": 3,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-retry/netbanking/en/contact-sms#53a3f1ef",
+      "segment": "customer-retry/netbanking/en/contact-sms",
+      "body": "To pay {amount}, please re-open {link} to login to {institution} and authorize the transaction.",
+      "subject": null,
+      "typicalSegments": 1,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/netbanking/en/contact-sms#9f3f27fe",
+      "segment": "customer-retry/netbanking/en/contact-sms",
+      "body": "You left your {amount} payment pending at {institution}. You can finish the login and authorization process at {link}.",
+      "subject": null,
+      "typicalSegments": 1,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/netbanking/en/contact-sms#a95bda4b",
+      "segment": "customer-retry/netbanking/en/contact-sms",
+      "body": "Your payment of {amount} was interrupted before you could login to {institution}. Please complete it at {link}.",
+      "subject": null,
+      "typicalSegments": 1,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/netbanking/en/contact-whatsapp#8aba2c9f",
+      "segment": "customer-retry/netbanking/en/contact-whatsapp",
+      "body": "Your netbanking session timed out before you could finish paying {amount}. Please try again: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/netbanking/en/contact-whatsapp#afab9a86",
+      "segment": "customer-retry/netbanking/en/contact-whatsapp",
+      "body": "We missed your payment of {amount}. If you still want to buy, please authorize it here: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "customer-retry/netbanking/en/contact-whatsapp#b82a543e",
+      "segment": "customer-retry/netbanking/en/contact-whatsapp",
+      "body": "You left your {amount} payment incomplete. Please log in to your bank via this link to pay: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/netbanking/hi/contact-email#13019c83",
+      "segment": "customer-retry/netbanking/hi/contact-email",
+      "body": "आपकी पेमेंट पूरी नहीं हो सकी क्योंकि आपने इसे बीच में छोड़ दिया था। कृपया {link} पर जाकर अपने {institution} नेटबैंकिंग के जरिए {amount} का पेमेंट फिर से शुरू करें।",
+      "subject": "आपका नेटबैंकिंग ट्रांजेक्शन अधूरा रह गया",
+      "typicalSegments": 3,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-retry/netbanking/hi/contact-email#868b7900",
+      "segment": "customer-retry/netbanking/hi/contact-email",
+      "body": "आपका ट्रांजेक्शन बीच में रुक गया था। कृपया {link} पर जाकर अपने {institution} नेटबैंकिंग अकाउंट में लॉग-इन करें और {amount} का भुगतान पूरा करें।",
+      "subject": "पेमेंट पूरी करने के लिए एक बार फिर प्रयास करें",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/netbanking/hi/contact-email#d66dfab5",
+      "segment": "customer-retry/netbanking/hi/contact-email",
+      "body": "आप अपना {amount} का पेमेंट पूरा करना भूल गए थे। आप {link} पर जाकर अपने {institution} नेटबैंकिंग से ऑथराइजेशन देकर इसे पूरा कर सकते हैं।",
+      "subject": "पेमेंट को पूरा करने का लिंक",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/netbanking/hi/contact-sms#2b29f4d2",
+      "segment": "customer-retry/netbanking/hi/contact-sms",
+      "body": "{amount} का भुगतान रुक गया है। {institution} नेटबैंकिंग से प्रक्रिया पूरी करें: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/netbanking/hi/contact-sms#2c63832b",
+      "segment": "customer-retry/netbanking/hi/contact-sms",
+      "body": "{institution} नेटबैंकिंग भुगतान अधूरा है। पूरा करने के लिए यहाँ लॉगिन करें: {link} {amount}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/netbanking/hi/contact-sms#98a20629",
+      "segment": "customer-retry/netbanking/hi/contact-sms",
+      "body": "{institution} नेटबैंकिंग पर भुगतान बाकी है। {link} पर जाकर {amount} का भुगतान पूरा करें।",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/netbanking/hi/contact-whatsapp#1bde2966",
+      "segment": "customer-retry/netbanking/hi/contact-whatsapp",
+      "body": "{institution} के नेटबैंकिंग पेज पर ट्रांजेक्शन रुक गया। फिर से कोशिश करें: {link} {amount}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/netbanking/hi/contact-whatsapp#91521b44",
+      "segment": "customer-retry/netbanking/hi/contact-whatsapp",
+      "body": "{institution} पर नेटबैंकिंग भुगतान अधूरा रहा। {amount} के लिए इसे यहाँ पूरा करें: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/netbanking/hi/contact-whatsapp#c930c2d6",
+      "segment": "customer-retry/netbanking/hi/contact-whatsapp",
+      "body": "{institution} नेटबैंकिंग से {amount} का भुगतान अभी बाकी है। यहाँ से पुनः प्रयास करें: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/netbanking/mr/contact-email#6bde48c4",
+      "segment": "customer-retry/netbanking/mr/contact-email",
+      "body": "तुम्ही निवडलेले {amount} रुपयांचे पेमेंट पूर्ण करण्यासाठी नेटबँकिंगची प्रक्रिया अपूर्ण राहिली आहे. कृपया {link} वर जाऊन तुमची बँक निवडल्यानंतर पुन्हा प्रयत्न करा.",
+      "subject": "पेमेंट पूर्ण करण्यासाठी प्रक्रिया",
+      "typicalSegments": 3,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-retry/netbanking/mr/contact-email#f64ff386",
+      "segment": "customer-retry/netbanking/mr/contact-email",
+      "body": "तुमचे {amount} चे नेटबँकिंग व्यवहार बँकेच्या पेजवर पूर्ण झाला नाही. व्यवहार पूर्ण करण्यासाठी येथे {link} क्लिक करून पुन्हा प्रयत्न करा.",
+      "subject": "अपूर्ण व्यवहार पूर्ण करा",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/netbanking/mr/contact-sms#41946199",
+      "segment": "customer-retry/netbanking/mr/contact-sms",
+      "body": "{amount} भरण्यासाठी {institution} नेटबँकिंगची प्रक्रिया पुन्हा करा. पेमेंट पूर्ण करण्यासाठी: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/netbanking/mr/contact-sms#468fbd40",
+      "segment": "customer-retry/netbanking/mr/contact-sms",
+      "body": "{institution} वर तुमचे {amount} चे नेटबँकिंग पेमेंट अपूर्ण राहिले. पूर्ण करण्यासाठी इथे क्लिक करा: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/netbanking/mr/contact-sms#a951f3f0",
+      "segment": "customer-retry/netbanking/mr/contact-sms",
+      "body": "{institution} द्वारे {amount} चे पेमेंट मध्येच थांबले आहे. व्यवहार पूर्ण करण्यासाठी येथे जा: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/netbanking/mr/contact-whatsapp#4a1e90c6",
+      "segment": "customer-retry/netbanking/mr/contact-whatsapp",
+      "body": "{institution} लॉगिन बाकी आहे. पेमेंट पूर्ण करण्यासाठी खालील लिंकवर क्लिक करा: {link} {amount}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/netbanking/mr/contact-whatsapp#8025d6e4",
+      "segment": "customer-retry/netbanking/mr/contact-whatsapp",
+      "body": "{institution} वर व्यवहार अर्धवट राहिला. पेमेंट पूर्ण करण्यासाठी ही लिंक वापरा: {link} {amount}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/netbanking/mr/contact-whatsapp#c4a4b688",
+      "segment": "customer-retry/netbanking/mr/contact-whatsapp",
+      "body": "{institution} ने पेमेंट पूर्ण केले नाही. पुन्हा प्रयत्न करण्यासाठी येथे क्लिक करा: {link} {amount}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/netbanking/ta/contact-email#0f79144b",
+      "segment": "customer-retry/netbanking/ta/contact-email",
+      "body": "{amount} செலுத்தும் போது நீங்கள் பக்கத்தை மூடிவிட்டீர்கள். கட்டணத்தை முடிக்க உங்கள் {institution} நிகர வங்கி இணையதளத்தில் உள்நுழைந்து அனுமதியளியுங்கள். மீண்டும் முயற்சி செய்ய இங்கே கிளிக் செய்யவும்: {link}",
+      "subject": "முடிக்கப்படாத கட்டண முயற்சி",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-retry/netbanking/ta/contact-email#1fb66996",
+      "segment": "customer-retry/netbanking/ta/contact-email",
+      "body": "நீங்கள் {amount} செலுத்தத் தொடங்கிய பரிவர்த்தனை பாதியிலேயே நின்றுவிட்டது. உங்கள் {institution} நிகர வங்கி கணக்கின் வழியாகப் பணத்தைச் செலுத்த இந்த இணைப்பைப் பயன்படுத்தவும்: {link}",
+      "subject": "மீண்டும் முயற்சி செய்ய அழைப்பு",
+      "typicalSegments": 3,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-retry/netbanking/ta/contact-email#856fcde0",
+      "segment": "customer-retry/netbanking/ta/contact-email",
+      "body": "{amount} மதிப்பிலான உங்கள் பரிவர்த்தனை முழுமையடையவில்லை. உங்கள் {institution} நிகர வங்கி கணக்கில் உள்நுழைந்து கட்டணத்தை உறுதிப்படுத்த இங்கே கிளிக் செய்யவும்: {link}",
+      "subject": "உங்கள் கட்டணத்தைச் செயல்முறைப்படுத்த உதவுங்கள்",
+      "typicalSegments": 3,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-retry/netbanking/ta/contact-sms#2d07b35e",
+      "segment": "customer-retry/netbanking/ta/contact-sms",
+      "body": "{institution} மூலம் {amount} செலுத்தும் முயற்சியை முடிக்க, மீண்டும் உள்நுழைய இங்கே கிளிக் செய்யவும்: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/netbanking/ta/contact-sms#6fa28ea2",
+      "segment": "customer-retry/netbanking/ta/contact-sms",
+      "body": "{amount} மதிப்பிலான உங்கள் {institution} வங்கி பரிவர்த்தனை முழுமையடையவில்லை. இதை முடிக்க: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/netbanking/ta/contact-sms#bec1253c",
+      "segment": "customer-retry/netbanking/ta/contact-sms",
+      "body": "{institution} இணையவங்கி பரிவர்த்தனை பாதியில் நின்றது. முடிக்க இங்கே செல்லவும்: {link} {amount}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/netbanking/ta/contact-whatsapp#18007e41",
+      "segment": "customer-retry/netbanking/ta/contact-whatsapp",
+      "body": "{amount} செலுத்தும் முயற்சியை பாதியில் நிறுத்திவிட்டீர்கள். மீண்டும் வங்கி தளத்திற்கு செல்ல {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/netbanking/ta/contact-whatsapp#35c6e792",
+      "segment": "customer-retry/netbanking/ta/contact-whatsapp",
+      "body": "வங்கி தளத்தில் {amount} கட்டணத்தை உறுதி செய்யவில்லை. பணம் செலுத்த மீண்டும் முயற்சிக்கவும்: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/netbanking/ta/contact-whatsapp#c494807e",
+      "segment": "customer-retry/netbanking/ta/contact-whatsapp",
+      "body": "{amount} பரிவர்த்தனை முழுமையடையவில்லை. உங்கள் வங்கியில் உள்நுழைந்து கட்டணத்தை முடிக்கவும்: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/paylater/en/contact-email#2d9112df",
+      "segment": "customer-retry/paylater/en/contact-email",
+      "body": "Your payment of {amount} did not go through because the authorization was not completed. You can finish the process by visiting this link: {link}.",
+      "subject": "Your pay-later transaction is pending",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/paylater/en/contact-email#a1252b8c",
+      "segment": "customer-retry/paylater/en/contact-email",
+      "body": "Your payment attempt was interrupted. Please open your pay-later account to approve the transaction for {amount} at this link: {link}.",
+      "subject": "Finish your payment for {amount}",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/paylater/en/contact-sms#05f35816",
+      "segment": "customer-retry/paylater/en/contact-sms",
+      "body": "We missed your {amount} payment authorization. Please open {link} to confirm the request on your pay-later account.",
+      "subject": null,
+      "typicalSegments": 1,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/paylater/en/contact-sms#1c92fcc7",
+      "segment": "customer-retry/paylater/en/contact-sms",
+      "body": "Your pay-later checkout for {amount} is still pending. Simply visit {link} to authorize the payment and complete the order.",
+      "subject": null,
+      "typicalSegments": 1,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/paylater/en/contact-sms#8c87f75b",
+      "segment": "customer-retry/paylater/en/contact-sms",
+      "body": "Your pay-later transaction for {amount} was cancelled before completion. Please approve the payment at {link} to finish.",
+      "subject": null,
+      "typicalSegments": 1,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/paylater/en/contact-whatsapp#e5283abe",
+      "segment": "customer-retry/paylater/en/contact-whatsapp",
+      "body": "To complete your {amount} purchase, please open {link} and approve the transaction via pay-later.",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/paylater/en/contact-whatsapp#e9249386",
+      "segment": "customer-retry/paylater/en/contact-whatsapp",
+      "body": "The payment for {amount} is pending. Please visit {link} to authorize it via your pay-later.",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "customer-retry/paylater/en/contact-whatsapp#fbb8c6e6",
+      "segment": "customer-retry/paylater/en/contact-whatsapp",
+      "body": "Your pay-later request was cancelled. Tap {link} to authorize the {amount} payment and finish.",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "customer-retry/paylater/hi/contact-email#8c8b98b7",
+      "segment": "customer-retry/paylater/hi/contact-email",
+      "body": "{amount} का भुगतान अभी बाकी है। इसे पूरा करने के लिए अपने {institution} अकाउंट में जाकर ऑथोराइज़ करें या इस {link} पर क्लिक करें।",
+      "subject": "आपका अधूरा भुगतान",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/paylater/hi/contact-email#d3a85296",
+      "segment": "customer-retry/paylater/hi/contact-email",
+      "body": "{amount} का भुगतान प्रोसेस नहीं हुआ क्योंकि इसे {institution} ऐप में ऑथोराइज़ करना शेष है। कृपया {link} पर जाकर इसे पूरा करें।",
+      "subject": "भुगतान पूरा करने के लिए निर्देश",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/paylater/hi/contact-email#f2bc2d1d",
+      "segment": "customer-retry/paylater/hi/contact-email",
+      "body": "{amount} के आपके भुगतान को पूरा करने के लिए {institution} ऐप पर जाएं और ट्रांजैक्शन को ऑथोराइज़ करें। आप यहाँ क्लिक करके फिर से प्रयास कर सकते हैं: {link}",
+      "subject": "पेमेंट पूरी नहीं हो पाई",
+      "typicalSegments": 3,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-retry/paylater/hi/contact-sms#646cf759",
+      "segment": "customer-retry/paylater/hi/contact-sms",
+      "body": "{amount} का भुगतान अभी बाकी है। अपना {institution} खाता खोलें और यहाँ से जारी रखें: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/paylater/hi/contact-sms#a9415e7f",
+      "segment": "customer-retry/paylater/hi/contact-sms",
+      "body": "{institution} के जरिए {amount} का भुगतान पूरा नहीं हुआ। लिंक पर जाकर इसे दोबारा शुरू करें: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/paylater/hi/contact-sms#af40f197",
+      "segment": "customer-retry/paylater/hi/contact-sms",
+      "body": "{institution} पर आपका {amount} का भुगतान अधूरा रह गया। इसे पूरा करने के लिए यहाँ क्लिक करें: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/paylater/hi/contact-whatsapp#0a72c0e2",
+      "segment": "customer-retry/paylater/hi/contact-whatsapp",
+      "body": "{institution} पर पेमेंट पूरा नहीं हुआ। पेमेंट पूरा करने के लिए यहाँ जाएँ: {link} {amount}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/paylater/hi/contact-whatsapp#25797ab0",
+      "segment": "customer-retry/paylater/hi/contact-whatsapp",
+      "body": "{amount} के लिए {institution} पर पेंडिंग पेमेंट पूरा करने हेतु यहाँ क्लिक करें: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/paylater/hi/contact-whatsapp#69f9174e",
+      "segment": "customer-retry/paylater/hi/contact-whatsapp",
+      "body": "{institution} का ऑथराइजेशन पूरा नहीं हुआ। यहाँ से फिर कोशिश करें: {link} {amount}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "customer-retry/paylater/mr/contact-email#17880f1c",
+      "segment": "customer-retry/paylater/mr/contact-email",
+      "body": "{institution} वरील पे-लेटर पेमेंट अपूर्ण राहिले आहे. पेमेंट पूर्ण करण्यासाठी कृपया या लिंकवर पुन्हा प्रयत्न करा: {link}. {amount} रकमेसाठी हे पेमेंट आता पूर्ण करता येईल.",
+      "subject": "पेमेंट पूर्ण करण्यासाठी सूचना",
+      "typicalSegments": 3,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-retry/paylater/mr/contact-email#ff41b85a",
+      "segment": "customer-retry/paylater/mr/contact-email",
+      "body": "तुमच्या {institution} पे-लेटर खात्यावरून {amount} रकमेचे व्यवहार थांबले आहेत. व्यवहार पूर्ण करण्यासाठी {link} वर जाऊन तुमची अधिकृतता द्या.",
+      "subject": "तुमचे पे-लेटर पेमेंट अपूर्ण आहे",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/paylater/mr/contact-sms#583adf84",
+      "segment": "customer-retry/paylater/mr/contact-sms",
+      "body": "तुमचे {amount} चे पे-लेटर पेमेंट अर्धवट आहे. ते पूर्ण करण्यासाठी या लिंकवर अधिकृत करा: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/paylater/mr/contact-sms#b6be0dc9",
+      "segment": "customer-retry/paylater/mr/contact-sms",
+      "body": "{amount} साठीचे तुमचे पे-लेटर पेमेंट अपूर्ण राहिले आहे. पूर्ण करण्यासाठी येथे क्लिक करा: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/paylater/mr/contact-sms#cfc6b996",
+      "segment": "customer-retry/paylater/mr/contact-sms",
+      "body": "पे-लेटरद्वारे {amount} भरण्याची प्रक्रिया तुम्ही मध्येच थांबवली आहे. पूर्ण करण्यासाठी: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/paylater/mr/contact-whatsapp#ad85e838",
+      "segment": "customer-retry/paylater/mr/contact-whatsapp",
+      "body": "{amount} चे पे-लेटर व्यवहार पूर्ण झालेले नाही. पुन्हा प्रयत्न करण्यासाठी येथे जा: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "customer-retry/paylater/mr/contact-whatsapp#adb66e02",
+      "segment": "customer-retry/paylater/mr/contact-whatsapp",
+      "body": "{amount} साठीचे तुमचे पे-लेटर पेमेन्ट अपूर्ण आहे. पूर्ण करण्यासाठी येथे क्लिक करा: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "customer-retry/paylater/mr/contact-whatsapp#d827577d",
+      "segment": "customer-retry/paylater/mr/contact-whatsapp",
+      "body": "{link} वर जाऊन तुमचे {amount} चे पे-लेटर पेमेन्ट पूर्ण करा. प्रक्रिया थांबली होती.",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "customer-retry/paylater/ta/contact-email#121081ee",
+      "segment": "customer-retry/paylater/ta/contact-email",
+      "body": "{amount} மதிப்பிலான உங்கள் கட்டணம் pay-later வசதி மூலம் இன்னும் உறுதி செய்யப்படவில்லை. உங்கள் கணக்கைச் சரிபார்த்து கட்டணத்தை முடிக்கவும். இந்த இணைப்பை கிளிக் செய்யவும்: {link}",
+      "subject": "பணம் செலுத்தும் முயற்சி பாதியில் நின்றது",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-retry/paylater/ta/contact-email#b2509024",
+      "segment": "customer-retry/paylater/ta/contact-email",
+      "body": "நீங்கள் தொடங்கிய {amount} மதிப்பிலான பணம் செலுத்தும் செயல்முறை முழுமையடையவில்லை. உங்கள் pay-later கணக்கில் உள்நுழைந்து கட்டணத்தை உறுதி செய்யவும். கட்டணத்தை முடிக்க இந்த இணைப்பைப் பயன்படுத்தவும்: {link}",
+      "subject": "பணம் செலுத்தும் செயல்முறை முழுமையடையவில்லை",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-retry/paylater/ta/contact-email#c4fe341d",
+      "segment": "customer-retry/paylater/ta/contact-email",
+      "body": "உங்கள் {amount} மதிப்பிலான கட்டணம் இன்னும் நிலுவையில் உள்ளது. உங்கள் pay-later செயலிக்குச் சென்று அனுமதியளிப்பதன் மூலம் இதை முடிக்கலாம். மீண்டும் முயற்சி செய்ய இந்த இணைப்பைப் பயன்படுத்தவும்: {link}",
+      "subject": "கட்டணத்தை நிறைவு செய்தல்",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-retry/paylater/ta/contact-sms#109d8402",
+      "segment": "customer-retry/paylater/ta/contact-sms",
+      "body": "{institution} மூலம் {amount} செலுத்தும் செயல்முறை முழுமையடையவில்லை. மீண்டும் முயற்சி செய்ய: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/paylater/ta/contact-sms#19a4f9b9",
+      "segment": "customer-retry/paylater/ta/contact-sms",
+      "body": "{amount} செலுத்தும் முயற்சியை முடிக்க, உங்கள் {institution} கணக்கில் அங்கீகாரம் தேவை. இங்கே தொடரவும்: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/paylater/ta/contact-whatsapp#4abf6bc7",
+      "segment": "customer-retry/paylater/ta/contact-whatsapp",
+      "body": "{institution} பேலேட்டர் பணம் {amount} செலுத்த முடியவில்லை. முடித்து வைக்க இங்கே தொடவும்: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/paylater/ta/contact-whatsapp#8a7288f2",
+      "segment": "customer-retry/paylater/ta/contact-whatsapp",
+      "body": "{institution} மூலம் {amount} அனுப்பியதில் பாதியில் நின்றது. கட்டணத்தை உறுதி செய்ய: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/paylater/ta/contact-whatsapp#a1be90d5",
+      "segment": "customer-retry/paylater/ta/contact-whatsapp",
+      "body": "{institution} பேலேட்டர் கட்டணம் முழுமை பெறவில்லை. {amount} செலுத்த இந்த இணைப்பை திறக்கவும்: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/upi/en/contact-email#37a03922",
+      "segment": "customer-retry/upi/en/contact-email",
+      "body": "Your payment of {amount} is waiting for approval in your UPI app. Complete the transaction using your PIN at {link}.",
+      "subject": "Payment status for your order",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/upi/en/contact-email#82133874",
+      "segment": "customer-retry/upi/en/contact-email",
+      "body": "It looks like your UPI payment of {amount} was interrupted. Please open your UPI app and approve the request to finalize your order here: {link}.",
+      "subject": "Finish your transaction",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/upi/en/contact-email#fbab3f78",
+      "segment": "customer-retry/upi/en/contact-email",
+      "body": "Your payment of {amount} is pending. Open your UPI app and enter your PIN to authorize the transaction via {link}.",
+      "subject": "Complete your UPI payment",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/upi/en/contact-sms#0edd9ffe",
+      "segment": "customer-retry/upi/en/contact-sms",
+      "body": "It looks like you stopped before approving the {amount} payment. Approve the request in your UPI app with your UPI PIN: {link}",
+      "subject": null,
+      "typicalSegments": 1,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/upi/en/contact-sms#428ac1e5",
+      "segment": "customer-retry/upi/en/contact-sms",
+      "body": "Your payment of {amount} is still pending. Open your UPI app and enter your UPI PIN to finish the transaction: {link}",
+      "subject": null,
+      "typicalSegments": 1,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/upi/en/contact-sms#c24a030f",
+      "segment": "customer-retry/upi/en/contact-sms",
+      "body": "Complete your {amount} payment by opening your UPI app and confirming the request using your UPI PIN: {link}",
+      "subject": null,
+      "typicalSegments": 1,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/upi/en/contact-whatsapp#d3623307",
+      "segment": "customer-retry/upi/en/contact-whatsapp",
+      "body": "Your transaction of {amount} stopped. Finish it by approving the request in your UPI app now {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/upi/hi/contact-email#1d4802c5",
+      "segment": "customer-retry/upi/hi/contact-email",
+      "body": "आपका {amount} का लेनदेन अधूरा है। कृपया अपने UPI ऐप में जाएं और अपने UPI पिन का उपयोग करके भुगतान को स्वीकृत करें। भुगतान पूरा करने के लिए यहाँ क्लिक करें: {link}",
+      "subject": "आपका लेनदेन अभी बाकी है",
+      "typicalSegments": 3,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-retry/upi/hi/contact-email#a4c918db",
+      "segment": "customer-retry/upi/hi/contact-email",
+      "body": "आपका {amount} का भुगतान पूरा नहीं हो पाया क्योंकि आपने प्रक्रिया बीच में ही रोक दी थी। इसे पूरा करने के लिए कृपया अपने UPI ऐप में जाकर भुगतान अनुरोध को अपने UPI पिन के साथ स्वीकृत करें: {link}",
+      "subject": "भुगतान अधूरा रह गया है",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-retry/upi/hi/contact-email#ebd56a3a",
+      "segment": "customer-retry/upi/hi/contact-email",
+      "body": "ऐसा लगता है कि आपने {amount} का भुगतान अधूरा छोड़ दिया है। कृपया {link} पर जाकर अपने UPI ऐप के माध्यम से अपना UPI पिन डालकर लेनदेन पूरा करें।",
+      "subject": "UPI भुगतान की स्थिति",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/upi/hi/contact-sms#15905a27",
+      "segment": "customer-retry/upi/hi/contact-sms",
+      "body": "UPI ऐप में अनुरोध पेंडिंग है। {amount} का भुगतान पूरा करने के लिए ऐप खोलें और पिन डालें: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/upi/hi/contact-sms#1a2c44cb",
+      "segment": "customer-retry/upi/hi/contact-sms",
+      "body": "आपका {amount} का भुगतान अधूरा रह गया। कृपया UPI ऐप खोलें और पिन डालकर भुगतान पूरा करें: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/upi/hi/contact-sms#e39ce29e",
+      "segment": "customer-retry/upi/hi/contact-sms",
+      "body": "आपने {amount} का भुगतान बीच में छोड़ दिया है। इसे पूरा करने के लिए UPI ऐप में अनुरोध स्वीकारें: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/upi/hi/contact-whatsapp#2a1b4b09",
+      "segment": "customer-retry/upi/hi/contact-whatsapp",
+      "body": "{amount} का भुगतान अभी बाकी है। अपना UPI ऐप खोलें और पिन डालकर इसे पूरा करें: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "customer-retry/upi/hi/contact-whatsapp#365dad2d",
+      "segment": "customer-retry/upi/hi/contact-whatsapp",
+      "body": "आपका {amount} का UPI भुगतान अधूरा है। कृपया अपना UPI ऐप खोलें और पिन दर्ज करके पूरा करें: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/upi/hi/contact-whatsapp#a13a01c1",
+      "segment": "customer-retry/upi/hi/contact-whatsapp",
+      "body": "आप {amount} का भुगतान पूरा नहीं कर पाए। कृपया UPI ऐप पर जाकर पिन डालें और लेनदेन समाप्त करें: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/upi/mr/contact-email#1a10973f",
+      "segment": "customer-retry/upi/mr/contact-email",
+      "body": "{amount} चे पेमेंट पूर्ण करण्यासाठी तुमच्या यूपीआय ॲपमध्ये पेमेंट विनंती तपासा. कृपया ती विनंती मान्य करून यूपीआय पिन टाकून व्यवहार पूर्ण करा: {link}",
+      "subject": "तुमचे पेमेंट अपूर्ण राहिले आहे",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/upi/mr/contact-email#5ca9a652",
+      "segment": "customer-retry/upi/mr/contact-email",
+      "body": "तुम्ही {amount} भरण्यासाठी निवडलेल्या यूपीआय ॲपमध्ये पेमेंट विनंती आली आहे. कृपया ती विनंती उघडून तुमचा यूपीआय पिन प्रविष्ट करा: {link}",
+      "subject": "पेमेंट पूर्ण करण्यासाठी सूचना",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/upi/mr/contact-email#f023ffdb",
+      "segment": "customer-retry/upi/mr/contact-email",
+      "body": "तुम्ही सुरू केलेले {amount} चे पेमेंट अद्याप पूर्ण झालेले नाही. पेमेंट पूर्ण करण्यासाठी तुमच्या यूपीआय ॲपमधील विनंती तपासा आणि यूपीआय पिन वापरून व्यवहार पूर्ण करा: {link}",
+      "subject": "पेमेंट प्रक्रियेबाबत माहिती",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-retry/upi/mr/contact-sms#5b10f3c8",
+      "segment": "customer-retry/upi/mr/contact-sms",
+      "body": "युपीआय ॲपमधील विनंती स्वीकारून {amount} चे पेमेंट पूर्ण करा. लिंक: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "customer-retry/upi/mr/contact-sms#8642b20b",
+      "segment": "customer-retry/upi/mr/contact-sms",
+      "body": "{amount} साठीचे युपीआय पेमेंट अपूर्ण राहिले. पूर्ण करण्यासाठी {link} वरून पुन्हा प्रयत्न करा.",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/upi/mr/contact-sms#f8320b37",
+      "segment": "customer-retry/upi/mr/contact-sms",
+      "body": "युपीआय पेमेंट पूर्ण झाले नाही. {amount} भरण्यासाठी {link} वर जाऊन युपीआय पिन प्रविष्ट करा.",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/upi/mr/contact-whatsapp#00fa0e34",
+      "segment": "customer-retry/upi/mr/contact-whatsapp",
+      "body": "तुमचे {amount} पेमेंट अपूर्ण आहे. कृपया यूपीआय ॲपमध्ये जाऊन पिनद्वारे व्यवहार पूर्ण करा: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/upi/mr/contact-whatsapp#76c756e1",
+      "segment": "customer-retry/upi/mr/contact-whatsapp",
+      "body": "तुम्ही {amount} चे पेमेंट थांबवले आहे. व्यवहार पूर्ण करण्यासाठी यूपीआय ॲपमध्ये पिन टाका: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/upi/ta/contact-email#0b2480fa",
+      "segment": "customer-retry/upi/ta/contact-email",
+      "body": "{amount} செலுத்துவதற்கான உங்கள் விண்ணப்பம் தற்போது பாதியில் நிற்கிறது. உங்கள் UPI செயலியில் உள்ள பணிக் கோரிக்கையை ஏற்றுக்கொண்டு, உங்கள் UPI பின்னைப் பயன்படுத்தி முடிக்கவும். இங்கே சென்று மீண்டும் தொடங்கலாம்: {link}",
+      "subject": "பரிவர்த்தனையை நிறைவு செய்யத் தேவைப்படும் நடவடிக்கை",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-retry/upi/ta/contact-email#541801ff",
+      "segment": "customer-retry/upi/ta/contact-email",
+      "body": "{amount} செலுத்துவதற்கான உங்கள் கோரிக்கை இன்னும் நிலுவையில் உள்ளது. உங்கள் UPI செயலியைத் திறந்து, அந்த கோரிக்கையை அங்கீகரிக்க UPI பின்னை உள்ளிடவும். மீண்டும் முயற்சி செய்ய இங்கே கிளிக் செய்யவும்: {link}",
+      "subject": "உங்கள் பணம் செலுத்தும் முயற்சி முழுமையடையவில்லை",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-retry/upi/ta/contact-email#760f1dfc",
+      "segment": "customer-retry/upi/ta/contact-email",
+      "body": "{amount} மதிப்பிலான பரிவர்த்தனை இன்னும் நிறைவு செய்யப்படவில்லை. உங்கள் UPI செயலியில் உள்ள நிலுவையில் உள்ள கோரிக்கையைத் தேர்ந்தெடுத்து, UPI பின் மூலம் உறுதிப்படுத்தவும். தொடர இந்த இணைப்பை அழுத்தவும்: {link}",
+      "subject": "UPI மூலம் பணம் செலுத்துவதில் சிக்கல்",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-retry/upi/ta/contact-sms#3a531c3f",
+      "segment": "customer-retry/upi/ta/contact-sms",
+      "body": "{amount} க்கான UPI பணம் செலுத்துதல் முடிக்கப்படவில்லை. உங்கள் UPI செயலியில் கோரிக்கையை ஏற்கவும் {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/upi/ta/contact-sms#7141b6eb",
+      "segment": "customer-retry/upi/ta/contact-sms",
+      "body": "{amount} செலுத்த உங்கள் UPI செயலியை திறந்து PIN உள்ளிட்டு பரிவர்த்தனையை நிறைவு செய்யவும் {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/upi/ta/contact-whatsapp#bc04b42c",
+      "segment": "customer-retry/upi/ta/contact-whatsapp",
+      "body": "{amount} பணப் பரிமாற்றம் பாதியில் உள்ளது. உங்கள் UPI செயலியில் கோரிக்கையை உறுதி செய்ய: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/wallet/en/contact-email#312643cc",
+      "segment": "customer-retry/wallet/en/contact-email",
+      "body": "It looks like your wallet payment for {amount} was interrupted. You can finish the process by ensuring your wallet has sufficient balance and retrying at this link: {link}.",
+      "subject": "Update on your recent transaction",
+      "typicalSegments": 3,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-retry/wallet/en/contact-email#7f36fc8d",
+      "segment": "customer-retry/wallet/en/contact-email",
+      "body": "The payment for {amount} did not go through because the wallet transaction was cancelled before completion. Please top up your wallet or check your link and try again here: {link}.",
+      "subject": "Payment for your order is incomplete",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-retry/wallet/en/contact-email#c1d29246",
+      "segment": "customer-retry/wallet/en/contact-email",
+      "body": "Your request to pay {amount} via wallet was not finalized. Please ensure your wallet is active and click here to complete the payment: {link}.",
+      "subject": "Incomplete payment for your order",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/wallet/en/contact-sms#27ffd187",
+      "segment": "customer-retry/wallet/en/contact-sms",
+      "body": "Your payment of {amount} was cancelled. Please refresh your wallet balance and try again at {link} to complete the order.",
+      "subject": null,
+      "typicalSegments": 1,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/wallet/en/contact-sms#7738e3be",
+      "segment": "customer-retry/wallet/en/contact-sms",
+      "body": "Payment of {amount} stopped mid-process. Please ensure your wallet is topped up and complete the checkout process at {link}.",
+      "subject": null,
+      "typicalSegments": 1,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/wallet/en/contact-sms#7a0a1f31",
+      "segment": "customer-retry/wallet/en/contact-sms",
+      "body": "Your wallet payment for {amount} did not go through. You can retry the transaction quickly at {link} to finish your purchase.",
+      "subject": null,
+      "typicalSegments": 1,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/wallet/en/contact-whatsapp#1908d2f4",
+      "segment": "customer-retry/wallet/en/contact-whatsapp",
+      "body": "Your wallet payment for {amount} did not complete. Please re-link your wallet and pay via {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/wallet/en/contact-whatsapp#2d593230",
+      "segment": "customer-retry/wallet/en/contact-whatsapp",
+      "body": "Your payment of {amount} was cancelled. Please top up your wallet and try again here: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "customer-retry/wallet/en/contact-whatsapp#596d7a93",
+      "segment": "customer-retry/wallet/en/contact-whatsapp",
+      "body": "You left your {amount} payment halfway. Simply top up your wallet and finish it at {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "customer-retry/wallet/hi/contact-email#360d982b",
+      "segment": "customer-retry/wallet/hi/contact-email",
+      "body": "आपका {amount} का भुगतान अभी पूरा नहीं हो पाया है क्योंकि वॉलेट को लिंक या टॉप-अप करने की आवश्यकता है। कृपया यहाँ जाकर भुगतान दोबारा शुरू करें: {link}",
+      "subject": "पेमेंट के लिए वॉलेट अपडेट करें",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/wallet/hi/contact-email#e19b9a1b",
+      "segment": "customer-retry/wallet/hi/contact-email",
+      "body": "आपका {amount} का पेमेंट अधूरा रह गया क्योंकि वॉलेट में बैलेंस कम था। कृपया वॉलेट में राशि जोड़ें और यहाँ से भुगतान पूरा करें: {link}",
+      "subject": "आपका वॉलेट पेमेंट पूरा नहीं हुआ",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/wallet/hi/contact-email#ebc78f48",
+      "segment": "customer-retry/wallet/hi/contact-email",
+      "body": "आपने {amount} के भुगतान की प्रक्रिया बीच में ही छोड़ दी थी। भुगतान पूरा करने के लिए कृपया अपने वॉलेट की सेटिंग्स चेक करें और इस लिंक पर क्लिक करें: {link}",
+      "subject": "वॉलेट से भुगतान नहीं हो पाया",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/wallet/hi/contact-sms#5f730ecb",
+      "segment": "customer-retry/wallet/hi/contact-sms",
+      "body": "वॉलेट पेमेंट बीच में रुक गया है। पूरा करने के लिए {link} पर जाकर फिर से भुगतान करें। राशि: {amount}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/wallet/hi/contact-sms#94c39ad9",
+      "segment": "customer-retry/wallet/hi/contact-sms",
+      "body": "वॉलेट बैलेंस कम होने से भुगतान अधूरा रह गया। फिर से कोशिश करने के लिए यहां क्लिक करें: {link} {amount}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/wallet/hi/contact-sms#da01a1d5",
+      "segment": "customer-retry/wallet/hi/contact-sms",
+      "body": "{amount} का भुगतान वॉलेट की कमी से नहीं हो पाया। इसे पूरा करने के लिए यहां टैप करें: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/wallet/hi/contact-whatsapp#1abe3027",
+      "segment": "customer-retry/wallet/hi/contact-whatsapp",
+      "body": "आपके वॉलेट से {amount} का भुगतान पूरा नहीं हुआ। कृपया इसे फिर से आज़माएं: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "customer-retry/wallet/hi/contact-whatsapp#468b33b3",
+      "segment": "customer-retry/wallet/hi/contact-whatsapp",
+      "body": "{amount} के लिए वॉलेट पेमेंट अधूरा रह गया। ऑर्डर पूरा करने के लिए यहाँ क्लिक करें: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "customer-retry/wallet/hi/contact-whatsapp#7e41fc59",
+      "segment": "customer-retry/wallet/hi/contact-whatsapp",
+      "body": "वॉलेट भुगतान बीच में रुक गया है। {amount} का भुगतान पूरा करने के लिए यहाँ जाएँ: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "customer-retry/wallet/mr/contact-email#0cbdde8f",
+      "segment": "customer-retry/wallet/mr/contact-email",
+      "body": "{amount} भरताना तुम्ही पेमेंट पेज बंद केले असावे. व्यवहार पूर्ण करण्यासाठी कृपया ही लिंक वापरून पुन्हा प्रयत्न करा: {link}",
+      "subject": "पेमेंट प्रक्रिया पुन्हा सुरू करा",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/wallet/mr/contact-email#2c3af62a",
+      "segment": "customer-retry/wallet/mr/contact-email",
+      "body": "तुमच्या वॉलेटमधून {amount} भरताना पेमेंट प्रक्रिया मध्येच थांबली होती. पूर्ण करण्यासाठी कृपया पुन्हा प्रयत्न करा आणि आवश्यक असल्यास वॉलेटमध्ये रक्कम तपासा: {link}",
+      "subject": "तुमचे पेमेंट अपूर्ण राहिले आहे",
+      "typicalSegments": 3,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-retry/wallet/mr/contact-email#d037bf7c",
+      "segment": "customer-retry/wallet/mr/contact-email",
+      "body": "{amount} चे तुमचे पेमेंट पूर्ण झाले नाही. कृपया तुमचे वॉलेट तपासा किंवा पुन्हा रिचार्ज करून ही लिंक वापरा: {link}",
+      "subject": "पेमेंट पूर्ण करण्यासाठी लिंक",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/wallet/mr/contact-sms#475cbddd",
+      "segment": "customer-retry/wallet/mr/contact-sms",
+      "body": "वॉलेटमधील शिल्लक अपुरी असल्याने {amount} चे व्यवहार पूर्ण होऊ शकले नाहीत. पुन्हा प्रयत्न करा: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/wallet/mr/contact-whatsapp#134d3d7d",
+      "segment": "customer-retry/wallet/mr/contact-whatsapp",
+      "body": "{amount} भरण्यासाठी आपले {institution} वॉलेट लिंक करा किंवा रिफिल करा. येथे पूर्ण करा: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/wallet/mr/contact-whatsapp#87413cd0",
+      "segment": "customer-retry/wallet/mr/contact-whatsapp",
+      "body": "{institution} वॉलेटमध्ये शिल्लक नसल्यामुळे {amount} चे पेमेंट थांबले. पुन्हा प्रयत्न करा: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/wallet/mr/contact-whatsapp#f07b6a2a",
+      "segment": "customer-retry/wallet/mr/contact-whatsapp",
+      "body": "{institution} वॉलेटमधील व्यवहार अर्धवट राहिला आहे. {amount} भरण्यासाठी येथे क्लिक करा: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/wallet/ta/contact-email#04f80bc2",
+      "segment": "customer-retry/wallet/ta/contact-email",
+      "body": "முன்பு பாதியில் நின்ற உங்கள் {amount} பரிவர்த்தனையை முடிக்க, தயவுசெய்து உங்கள் வாலட்டில் போதிய இருப்பு இருப்பதை உறுதி செய்யவும். பணம் செலுத்த இந்த இணைப்பைத் தொடரவும்: {link}.",
+      "subject": "பரிவர்த்தனையை நிறைவு செய்யத் தேவையான உதவி",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-retry/wallet/ta/contact-email#6d025f51",
+      "segment": "customer-retry/wallet/ta/contact-email",
+      "body": "உங்கள் வாலட் இருப்பு குறைவாக இருப்பதால் கட்டணம் செலுத்த முடியவில்லை. உங்கள் வாலட்டை ரீசார்ஜ் செய்துவிட்டு மீண்டும் இந்த இணைப்பைப் பயன்படுத்தி {amount} தொகையைச் செலுத்தவும்: {link}.",
+      "subject": "உங்கள் கட்டண முயற்சி முழுமையடையவில்லை",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-retry/wallet/ta/contact-email#a5c18cc7",
+      "segment": "customer-retry/wallet/ta/contact-email",
+      "body": "உங்கள் வாலட் இணைப்பு துண்டிக்கப்பட்டதால் கட்டண செயல்முறை நின்றது. உங்கள் வாலட்டை சரிபார்த்துவிட்டு, மீண்டும் இந்த இணைப்பின் மூலம் {amount} தொகையைச் செலுத்தவும்: {link}.",
+      "subject": "மீண்டும் முயற்சி செய்யவும்: கட்டணம் நிலுவையில் உள்ளது",
+      "typicalSegments": 3,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "customer-retry/wallet/ta/contact-sms#86c32d69",
+      "segment": "customer-retry/wallet/ta/contact-sms",
+      "body": "{amount} மதிப்பிலான உங்கள் பணப்பை பரிவர்த்தனை பாதியில் நின்றது. மீண்டும் முயற்சிக்கவும்: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "customer-retry/wallet/ta/contact-whatsapp#b4ca6367",
+      "segment": "customer-retry/wallet/ta/contact-whatsapp",
+      "body": "{institution} வாலட்டில் போதிய பணம் இல்லை. பேமென்ட் முடிக்க மீண்டும் முயற்சிக்கவும்: {link} {amount}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "timed/any/en/contact-email#10da99df",
+      "segment": "timed/any/en/contact-email",
+      "body": "We were unable to process your payment of {amount}. Please return to the checkout page here {link} to finish the process.",
+      "subject": "Complete your payment",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "timed/any/en/contact-email#5a011587",
+      "segment": "timed/any/en/contact-email",
+      "body": "The transaction for {amount} remains incomplete. You can finalize your order by visiting {link} whenever you are ready.",
+      "subject": "Update on your purchase",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "timed/any/en/contact-email#e3ea089c",
+      "segment": "timed/any/en/contact-email",
+      "body": "The payment for {amount} did not go through. You can complete the transaction at your convenience using this link: {link}.",
+      "subject": "Payment for your recent order",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "timed/any/en/contact-sms#90e89b80",
+      "segment": "timed/any/en/contact-sms",
+      "body": "The payment for {amount} did not go through. You can complete the transaction here: {link}",
+      "subject": null,
+      "typicalSegments": 1,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "timed/any/en/contact-sms#99b90ca9",
+      "segment": "timed/any/en/contact-sms",
+      "body": "Your payment of {amount} is currently incomplete. Use this link to finish your order: {link}",
+      "subject": null,
+      "typicalSegments": 1,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "timed/any/en/contact-sms#e12ae783",
+      "segment": "timed/any/en/contact-sms",
+      "body": "We could not process the payment of {amount}. Please try again using this link: {link}",
+      "subject": null,
+      "typicalSegments": 1,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "timed/any/en/contact-whatsapp#03d9c6e6",
+      "segment": "timed/any/en/contact-whatsapp",
+      "body": "Your order for {amount} is still pending. Tap this link to try the payment again: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "timed/any/en/contact-whatsapp#4a5a6e1e",
+      "segment": "timed/any/en/contact-whatsapp",
+      "body": "The payment of {amount} did not go through. You can complete your order here: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "timed/any/en/contact-whatsapp#a596fd59",
+      "segment": "timed/any/en/contact-whatsapp",
+      "body": "We could not process your {amount} payment. Use this link to finish your purchase: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "timed/any/hi/contact-email#10b95fd4",
+      "segment": "timed/any/hi/contact-email",
+      "body": "आपका {amount} का भुगतान सफल नहीं रहा है। आप इस {link} का उपयोग करके भुगतान की प्रक्रिया को आसानी से पूरा कर सकते हैं।",
+      "subject": "ऑर्डर के भुगतान के लिए अनुस्मारक",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "timed/any/hi/contact-email#197e05fb",
+      "segment": "timed/any/hi/contact-email",
+      "body": "आपका {amount} का भुगतान अभी लंबित है। भुगतान की प्रक्रिया को पूरा करने के लिए कृपया इस {link} पर क्लिक करें।",
+      "subject": "भुगतान को पूरा करने की जानकारी",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "timed/any/hi/contact-email#378e9cb9",
+      "segment": "timed/any/hi/contact-email",
+      "body": "आपका {amount} का भुगतान अभी पूरा नहीं हो पाया है। जब भी आप तैयार हों, तो कृपया इस {link} पर जाकर इसे दोबारा पूरा करें।",
+      "subject": "आपका भुगतान पूरा नहीं हो सका",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "timed/any/hi/contact-sms#29be7f35",
+      "segment": "timed/any/hi/contact-sms",
+      "body": "{amount} के भुगतान के लिए प्रक्रिया अधूरी रह गई। इसे पूरा करने हेतु यहाँ जाएँ: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "timed/any/hi/contact-sms#431809ea",
+      "segment": "timed/any/hi/contact-sms",
+      "body": "{amount} का लेनदेन अभी पूरा नहीं हो पाया। इसे पूरा करने के लिए यहाँ क्लिक करें: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "timed/any/hi/contact-sms#b75c6ac9",
+      "segment": "timed/any/hi/contact-sms",
+      "body": "{amount} का भुगतान पूरा नहीं हुआ। आप तैयार होने पर यहाँ से पुनः प्रयास करें: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "timed/any/hi/contact-whatsapp#00867df3",
+      "segment": "timed/any/hi/contact-whatsapp",
+      "body": "आपका {amount} का ट्रांजेक्शन अधूरा रह गया। आप इस लिंक के ज़रिए भुगतान पूरा कर सकते हैं: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "timed/any/hi/contact-whatsapp#3157c9ef",
+      "segment": "timed/any/hi/contact-whatsapp",
+      "body": "आपका {amount} का भुगतान पूरा नहीं हो सका। आप इस लिंक से भुगतान फिर से कर सकते हैं: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "timed/any/hi/contact-whatsapp#dac72c2f",
+      "segment": "timed/any/hi/contact-whatsapp",
+      "body": "{amount} के लिए आपका भुगतान रुक गया है। कृपया इसे पूरा करने के लिए यहाँ क्लिक करें: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "timed/any/mr/contact-email#1e243954",
+      "segment": "timed/any/mr/contact-email",
+      "body": "तुमचे {amount} रुपयांचे पेमेंट पूर्ण होऊ शकले नाही. कृपया खालील लिंकवर जाऊन पुन्हा प्रयत्न करा: {link}",
+      "subject": "तुमचे पेमेंट अपूर्ण राहिले आहे",
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "timed/any/mr/contact-email#825b5d15",
+      "segment": "timed/any/mr/contact-email",
+      "body": "{amount} रुपयांसाठी केलेला प्रयत्न सध्या पूर्ण झाला नाही. आपली खरेदी पूर्ण करण्यासाठी या लिंकचा वापर करा: {link}",
+      "subject": "अपूर्ण व्यवहार प्रक्रिया",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "timed/any/mr/contact-email#b0779974",
+      "segment": "timed/any/mr/contact-email",
+      "body": "तुमचे {amount} चे व्यवहार सध्या अपूर्ण आहेत. तुम्ही तयार असताना खालील लिंक वापरून प्रक्रिया पूर्ण करू शकता: {link}",
+      "subject": "पेमेंट पूर्ण करण्यासाठी सूचना",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "timed/any/mr/contact-sms#18a91b62",
+      "segment": "timed/any/mr/contact-sms",
+      "body": "पेमेंट पूर्ण होऊ शकले नाही. {amount} देय भरण्यासाठी या लिंकवर जाऊन प्रक्रिया पूर्ण करा: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "timed/any/mr/contact-sms#c2cee5f5",
+      "segment": "timed/any/mr/contact-sms",
+      "body": "{amount} चे पेमेंट अपूर्ण राहिले आहे. खालील लिंकवर जाऊन तुम्ही ते आता पूर्ण करू शकता: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "timed/any/mr/contact-sms#d1cd8383",
+      "segment": "timed/any/mr/contact-sms",
+      "body": "{amount} साठी तुमचे पेमेंट पूर्ण झाले नाही. कृपया पुन्हा प्रयत्न करण्यासाठी येथे क्लिक करा: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "timed/any/mr/contact-whatsapp#2566bdcb",
+      "segment": "timed/any/mr/contact-whatsapp",
+      "body": "{amount} चे व्यवहार अपूर्ण राहिले. कृपया या लिंकवरून पेमेंट पूर्ण करा: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "timed/any/mr/contact-whatsapp#757b9274",
+      "segment": "timed/any/mr/contact-whatsapp",
+      "body": "{amount} चे पेमेंट पूर्ण होऊ शकले नाही. पुन्हा प्रयत्न करण्यासाठी येथे जा: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "timed/any/mr/contact-whatsapp#8e5a6422",
+      "segment": "timed/any/mr/contact-whatsapp",
+      "body": "{amount} भरणे बाकी आहे. पेमेंट पूर्ण करण्यासाठी कृपया ही लिंक वापरा: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "timed/any/ta/contact-email#03ae0472",
+      "segment": "timed/any/ta/contact-email",
+      "body": "{amount} செலுத்தும் செயல்முறை தற்போது பாதியில் நின்றுவிட்டது. இந்த {link} இணைப்பைப் பயன்படுத்தி நீங்கள் கட்டணத்தை முடித்துக்கொள்ளலாம்.",
+      "subject": "கட்டணத்தை மீண்டும் தொடரவும்",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "timed/any/ta/contact-email#6a5d64b5",
+      "segment": "timed/any/ta/contact-email",
+      "body": "{amount} மதிப்பிலான உங்கள் கட்டணம் நிறைவடையவில்லை. நீங்கள் தயாராக இருக்கும்போது இந்த {link} இணைப்பைப் பயன்படுத்தி மீண்டும் முயலலாம்.",
+      "subject": "உங்கள் கட்டணத்தை நிறைவு செய்தல்",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "timed/any/ta/contact-email#a2dc90bb",
+      "segment": "timed/any/ta/contact-email",
+      "body": "{amount} செலுத்தும் முயற்சி வெற்றிகரமாக முடியவில்லை. இந்த {link} இணைப்பின் மூலம் நீங்கள் கட்டணத்தை மீண்டும் தொடரலாம்.",
+      "subject": "முழுமையடையாத கட்டண நடவடிக்கை",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "timed/any/ta/contact-sms#06ad3fda",
+      "segment": "timed/any/ta/contact-sms",
+      "body": "{amount} பரிவர்த்தனை முழுமையடையவில்லை. இந்த இணைப்பை பயன்படுத்தி பணத்தைச் செலுத்துங்கள்: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "timed/any/ta/contact-sms#382c1760",
+      "segment": "timed/any/ta/contact-sms",
+      "body": "{amount} தொகைக்கான கட்டணம் நிலுவையில் உள்ளது. இங்கே கிளிக் செய்து பணம் செலுத்தவும்: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "timed/any/ta/contact-sms#55e4c754",
+      "segment": "timed/any/ta/contact-sms",
+      "body": "{amount} செலுத்தும் முயற்சி நிறைவடையவில்லை. மீண்டும் முயற்சி செய்ய இங்கே கிளிக் செய்யவும்: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "timed/any/ta/contact-whatsapp#3ebf1704",
+      "segment": "timed/any/ta/contact-whatsapp",
+      "body": "உங்கள் {amount} பரிவர்த்தனை தோல்வியடைந்தது. பணம் செலுத்த இந்த இணைப்பை கிளிக் செய்யவும்: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "timed/any/ta/contact-whatsapp#55e4c754",
+      "segment": "timed/any/ta/contact-whatsapp",
+      "body": "{amount} செலுத்தும் முயற்சி நிறைவடையவில்லை. மீண்டும் முயற்சி செய்ய இங்கே கிளிக் செய்யவும்: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "timed/any/ta/contact-whatsapp#9a8d292b",
+      "segment": "timed/any/ta/contact-whatsapp",
+      "body": "{amount} பணப் பரிவர்த்தனை முடிவடையவில்லை. கீழேயுள்ள இணைப்பை பயன்படுத்திப் பணம் செலுத்தலாம்: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "transient/any/en/contact-email#0f0d294f",
+      "segment": "transient/any/en/contact-email",
+      "body": "The connection to {institution} was interrupted during your checkout. This is resolved now, so please use this {link} to complete your payment of {amount}.",
+      "subject": "Your payment did not go through",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "transient/any/en/contact-email#2658f803",
+      "segment": "transient/any/en/contact-email",
+      "body": "We could not reach {institution} to process your {amount} payment earlier. Everything is back to normal, and you can finish the checkout at {link}.",
+      "subject": "Update on your recent transaction",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "transient/any/en/contact-email#f00ab61e",
+      "segment": "transient/any/en/contact-email",
+      "body": "A temporary outage at {institution} prevented your transaction. You can now successfully process your {amount} payment by visiting {link}.",
+      "subject": "Payment issue with {institution}",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "transient/any/en/contact-sms#3b332234",
+      "segment": "transient/any/en/contact-sms",
+      "body": "{institution} had a brief server hiccup while processing {amount}. You can complete your payment now by tapping {link}.",
+      "subject": null,
+      "typicalSegments": 1,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "transient/any/en/contact-sms#6e4af153",
+      "segment": "transient/any/en/contact-sms",
+      "body": "Your payment of {amount} did not go through because {institution} was temporarily unavailable. Try again using this link: {link}",
+      "subject": null,
+      "typicalSegments": 1,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "transient/any/en/contact-sms#ee44eac7",
+      "segment": "transient/any/en/contact-sms",
+      "body": "The connection to {institution} timed out during your {amount} payment. Tap {link} to finish the transaction successfully.",
+      "subject": null,
+      "typicalSegments": 1,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "transient/any/en/contact-whatsapp#a9f93a5d",
+      "segment": "transient/any/en/contact-whatsapp",
+      "body": "We could not process {amount} via {institution} earlier. It is fixed. Tap {link} to finish payment.",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "transient/any/en/contact-whatsapp#cdf2258a",
+      "segment": "transient/any/en/contact-whatsapp",
+      "body": "{institution} had a brief outage. The issue is resolved. Please tap {link} to pay {amount} now.",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "transient/any/en/contact-whatsapp#fd241031",
+      "segment": "transient/any/en/contact-whatsapp",
+      "body": "Your payment of {amount} did not go through because {institution} was down. Please retry at {link}.",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "transient/any/hi/contact-email#49cd7a4d",
+      "segment": "transient/any/hi/contact-email",
+      "body": "{institution} पर तकनीकी रुकावट के कारण आपका {amount} का भुगतान पूरा नहीं हो सका। अब यह सेवा फिर से सुचारू है, कृपया भुगतान पूरा करने के लिए यहाँ क्लिक करें: {link}",
+      "subject": "भुगतान में तकनीकी समस्या",
+      "typicalSegments": 3,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "transient/any/hi/contact-email#52e4367f",
+      "segment": "transient/any/hi/contact-email",
+      "body": "{institution} की ओर से आई तकनीकी खराबी के चलते {amount} का आपका ट्रांजेक्शन विफल रहा। आप अब इस लिंक पर जाकर अपना भुगतान बिना किसी परेशानी के पूरा कर सकते हैं: {link}",
+      "subject": "भुगतान पूरा करने हेतु लिंक",
+      "typicalSegments": 3,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "transient/any/hi/contact-email#f7198d61",
+      "segment": "transient/any/hi/contact-email",
+      "body": "{institution} के सर्वर में अस्थायी समस्या होने से आपका {amount} का भुगतान रुक गया था। अब सब कुछ ठीक हो गया है, आप इस लिंक के माध्यम से अपना भुगतान दोबारा कर सकते हैं: {link}",
+      "subject": "आपके भुगतान के बारे में जानकारी",
+      "typicalSegments": 3,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "transient/any/hi/contact-sms#981b0565",
+      "segment": "transient/any/hi/contact-sms",
+      "body": "{institution} पर तकनीकी खराबी से {amount} का भुगतान पूरा नहीं हुआ। यहाँ क्लिक करके फिर से प्रयास करें {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "transient/any/hi/contact-sms#dbf3db78",
+      "segment": "transient/any/hi/contact-sms",
+      "body": "{institution} के नेटवर्क में समस्या के कारण {amount} का भुगतान रुक गया था। अब लिंक पर जाकर प्रयास करें {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "transient/any/hi/contact-sms#fa2f5c5f",
+      "segment": "transient/any/hi/contact-sms",
+      "body": "{institution} की अस्थायी दिक्कत से {amount} का पेमेंट फेल हो गया। सुचारू होने पर यहाँ से पूरा करें {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "transient/any/hi/contact-whatsapp#17869874",
+      "segment": "transient/any/hi/contact-whatsapp",
+      "body": "अभी {institution} का सर्वर डाउन था इसलिए {amount} का भुगतान नहीं हुआ। पुनः प्रयास करें: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "transient/any/hi/contact-whatsapp#27a31a57",
+      "segment": "transient/any/hi/contact-whatsapp",
+      "body": "{institution} के नेटवर्क में समस्या के कारण {amount} का भुगतान रुक गया था। अब लिंक पर टैप करें: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "transient/any/hi/contact-whatsapp#c6587ffd",
+      "segment": "transient/any/hi/contact-whatsapp",
+      "body": "{institution} पर तकनीकी खराबी से {amount} का ट्रांजेक्शन अधूरा रहा। भुगतान पूरा करने हेतु: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "transient/any/mr/contact-email#44645994",
+      "segment": "transient/any/mr/contact-email",
+      "body": "नेटवर्क समस्येमुळे तुमचे {amount} चे पेमेंट अयशस्वी झाले होते, पण आता ही सेवा पूर्ववत झाली आहे. सुलभपणे पेमेंट पूर्ण करण्यासाठी या लिंकचा वापर करा: {link}",
+      "subject": "पेमेंट पूर्ण करण्याबाबत एक सूचना",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "transient/any/mr/contact-email#74664dab",
+      "segment": "transient/any/mr/contact-email",
+      "body": "{institution} च्या नेटवर्कमध्ये तांत्रिक अडथळा आल्यामुळे तुमचे {amount} चे पेमेंट पूर्ण होऊ शकले नाही. आता सर्वकाही व्यवस्थित सुरू आहे. खालील लिंकवरून तुम्ही पेमेंट पुन्हा करू शकता: {link}",
+      "subject": "तुमच्या पेमेंट प्रक्रियेबाबत",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "transient/any/mr/contact-email#b26fc852",
+      "segment": "transient/any/mr/contact-email",
+      "body": "{institution} कडून तांत्रिक बिघाड झाल्यामुळे तुमचे {amount} चे पेमेंट थांबले होते. आता ही समस्या दूर झाली आहे. व्यवहार पूर्ण करण्यासाठी कृपया या लिंकवर क्लिक करा: {link}",
+      "subject": "पेमेंट पूर्ण करण्यात अडचण आली होती",
+      "typicalSegments": 3,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "transient/any/mr/contact-sms#1da8655c",
+      "segment": "transient/any/mr/contact-sms",
+      "body": "{institution} मध्ये काही काळ समस्या होती, म्हणून {amount} चे पेमेंट थांबले. आता इथे पूर्ण करा: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "transient/any/mr/contact-sms#2effd520",
+      "segment": "transient/any/mr/contact-sms",
+      "body": "{institution} च्या सर्व्हरमधील त्रुटीमुळे {amount} चे पेमेंट अयशस्वी झाले. या लिंकवर पुन्हा भरा: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "transient/any/mr/contact-sms#98fd5ecc",
+      "segment": "transient/any/mr/contact-sms",
+      "body": "{institution} कडून तांत्रिक बिघाड झाल्यामुळे {amount} चे पेमेंट पूर्ण झाले नाही. पुन्हा प्रयत्न करा: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "transient/any/mr/contact-whatsapp#00bc97bd",
+      "segment": "transient/any/mr/contact-whatsapp",
+      "body": "{institution} मध्ये काही काळ तांत्रिक अडचण होती, म्हणून {amount} चे पेमेंट झाले नाही. लिंकवर जा: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "transient/any/ta/contact-email#1b872d9c",
+      "segment": "transient/any/ta/contact-email",
+      "body": "{institution} வங்கியின் தொழில்நுட்பக் கோளாறு காரணமாக உங்கள் {amount} ரூபாய் கட்டணம் பாதியில் நின்றது. உங்கள் கட்டணத்தை வெற்றிகரமாக முடிக்க இந்த {link} இணைப்பை அழுத்தவும்.",
+      "subject": "பரிவர்த்தனை முடிப்பதற்கான உதவி",
+      "typicalSegments": 3,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "transient/any/ta/contact-email#8daab994",
+      "segment": "transient/any/ta/contact-email",
+      "body": "{institution} வங்கியின் சர்வர் தற்காலிகமாக செயலிழந்ததால் உங்கள் {amount} ரூபாய் பரிவர்த்தனை தோல்வியடைந்தது. தற்போது சேவை சீராகிவிட்டது, இந்த {link} இணைப்பைப் பயன்படுத்தி மீண்டும் பணம் செலுத்தலாம்.",
+      "subject": "பரிவர்த்தனை தோல்வி: மீண்டும் முயற்சிக்கவும்",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "transient/any/ta/contact-email#a17b8767",
+      "segment": "transient/any/ta/contact-email",
+      "body": "உங்கள் {amount} ரூபாய் பரிவர்த்தனையின் போது ஏற்பட்ட தொழில்நுட்பக் கோளாறு இப்போது சரிசெய்யப்பட்டுள்ளது. இந்த {link} இணைப்பைத் திறந்து உங்கள் கட்டணத்தை எளிதாக முடித்துவிடலாம்.",
+      "subject": "உங்கள் கட்டணத்தை முடிக்கவும்",
+      "typicalSegments": 4,
+      "worstCaseSegments": 4
+    },
+    {
+      "id": "transient/any/ta/contact-sms#5978a005",
+      "segment": "transient/any/ta/contact-sms",
+      "body": "{institution} தொழில்நுட்பக் கோளாறால் {amount} பரிவர்த்தனை தடைபட்டது. இப்போது செலுத்த {link} பயன்படுத்தவும்.",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "transient/any/ta/contact-whatsapp#d797f4a8",
+      "segment": "transient/any/ta/contact-whatsapp",
+      "body": "{institution} தொழில்நுட்பக் கோளாறால் {amount} பரிவர்த்தனை தடைபட்டது. தற்போது சேவை சீராக உள்ளது. தொடர: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "unknown/any/en/contact-email#51f67eb5",
+      "segment": "unknown/any/en/contact-email",
+      "body": "Your payment of {amount} did not complete. Please use this {link} to try the payment again.",
+      "subject": "Payment status for your recent order",
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "unknown/any/en/contact-email#7eb2d662",
+      "segment": "unknown/any/en/contact-email",
+      "body": "We were unable to process your payment of {amount}. You can complete your purchase by visiting {link}.",
+      "subject": "Update regarding your transaction",
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "unknown/any/en/contact-email#dc2081ca",
+      "segment": "unknown/any/en/contact-email",
+      "body": "Your transaction for {amount} is currently incomplete. Please finish the process using this {link}.",
+      "subject": "Complete your payment",
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "unknown/any/en/contact-sms#3f03dde2",
+      "segment": "unknown/any/en/contact-sms",
+      "body": "We could not process your {amount} payment. Use this link to finish your order: {link}",
+      "subject": null,
+      "typicalSegments": 1,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "unknown/any/en/contact-sms#4b4744fe",
+      "segment": "unknown/any/en/contact-sms",
+      "body": "To complete your purchase of {amount} that did not go through, click this link: {link}",
+      "subject": null,
+      "typicalSegments": 1,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "unknown/any/en/contact-sms#afdc4fd9",
+      "segment": "unknown/any/en/contact-sms",
+      "body": "Your payment of {amount} did not complete. Please retry the transaction here: {link}",
+      "subject": null,
+      "typicalSegments": 1,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "unknown/any/en/contact-whatsapp#363a924a",
+      "segment": "unknown/any/en/contact-whatsapp",
+      "body": "The payment of {amount} was not successful. You can retry the transaction using this link: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "unknown/any/en/contact-whatsapp#8edd8d0f",
+      "segment": "unknown/any/en/contact-whatsapp",
+      "body": "Your payment of {amount} did not complete. Please try the payment again here: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "unknown/any/en/contact-whatsapp#ba0f97c9",
+      "segment": "unknown/any/en/contact-whatsapp",
+      "body": "We could not process your payment of {amount}. Please use this link to finish your order: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "unknown/any/hi/contact-email#5270fa5b",
+      "segment": "unknown/any/hi/contact-email",
+      "body": "{amount} का भुगतान अभी हमारे सिस्टम में दर्ज नहीं हुआ है। आप इस लिंक के माध्यम से अपना भुगतान सुरक्षित रूप से पूरा कर सकते हैं: {link}।",
+      "subject": "भुगतान की स्थिति: अधूरा",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "unknown/any/hi/contact-email#820cb64c",
+      "segment": "unknown/any/hi/contact-email",
+      "body": "आपका {amount} का पिछला भुगतान सफल नहीं रहा। कृपया भुगतान की प्रक्रिया पूरी करने के लिए यहाँ जाएँ: {link}।",
+      "subject": "भुगतान के लिए एक और प्रयास करें",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "unknown/any/hi/contact-email#c5525264",
+      "segment": "unknown/any/hi/contact-email",
+      "body": "आपका {amount} का भुगतान अभी पूरा नहीं हो पाया है। कृपया इस लिंक का उपयोग करके इसे फिर से प्रयास करें: {link}।",
+      "subject": "आपका भुगतान पूरा नहीं हुआ",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "unknown/any/hi/contact-sms#53bee89d",
+      "segment": "unknown/any/hi/contact-sms",
+      "body": "{amount} के लिए आपका लेनदेन अधूरा रह गया। ऑर्डर पूरा करने के लिए यहाँ क्लिक करें: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "unknown/any/hi/contact-sms#7506f89a",
+      "segment": "unknown/any/hi/contact-sms",
+      "body": "{amount} का भुगतान अभी नहीं हुआ। इसे पूरा करने के लिए यहाँ जाएँ: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "unknown/any/hi/contact-sms#e2faaf87",
+      "segment": "unknown/any/hi/contact-sms",
+      "body": "{amount} का भुगतान पूरा नहीं हो सका। कृपया इसे फिर से यहाँ पूरा करें: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "unknown/any/hi/contact-whatsapp#65be4a1f",
+      "segment": "unknown/any/hi/contact-whatsapp",
+      "body": "{amount} का भुगतान पूरा नहीं हुआ। इसे फिर से करने के लिए यहाँ क्लिक करें: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "unknown/any/hi/contact-whatsapp#98150111",
+      "segment": "unknown/any/hi/contact-whatsapp",
+      "body": "आपका {amount} का भुगतान अधूरा रह गया। कृपया इसे फिर से पूरा करने के लिए यहाँ जाएं: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "unknown/any/hi/contact-whatsapp#f779b4b4",
+      "segment": "unknown/any/hi/contact-whatsapp",
+      "body": "{amount} के लिए भुगतान प्रक्रिया पूरी नहीं हुई। कृपया इसे यहाँ से दोबारा करें: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "unknown/any/mr/contact-email#0722d1e6",
+      "segment": "unknown/any/mr/contact-email",
+      "body": "तुमच्या {amount} च्या व्यवहाराची प्रक्रिया पूर्ण झालेली नाही. व्यवहार पूर्ण करण्यासाठी कृपया येथे जा: {link}.",
+      "subject": "पेमेंट प्रक्रियेत अडथळा",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "unknown/any/mr/contact-email#42af2f63",
+      "segment": "unknown/any/mr/contact-email",
+      "body": "{amount} साठी तुमचे पेमेंट पूर्ण होऊ शकले नाही. कृपया पुन्हा प्रयत्न करण्यासाठी या लिंकवर क्लिक करा: {link}.",
+      "subject": "तुमचे पेमेंट पूर्ण झाले नाही",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "unknown/any/mr/contact-email#cc1eb83d",
+      "segment": "unknown/any/mr/contact-email",
+      "body": "{amount} चे पेमेंट सध्या प्रलंबित आहे. व्यवहार पूर्ण करण्यासाठी कृपया खालील लिंक वापरा: {link}.",
+      "subject": "पेमेंट पूर्ण करण्यासाठी सूचना",
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "unknown/any/mr/contact-sms#069a23c5",
+      "segment": "unknown/any/mr/contact-sms",
+      "body": "तुमचा {amount} चा व्यवहार अर्धवट राहिला आहे. कृपया पेमेंट पूर्ण करण्यासाठी येथे जा: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "unknown/any/mr/contact-sms#8667bf23",
+      "segment": "unknown/any/mr/contact-sms",
+      "body": "{amount} चे तुमचे पेमेंट पूर्ण होऊ शकले नाही. कृपया पुन्हा प्रयत्न करण्यासाठी येथे क्लिक करा: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "unknown/any/mr/contact-sms#bfa96109",
+      "segment": "unknown/any/mr/contact-sms",
+      "body": "{amount} भरताना काही अडचण आली. पेमेंट पूर्ण करण्यासाठी खालील लिंक वापरा: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "unknown/any/mr/contact-whatsapp#78ae7563",
+      "segment": "unknown/any/mr/contact-whatsapp",
+      "body": "{amount} रुपयांचे पेमेंट प्रलंबित आहे. व्यवहार पूर्ण करण्यासाठी कृपया ही लिंक वापरा: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "unknown/any/mr/contact-whatsapp#e3c8c270",
+      "segment": "unknown/any/mr/contact-whatsapp",
+      "body": "तुमचे {amount} रुपयांचे पेमेंट पूर्ण झाले नाही. पुन्हा प्रयत्न करण्यासाठी येथे क्लिक करा: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "unknown/any/mr/contact-whatsapp#f15743b8",
+      "segment": "unknown/any/mr/contact-whatsapp",
+      "body": "{amount} रुपयांसाठी केलेले पेमेंट अपूर्ण राहिले आहे. पेमेंट पूर्ण करायला या लिंकवर जा: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "unknown/any/ta/contact-email#467c47cf",
+      "segment": "unknown/any/ta/contact-email",
+      "body": "தங்கள் கட்டணம் முழுமையடையவில்லை. {amount} தொகையை செலுத்த, தயவுசெய்து இந்த இணைப்பிற்குச் செல்லவும்: {link}",
+      "subject": "மீண்டும் முயற்சி செய்யவும்",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "unknown/any/ta/contact-email#724ac44d",
+      "segment": "unknown/any/ta/contact-email",
+      "body": "{amount} மதிப்பிலான உங்கள் கட்டணம் நிறைவு பெறவில்லை. அதை மீண்டும் முயற்சி செய்ய இந்த இணைப்பைப் பயன்படுத்தவும்: {link}",
+      "subject": "உங்கள் கட்டணம் நிறைவு பெறவில்லை",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "unknown/any/ta/contact-email#fa82345e",
+      "segment": "unknown/any/ta/contact-email",
+      "body": "தாங்கள் மேற்கொண்ட {amount} பரிவர்த்தனை தோல்வியடைந்தது. கட்டணத்தை மீண்டும் தொடர இங்கே அழுத்தவும்: {link}",
+      "subject": "கட்டணத்தை முடிக்கவும்",
+      "typicalSegments": 3,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "unknown/any/ta/contact-sms#037484c1",
+      "segment": "unknown/any/ta/contact-sms",
+      "body": "{amount} தொகைக்கான கட்டணம் விடுபட்டுள்ளது. முடிக்க இந்த இணைப்பைத் தொடரவும்: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "unknown/any/ta/contact-sms#17fc5d86",
+      "segment": "unknown/any/ta/contact-sms",
+      "body": "{amount} செலுத்தும் முயற்சி நிறைவடையவில்லை. மீண்டும் முயல இங்கே கிளிக் செய்யவும்: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "unknown/any/ta/contact-sms#2f80f022",
+      "segment": "unknown/any/ta/contact-sms",
+      "body": "{amount} பரிவர்த்தனை தோல்வியடைந்தது. மீண்டும் கட்டணம் செலுத்த இந்த இணைப்பைப் பயன்படுத்தவும்: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    },
+    {
+      "id": "unknown/any/ta/contact-whatsapp#5471fc1a",
+      "segment": "unknown/any/ta/contact-whatsapp",
+      "body": "{amount} கட்டணத்தைச் செலுத்த உங்கள் முயற்சி தோல்வியுற்றது. தொடர இதை அழுத்தவும்: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "unknown/any/ta/contact-whatsapp#f0fb591c",
+      "segment": "unknown/any/ta/contact-whatsapp",
+      "body": "{amount} செலுத்தும் முயற்சி நிறைவடையவில்லை. மீண்டும் முயல இந்த இணைப்பை அழுத்தவும்: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 2
+    },
+    {
+      "id": "unknown/any/ta/contact-whatsapp#feb190ea",
+      "segment": "unknown/any/ta/contact-whatsapp",
+      "body": "{amount} பரிவர்த்தனை முழுமையடையவில்லை. இந்த இணைப்பைப் பயன்படுத்தி மீண்டும் செலுத்தவும்: {link}",
+      "subject": null,
+      "typicalSegments": 2,
+      "worstCaseSegments": 3
+    }
+  ]
+}
