@@ -260,6 +260,10 @@ class SimulatedExecutor implements Executor {
       pastPayday: pastPayday(casualty.occurredAt, at),
       ordinal: casualty.attempts.length,
       guidance: 0,
+      // Every arm writes English templates and every customer reads English, so nothing here is
+      // ever illegible yet. The multilingual population is a change to the world this benchmark
+      // models, and it arrives with the arm that measures it.
+      legible: true,
     };
 
     const kind = grant.action.kind;
@@ -462,6 +466,9 @@ function buildTruths(
         railHealthy,
         pastPayday: pastPayday(casualty.occurredAt, spontaneousAt),
         ordinal: 0,
+        // No message was sent, so there is nothing to be unreadable. `true` is the neutral value:
+        // it leaves the response rate unmultiplied.
+        legible: true,
         // Nobody sent them anything; whatever brought them back, it was not our copy.
         guidance: 0,
       });

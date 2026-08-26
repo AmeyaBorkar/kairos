@@ -15,6 +15,12 @@ export {
   type LabelledAttempt,
   type SimulatorConfig,
 } from "./generate.js";
+export {
+  ENGLISH_ONLY,
+  INDIA_LANGUAGE_MIX,
+  languageOf,
+  realisedMix,
+} from "./population.js";
 export { blendedFailureRate, INDIA_PROFILES, type SliceProfile } from "./profiles.js";
 export {
   ILLEGIBLE_PENALTY,

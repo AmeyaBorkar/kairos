@@ -70,21 +70,26 @@ describe("scoring a message", () => {
     expect(quality.legible).toBe(true);
   });
 
-  it("discounts a message arriving in a script the reader does not use", () => {
-    const tamilReader = expectation({ language: "ta" });
+  it("reports a script the reader does not use without docking the content score", () => {
+    // The scorer used to halve `guidance` here. It no longer does, and the change is the point
+    // rather than a relaxation: legibility governs whether somebody *responds*, which is a property
+    // of the recovery world, and content governs whether the attempt then *works*, which is this.
+    // Charging one number for both billed the same penalty through two mechanisms and made every
+    // multilingual result better than it should have been.
     const english = scoreMessage(TEMPLATE_TRANSIENT, expectation());
-    const toTamilReader = scoreMessage(TEMPLATE_TRANSIENT, tamilReader);
+    const toTamilReader = scoreMessage(TEMPLATE_TRANSIENT, expectation({ language: "ta" }));
 
     expect(toTamilReader.legible).toBe(false);
-    expect(toTamilReader.guidance).toBeCloseTo(english.guidance * ILLEGIBLE_PENALTY, 10);
+    expect(english.legible).toBe(true);
+    expect(toTamilReader.guidance).toBeCloseTo(english.guidance, 10);
   });
 
-  it("does not discount it to nothing, which would flatter the multilingual case", () => {
-    // Many Indians read English perfectly well. Scoring an unreadable message at zero would be the
-    // choice that makes generated copy easiest to win with, so it is not the choice made.
+  it("keeps the penalty short of total, which would flatter the multilingual case", () => {
+    // Many Indians read English perfectly well. Pricing an unreadable message at zero would be the
+    // choice that makes generated copy easiest to win with, so it is not the choice made. The
+    // constant lives here and is applied by the world; this asserts the value, not the mechanism.
     expect(ILLEGIBLE_PENALTY).toBeGreaterThan(0);
-    const quality = scoreMessage(TEMPLATE_TRANSIENT, expectation({ language: "ta" }));
-    expect(quality.guidance).toBeGreaterThan(0);
+    expect(ILLEGIBLE_PENALTY).toBeLessThan(1);
   });
 
   it("penalises copy that spills into a second segment", () => {

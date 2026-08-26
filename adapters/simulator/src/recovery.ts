@@ -1,4 +1,5 @@
 import { stableSeed } from "@kairos/domain";
+import { ILLEGIBLE_PENALTY } from "./quality.js";
 import { Rng } from "./rng.js";
 
 /**
@@ -51,6 +52,19 @@ export interface RecoveryWorldConfig {
   readonly channelEffect: Readonly<Record<ContactChannel, number>>;
   /** How much less each subsequent message works than the one before it. */
   readonly nudgeDecay: number;
+  /**
+   * How much of a message's pull survives arriving in a script the reader does not use.
+   *
+   * Configurable rather than constant because it is invented, it is the weight the entire
+   * multilingual claim rests on, and ADR 0007 spends real postage on the strength of it. A number
+   * nobody measured should be a number the harness can sweep — the honest output is not "generated
+   * copy is worth ₹X" but "generated copy is worth ₹X if this is 0.5, and ₹0 if it is 1.0".
+   *
+   * `1` means an unreadable message works exactly as well as a readable one, which is the setting
+   * under which the whole language programme is worthless. That the harness can express that is the
+   * point of the field.
+   */
+  readonly illegiblePenalty: number;
   /**
    * Probability per elapsed day that a `customer-action` customer fixes the underlying problem.
    *
@@ -115,6 +129,7 @@ export const DEFAULT_RECOVERY_WORLD: RecoveryWorldConfig = {
     "contact-email": 0.55,
   },
   nudgeDecay: 0.45,
+  illegiblePenalty: ILLEGIBLE_PENALTY,
   fixRatePerDay: 0.06,
   fixRateWithGuidance: 0.19,
   fundedAfterPayday: 0.62,
@@ -177,8 +192,29 @@ export interface ActionContext {
    * text rather than supplied by the arm that wrote it. That distinction is the whole reason this
    * field changed shape: a boolean the caller set was an arm's opinion of its own copy, and an arm
    * could improve its measured result by passing `true`.
+   *
+   * Content only. Whether the reader can read it at all is {@link legible}, and the two are applied
+   * at different points below because they are different mechanisms.
    */
   readonly guidance: number;
+  /**
+   * Whether the message arrived in a script this customer reads.
+   *
+   * Separated from {@link guidance} when the multilingual arm was built, and the separation is the
+   * point rather than a tidy-up. These two facts act on a customer at two different moments:
+   *
+   * - **Legibility decides whether they respond at all.** Nobody acts on a message they cannot
+   *   read, so it belongs on the response rate — and until this field existed, it was not there.
+   *   An illegible message pulled back exactly as many people as a legible one and was then
+   *   slightly worse at helping them, which is not a model of anything.
+   * - **Guidance decides whether the attempt then succeeds.** Knowing that it was your card's OTP
+   *   and not your balance is what makes the second attempt work.
+   *
+   * Folding both into one number would have applied the readability penalty to the wrong quantity,
+   * and folding it into `guidance` *as well* would have charged it twice through two routes and
+   * flattered every multilingual result by construction. It is charged once, here.
+   */
+  readonly legible: boolean;
 }
 
 /**
@@ -286,7 +322,13 @@ export class RecoveryWorld {
     const pull =
       this.#config.nudgeUplift[context.casualtyClass] *
       this.#config.channelEffect[channel] *
-      (1 - this.#config.nudgeDecay) ** context.ordinal;
+      (1 - this.#config.nudgeDecay) ** context.ordinal *
+      // A message in a script the reader does not use still arrives, still costs its segments, and
+      // still spends a contact from the cap — it just moves fewer people. This is the single place
+      // that fact is priced, and `ILLEGIBLE_PENALTY` is the invented number the whole multilingual
+      // case rests on. `bench variance --sweep-legibility` reports the arm's gain across its range
+      // rather than asserting the default is right. See open question 18.
+      (context.legible ? 1 : this.#config.illegiblePenalty);
 
     // Somebody who was already coming back is receptive by construction; the uplift is the extra
     // people the message reaches. Whether the payment then goes through is a separate question, and

@@ -24,6 +24,7 @@ function context(o: Partial<ActionContext> = {}): ActionContext {
     pastPayday: false,
     ordinal: 0,
     guidance: 0,
+    legible: true,
     ...o,
   };
 }
@@ -226,6 +227,51 @@ describe("contact", () => {
 
     expect(rate(0)).toBeGreaterThan(rate(1));
     expect(rate(1)).toBeGreaterThan(rate(3));
+  });
+
+  it("moves fewer people when they cannot read it", () => {
+    // The mechanism the whole multilingual case rests on, and it lives here rather than in the
+    // scorer. A message in the wrong script still arrives, still costs its segments and still
+    // spends a contact from the cap — it just persuades fewer people to come back. Before this, an
+    // illegible message pulled exactly as many people as a legible one and was merely slightly
+    // worse at helping them, which is not a model of anything.
+    const rate = (legible: boolean): number =>
+      ids(4000, `leg${legible}`).filter(
+        (id) =>
+          world.contact(
+            context({ casualtyId: id, casualtyClass: "timed", at: AT + 8 * DAY, legible }),
+            "contact-sms",
+          ).recovered,
+      ).length / 4000;
+
+    expect(rate(true)).toBeGreaterThan(rate(false));
+  });
+
+  it("charges the penalty once, on the response, and not again on the outcome", () => {
+    // The property that stops the multilingual arm from being flattered by construction. Guidance
+    // and legibility are separate inputs, so an illegible message with perfect content is penalised
+    // exactly as much as an illegible message with none — the content score is not docked a second
+    // time for the script it arrived in.
+    const illegible = new RecoveryWorld(20260825, {
+      ...DEFAULT_RECOVERY_WORLD,
+      illegiblePenalty: 0,
+    });
+    const outcomes = ids(500, "once").map((id) =>
+      illegible.contact(
+        context({
+          casualtyId: id,
+          casualtyClass: "customer-action",
+          at: AT + 3 * DAY,
+          guidance: 1,
+          legible: false,
+        }),
+        "contact-sms",
+      ),
+    );
+
+    // At a penalty of zero nobody who was not already coming back responds at all, whatever the
+    // copy said. Every recovery left is somebody the message did not earn.
+    expect(outcomes.filter((o) => o.recovered && !o.wasAlreadyComing)).toHaveLength(0);
   });
 
   it("recovers more when it says what to fix than when it says a payment failed", () => {

@@ -22,17 +22,25 @@
  * 2. **It names what to do** — enter the PIN, wait for the OTP, log in, update the card. The single
  *    most useful thing a recovery message can contain, and the reason classification pays for
  *    itself twice.
- * 3. **They can read it** — an Indian merchant's customers do not all read English.
- * 4. **It fits** — a message that spills into a second segment costs twice as much and is read
+ * 3. **It fits** — a message that spills into a second segment costs twice as much and is read
  *    less.
+ *
+ * A fourth property, **whether they can read it at all**, is reported here as {@link
+ * MessageQuality.legible} and deliberately kept *out* of the weighted score. An Indian merchant's
+ * customers do not all read English, but legibility does not belong on the same axis as the other
+ * three: those three make a message more likely to *work* once somebody engages with it, and
+ * legibility decides whether they engage at all. The recovery world applies it to the response
+ * rate, once. Folding it in here as well — which is what this function used to do — charged the
+ * same penalty through two mechanisms and made every multilingual result better than it should be.
  *
  * ## The part that is a guess
  *
- * The *weights* are invented, and so is {@link ILLEGIBLE_PENALTY}. Their ordering is defensible;
- * their levels are not measured, because measuring them needs customers rather than a simulator.
- * They are set deliberately conservatively — a message somebody cannot read is scored at half
- * effectiveness rather than zero, which is the choice that makes the multilingual case *harder* to
- * win rather than easier. See the caveats in `docs/MEASUREMENT.md`.
+ * The *weights* are invented, and so is `ILLEGIBLE_PENALTY`. Their ordering is defensible; their
+ * levels are not measured, because measuring them needs customers rather than a simulator. They are
+ * set deliberately conservatively — a message somebody cannot read still moves half as many people
+ * rather than none, which is the choice that makes the multilingual case *harder* to win rather
+ * than easier. The harness sweeps the legibility penalty across its full range instead of quoting
+ * one point from it; see the caveats in `docs/MEASUREMENT.md`.
  */
 
 import { isInScript, type Language, type PaymentMethod, smsCost } from "@kairos/domain";
@@ -57,7 +65,16 @@ export interface MessageQuality {
   readonly legible: boolean;
   /** Fits the channel it is being sent on. */
   readonly concise: boolean;
-  /** The weighted result, in [0,1]. What a fix rate is interpolated along. */
+  /**
+   * The weighted result, in [0,1]. What a fix rate is interpolated along.
+   *
+   * **Content only — {@link legible} is deliberately not folded in.** It used to be, halving this
+   * number for a message in the wrong script, and that was the wrong place to charge it. Whether
+   * somebody can read a message decides whether they *respond*; how specific it is decides whether
+   * the attempt then *works*. The world applies each to the quantity it governs, and charging
+   * legibility here as well would bill it twice through two routes and inflate every multilingual
+   * result by construction.
+   */
   readonly guidance: number;
 }
 
@@ -92,7 +109,19 @@ const ACTION_TERMS: Readonly<Record<PaymentMethod, readonly string[]>> = {
   paylater: ["authorise", "authorize", "approve", "अधिकृत", "அங்கீகரி"],
 };
 
-/** How much of a message's effect survives arriving in a script the reader does not use. */
+/**
+ * How much of a message's pull survives arriving in a script the reader does not use.
+ *
+ * Lives here beside the other message-quality constants, and is *applied* by the recovery world as
+ * `RecoveryWorldConfig.illegiblePenalty` — where it multiplies the response rate, because nobody
+ * acts on a message they cannot read. It is exported as the default for that field rather than used
+ * directly here, so the harness can sweep it.
+ *
+ * The value is invented. `0.5` scores an unreadable message at half effectiveness rather than zero,
+ * which was chosen to make the multilingual case *harder* to win, not easier — a merchant's Tamil
+ * customer receiving English SMS plausibly ignores it entirely. See open question 18, and the
+ * legibility sweep in `docs/MEASUREMENT.md` for what the answer looks like across its whole range.
+ */
 export const ILLEGIBLE_PENALTY = 0.5;
 
 const WEIGHTS = { namesCause: 0.4, namesAction: 0.4, concise: 0.2 } as const;
@@ -133,13 +162,7 @@ export function scoreMessage(text: string, expectation: MessageExpectation): Mes
     (namesAction ? WEIGHTS.namesAction : 0) +
     (concise ? WEIGHTS.concise : 0);
 
-  return {
-    namesCause,
-    namesAction,
-    legible,
-    concise,
-    guidance: legible ? earned : earned * ILLEGIBLE_PENALTY,
-  };
+  return { namesCause, namesAction, legible, concise, guidance: earned };
 }
 
 /** A message nobody sent, for the paths that ask what would have happened without one. */
