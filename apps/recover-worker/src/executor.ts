@@ -1,11 +1,5 @@
-import { type ActionKind, type Paise, smsCostPaise } from "@kairos/domain";
-import {
-  acceptableFirstName,
-  compose,
-  type Gateway,
-  type MessageChannel,
-  type Messenger,
-} from "@kairos/razorpay";
+import { type ActionKind, acceptableFirstName, type Paise, smsCostPaise } from "@kairos/domain";
+import { compose, type Gateway, type MessageChannel, type Messenger } from "@kairos/razorpay";
 import type { ExecuteRequest, ExecuteResult, Executor } from "@kairos/recover";
 
 export interface RecoveryExecutorOptions {

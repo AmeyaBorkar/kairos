@@ -191,6 +191,19 @@ importers:
         specifier: ^22.10.0
         version: 22.20.1
 
+  packages/reason:
+    dependencies:
+      '@kairos/domain':
+        specifier: workspace:*
+        version: link:../domain
+      zod:
+        specifier: ^4.1.0
+        version: 4.4.3
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.0
+        version: 22.20.1
+
   packages/recover:
     dependencies:
       '@kairos/domain':

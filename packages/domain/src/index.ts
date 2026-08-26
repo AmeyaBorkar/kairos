@@ -79,6 +79,7 @@ export {
   quietHoursEndAt,
   validateMandate,
 } from "./mandate.js";
+export { acceptableFirstName, type CopyVariables } from "./message.js";
 export {
   addPaise,
   formatINR,

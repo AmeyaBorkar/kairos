@@ -1,0 +1,30 @@
+{
+  "name": "@kairos/reason",
+  "version": "0.0.0",
+  "private": true,
+  "description": "What a language model is asked, what it is allowed to answer, and what the answer costs. Prompts, validation, pricing and the copy library — everything about talking to a model except the talking.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@kairos/domain": "workspace:*",
+    "zod": "^4.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0"
+  }
+}

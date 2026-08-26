@@ -17,6 +17,7 @@ export default defineConfig({
       "@kairos/ledger": pkg("ledger"),
       "@kairos/policy": pkg("policy"),
       "@kairos/proof": pkg("proof"),
+      "@kairos/reason": pkg("reason"),
       "@kairos/recover": pkg("recover"),
       "@kairos/terminus": pkg("terminus"),
       "@kairos/razorpay": adapter("razorpay"),

@@ -36,13 +36,7 @@ export {
   upiAppCode,
   walletCode,
 } from "./codes.js";
-export {
-  acceptableFirstName,
-  type ComposedMessage,
-  type CopyVariables,
-  compose,
-  rupeesAscii,
-} from "./copy.js";
+export { type ComposedMessage, compose, rupeesAscii } from "./copy.js";
 export {
   memorySeenEvents,
   type SeenEvents,
