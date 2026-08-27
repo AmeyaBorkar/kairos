@@ -37,3 +37,15 @@ ce557ec9677c0b2241345a16a44a5ec69bb2ad86:adapters/reasoner-gemini/src/fixtures/g
 # instrument for this. The value is the same truncated SHA-256 as the entry above, cleared for the
 # same reason, and the commit that removed it explains what happened. Both stay.
 8cc9b09db7ee17da85fc32818961f15c094d889a:.gitleaksignore:generic-api-key:11
+
+#
+# ── 87ebcd5, apps/site/src/settings.ts:14 ───────────────────────────────────────────────────────
+#
+# `generic-api-key`, on the name of a browser storage slot. The site remembers which palette a
+# reader chose, and the constant holding that slot's name carries a version suffix so that changing
+# a default does not leave a stale choice outliving it. Hyphenated lowercase words and a digit are
+# enough entropy for the generic rule, which is working as intended — it cannot know that the value
+# is written to `localStorage` in the reader's own browser and never travels anywhere.
+#
+# Nothing is secret about it by construction: the whole file ships to the tab as readable source.
+87ebcd5ecaa18699460032a937065d5659b7a1c0:apps/site/src/settings.ts:generic-api-key:14
