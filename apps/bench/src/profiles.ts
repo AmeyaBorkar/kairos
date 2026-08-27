@@ -24,7 +24,12 @@ import type { JsonValue } from "@kairos/proof";
 import { DEFAULT_RECOVERY_CONFIG, worstActionCostPaise } from "@kairos/recover";
 import { type Degradation, INDIA_PROFILES, type SimulatorConfig } from "@kairos/simulator";
 import { sealMandate, type UnsignedMandate } from "@kairos/terminus";
-import { DEFAULT_OPTIONS, type ExperimentOptions } from "./experiment.js";
+import {
+  DEFAULT_OPTIONS,
+  DEFAULT_RESOLUTION_OPTIONS,
+  type ExperimentOptions,
+  type ResolutionOptions,
+} from "./experiment.js";
 import { loadLibrary } from "./library.js";
 import { DEFAULT_PREVENT_OPTIONS, type PreventOptions } from "./prevent.js";
 import type { RecoveryRunConfig } from "./recover.js";
@@ -222,6 +227,14 @@ export interface Profile {
   readonly name: ProfileName;
   readonly seed: number;
   readonly detect: ExperimentOptions;
+  /**
+   * The other end of an incident.
+   *
+   * Its own options rather than a field on `detect`, because it needs a window long enough to
+   * watch a rail heal and an incident let go of it — and stretching the detection window would
+   * move the healthy arm's denominator and the detection arm's deadline with it.
+   */
+  readonly resolve: ResolutionOptions;
   readonly spend: { readonly options: SpendOptions; readonly workerCounts: readonly number[] };
   readonly prevent: {
     readonly options: PreventOptions;
@@ -283,6 +296,17 @@ export function profile(name: ProfileName, seed: number = PINNED_SEED): Profile 
       seedBase: seed - PINNED_SEED,
     },
 
+    resolve: {
+      ...DEFAULT_RESOLUTION_OPTIONS,
+      thresholds: quick ? [8, OPERATING_THRESHOLD, 17] : DEFAULT_RESOLUTION_OPTIONS.thresholds,
+      seedsPerCell: quick ? 4 : DEFAULT_RESOLUTION_OPTIONS.seedsPerCell,
+      warmupMs: quick ? 15 * MINUTE : DEFAULT_RESOLUTION_OPTIONS.warmupMs,
+      // Long enough that a trial reporting "never resolved" means it, rather than meaning the tape
+      // ran out. Shorter on `quick` because the gate has a pull request to fit inside.
+      tailMs: quick ? 45 * MINUTE : DEFAULT_RESOLUTION_OPTIONS.tailMs,
+      seedBase: seed - PINNED_SEED,
+    },
+
     spend: {
       options: {
         ...DEFAULT_SPEND_OPTIONS,
@@ -333,6 +357,15 @@ export function describe(p: Profile): JsonValue {
   return {
     profile: p.name,
     seed: p.seed,
+    resolve: {
+      thresholds: [...p.resolve.thresholds],
+      seedsPerCell: p.resolve.seedsPerCell,
+      seedBase: p.resolve.seedBase,
+      attemptsPerMinute: p.resolve.attemptsPerMinute,
+      warmupMs: p.resolve.warmupMs,
+      tailMs: p.resolve.tailMs,
+      scenarios: p.resolve.scenarios.map((s) => s.name),
+    },
     detect: {
       thresholds: [...p.detect.thresholds],
       operatingThreshold: OPERATING_THRESHOLD,

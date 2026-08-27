@@ -22,7 +22,12 @@ import {
   type Scorecard,
 } from "@kairos/proof";
 import { DEFAULT_RECOVERY_CONFIG } from "@kairos/recover";
-import { runCurve, type ThresholdResult } from "./experiment.js";
+import {
+  type ResolutionThresholdResult,
+  runCurve,
+  runResolutionStudy,
+  type ThresholdResult,
+} from "./experiment.js";
 import { type Comparison, type PreventResult, runPrevention } from "./prevent.js";
 import { describe, OPERATING_THRESHOLD, type Profile } from "./profiles.js";
 import { type ArmResult as RecoveryArm, runRecovery } from "./recover.js";
@@ -140,6 +145,8 @@ function collectDetect(
       ? 0
       : row.scenarios.reduce((sum, s) => sum + s.rightAltitudeRate * s.trials, 0) / trials;
 
+  collectResolve(p, metrics, invariants);
+
   metrics.push(
     metric(
       "detect.falseAlarmsPerHour",
@@ -166,6 +173,81 @@ function collectDetect(
       "detect.rightAltitudeRate",
       "share of incidents reported at the degraded slice rather than above or below it",
       rightAltitude,
+      "higher-is-better",
+      "ratio",
+    ),
+  );
+
+  return row;
+}
+
+/**
+ * The way back — how long an incident outlives the outage that opened it.
+ *
+ * Gated rather than merely reported, because this is the measurement whose absence let a six-hour
+ * resolution latency sit in the repository for five phases behind a 93-second detection latency.
+ * A number nothing checks is a number that drifts, and this one drifted all the way to open
+ * question 19 before a console made it visible.
+ */
+function collectResolve(
+  p: Profile,
+  metrics: Observation[],
+  invariants: InvariantObservation[],
+): ResolutionThresholdResult {
+  const study = runResolutionStudy(p.resolve);
+  const row = study.thresholds.find((t) => t.threshold === OPERATING_THRESHOLD);
+  if (row === undefined) {
+    throw new Error(
+      `the resolution study does not include the operating threshold h=${OPERATING_THRESHOLD}; ` +
+        "the scorecard has nothing to read out of it",
+    );
+  }
+
+  /* Only the first of these is an invariant, and the distinction is the whole point of having two
+     kinds of check. That every incident closes is structural: on a healed rail the recovery
+     statistic's drift is `+KL(p0 || p1) > 0`, so it reaches its threshold given traffic, and there
+     is no sequence of observations where it does not.
+
+     That cover never lapses mid-outage is *not* structural, and asserting it would be asserting
+     something measured to be false. It fails where an alarm fires on a burst and freezes a claim
+     the sustained traffic never supported — the incident is then correctly demolished, and cover
+     lapses for one detection latency until a second incident opens with the right claim. Two trials
+     in twenty, on the full profile. It belongs in a banded metric with the rest of the stochastic
+     quantities, not in a list of things that cannot happen. */
+  invariants.push(
+    invariant.holds(
+      "detect.everyIncidentCloses",
+      "every incident opened against a degradation was closed once the rail recovered",
+      row.opened > 0 && row.resolved === row.opened,
+    ),
+  );
+
+  metrics.push(
+    metric(
+      "detect.medianResolutionMs",
+      "median time from a rail recovering to its incident closing",
+      row.medianResolutionMs ?? Number.MAX_SAFE_INTEGER,
+      "lower-is-better",
+      "ms",
+    ),
+    metric(
+      "detect.p90ResolutionMs",
+      "ninetieth-percentile time from a rail recovering to its incident closing",
+      row.p90ResolutionMs ?? Number.MAX_SAFE_INTEGER,
+      "lower-is-better",
+      "ms",
+    ),
+    metric(
+      "detect.lostCoverTrials",
+      "trials where cover lapsed while the rail was still at its peak failure rate",
+      row.clearedEarly,
+      "lower-is-better",
+      "count",
+    ),
+    metric(
+      "detect.heldThroughPeakRate",
+      "share of incidents that were open at the worst moment of the outage they describe",
+      row.opened === 0 ? 0 : row.heldThroughPeak / row.opened,
       "higher-is-better",
       "ratio",
     ),

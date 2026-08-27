@@ -1,12 +1,31 @@
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { DEFAULT_OPTIONS, type ExperimentOptions, runCurve } from "./experiment.js";
-import { formatCurve, formatScenarios, recommend } from "./format.js";
+import {
+  DEFAULT_OPTIONS,
+  DEFAULT_RESOLUTION_OPTIONS,
+  type ExperimentOptions,
+  type ResolutionOptions,
+  runCurve,
+  runResolutionStudy,
+} from "./experiment.js";
+import {
+  formatCurve,
+  formatResolution,
+  formatResolutionScenarios,
+  formatScenarios,
+  recommend,
+} from "./format.js";
 import { FALSE_ALARM_BUDGET_PER_HOUR } from "./profiles.js";
 
 const RULE = "─".repeat(64);
 
-function parseArgs(argv: readonly string[]): { options: ExperimentOptions; out: string | null } {
+interface Args {
+  readonly options: ExperimentOptions;
+  readonly resolution: ResolutionOptions;
+  readonly out: string | null;
+}
+
+function parseArgs(argv: readonly string[]): Args {
   const flags = new Map<string, string>();
   for (const arg of argv) {
     const match = /^--([a-z-]+)(?:=(.*))?$/.exec(arg);
@@ -28,12 +47,26 @@ function parseArgs(argv: readonly string[]): { options: ExperimentOptions; out: 
     ...(flags.has("seeds") ? { seedsPerCell: Number(flags.get("seeds")) } : {}),
   };
 
+  /* The resolution arm keeps its own window. It has to watch well past the moment the rail heals,
+     and stretching the shared one would move the healthy arm's denominator and the detection arm's
+     deadline — re-baselining two published measurements to add a third. */
+  const resolution: ResolutionOptions = {
+    ...DEFAULT_RESOLUTION_OPTIONS,
+    thresholds: options.thresholds,
+    seedsPerCell: options.seedsPerCell,
+    seedBase: options.seedBase,
+    attemptsPerMinute: options.attemptsPerMinute,
+    warmupMs: options.warmupMs,
+    scenarios: options.scenarios,
+    ...(quick ? { tailMs: 60 * 60_000 } : {}),
+  };
+
   const out = flags.get("out") ?? "bench-out/detection-curve.json";
-  return { options, out: out === "none" ? null : out };
+  return { options, resolution, out: out === "none" ? null : out };
 }
 
 function main(): void {
-  const { options, out } = parseArgs(process.argv.slice(2));
+  const { options, resolution, out } = parseArgs(process.argv.slice(2));
 
   const total =
     options.thresholds.length *
@@ -73,6 +106,26 @@ function main(): void {
     process.stdout.write(`${formatScenarios(chosen)}\n`);
   }
 
+  /* The way back. Measured because it was not, for five phases: the sweep above reported a
+     93-second median detection latency while the same detector held incidents open for six hours,
+     and nothing here disagreed with either number. */
+  process.stderr.write("\nRunning the resolution arm…\n");
+  const resolved = runResolutionStudy(resolution);
+
+  process.stdout.write("\nResolution: how long an incident outlives the outage\n");
+  process.stdout.write(`${RULE}\n`);
+  process.stdout.write(`${formatResolution(resolved)}\n\n`);
+
+  const resolvedAtChosen =
+    chosen === null
+      ? null
+      : (resolved.thresholds.find((t) => t.threshold === chosen.threshold) ?? null);
+  if (resolvedAtChosen !== null) {
+    process.stdout.write("Per scenario at that threshold\n");
+    process.stdout.write(`${RULE}\n`);
+    process.stdout.write(`${formatResolutionScenarios(resolvedAtChosen)}\n`);
+  }
+
   process.stderr.write(`\nCompleted in ${(elapsedMs / 1000).toFixed(1)}s\n`);
 
   if (out !== null) {
@@ -80,7 +133,11 @@ function main(): void {
     mkdirSync(dirname(path), { recursive: true });
     writeFileSync(
       path,
-      `${JSON.stringify({ generatedBy: "kairos bench detect-curve", elapsedMs, ...result }, null, 2)}\n`,
+      `${JSON.stringify(
+        { generatedBy: "kairos bench detect-curve", elapsedMs, ...result, resolution: resolved },
+        null,
+        2,
+      )}\n`,
     );
     process.stderr.write(`Scorecard written to ${out}\n`);
   }

@@ -1,5 +1,10 @@
 import { formatINR, paise } from "@kairos/domain";
-import type { CurveResult, ThresholdResult } from "./experiment.js";
+import type {
+  CurveResult,
+  ResolutionResult,
+  ResolutionThresholdResult,
+  ThresholdResult,
+} from "./experiment.js";
 import type { ArmResult, MixRow, SpendSweep, TailRow, TerminusArmResult } from "./spend.js";
 
 function seconds(ms: number | null): string {
@@ -59,6 +64,40 @@ export function formatScenarios(t: ThresholdResult): string {
   ]);
 
   return table(["scenario", "detected", "median", "p90", "onset err", "right slice"], rows);
+}
+
+/**
+ * The other end of an incident: how long it stays open once the rail is healthy again.
+ *
+ * `lost cover` is printed next to the latencies rather than in a footnote because a resolution time
+ * is only worth reading with it. Clearing instantly is trivial if you are allowed to clear while
+ * the rail is still broken, and that column is the only thing in the sweep that would catch it.
+ */
+export function formatResolution(result: ResolutionResult): string {
+  const rows = result.thresholds.map((t) => [
+    t.threshold.toFixed(0),
+    `${t.resolved}/${t.opened}`,
+    seconds(t.medianResolutionMs),
+    seconds(t.p90ResolutionMs),
+    `${t.heldThroughPeak}/${t.opened}`,
+    `${t.clearedEarly}`,
+  ]);
+
+  return table(["threshold", "resolved", "median", "p90", "held at peak", "lost cover"], rows);
+}
+
+/** Per-scenario resolution at one operating point. */
+export function formatResolutionScenarios(t: ResolutionThresholdResult): string {
+  const rows = t.scenarios.map((s) => [
+    s.scenario,
+    `${s.opened}/${s.trials}`,
+    `${s.resolved}`,
+    seconds(s.medianResolutionMs),
+    seconds(s.p90ResolutionMs),
+    `${s.clearedEarly}`,
+  ]);
+
+  return table(["scenario", "opened", "resolved", "median", "p90", "lost cover"], rows);
 }
 
 /**

@@ -249,6 +249,246 @@ export function runHealthyTrial(
   return { alarms, hours: durationMs / 3_600_000 };
 }
 
+/**
+ * The resolution arm — how long an incident stays open after the rail is healthy again.
+ *
+ * This exists because the two arms above cannot see it, and that blindness is not academic. A
+ * detection trial stops watching 45 minutes after onset, which for most of these scenarios is a
+ * minute or two after the rail heals — nowhere near long enough to watch an incident close. So the
+ * sweep could report a 93-second median detection latency while the same detector held incidents
+ * open for six hours, and nothing in this repository would disagree with either number. It did
+ * exactly that, and it took building a console to notice.
+ *
+ * Its own options rather than a longer {@link ExperimentOptions}, because lengthening the shared
+ * window would change the healthy arm's denominator and the detection arm's deadline — re-baselining
+ * two published measurements in order to fix a third.
+ */
+export interface ResolutionOptions {
+  readonly thresholds: readonly number[];
+  readonly seedsPerCell: number;
+  readonly seedBase: number;
+  readonly attemptsPerMinute: number;
+  readonly warmupMs: number;
+  /**
+   * How long to keep watching after the rail is healthy.
+   *
+   * Generous on purpose. A trial that runs out of traffic reports "never resolved", and a tail so
+   * short that every trial reported it would flatter nothing but would also say nothing.
+   */
+  readonly tailMs: number;
+  readonly scenarios: readonly Scenario[];
+}
+
+export const DEFAULT_RESOLUTION_OPTIONS: ResolutionOptions = {
+  thresholds: [6, 8, 10, 12, 14, 17, 21],
+  seedsPerCell: 4,
+  seedBase: 0,
+  attemptsPerMinute: 400,
+  warmupMs: 25 * MINUTE,
+  tailMs: 90 * MINUTE,
+  scenarios: SCENARIOS,
+};
+
+export interface ResolutionOutcome {
+  readonly scenario: string;
+  readonly seed: number;
+  readonly opened: boolean;
+  readonly resolved: boolean;
+  /**
+   * Resolve time minus the moment the rail was **actually** healthy, taken from the simulator rather
+   * than from anything the detector believes.
+   */
+  readonly resolutionLatencyMs: number | null;
+  /** Whether an incident was open at the worst moment of the degradation. */
+  readonly heldThroughPeak: boolean;
+  /**
+   * Whether it let go while the rail was still at its peak failure rate.
+   *
+   * The failure a fast clear could introduce, and the reason this is reported next to the latency
+   * rather than underneath it. A resolution latency of zero achieved by clearing early is not an
+   * improvement; it is a different bug wearing the first one's number.
+   */
+  readonly clearedEarly: boolean;
+}
+
+/** Watch one degradation from onset to well past its recovery, and time the close. */
+export function runResolutionTrial(
+  scenario: Scenario,
+  threshold: number,
+  seed: number,
+  options: ResolutionOptions,
+): ResolutionOutcome {
+  const startAt = 1_756_000_000_000;
+  const onsetAt = startAt + options.warmupMs;
+  const degradation = scenario.build(onsetAt);
+
+  // Three instants the simulator knows and the detector does not: the worst of it, the last moment
+  // it is still at its worst, and the moment it is genuinely over.
+  const peakAt = onsetAt + degradation.rampMs + degradation.holdMs / 2;
+  const stillPeakUntil = onsetAt + degradation.rampMs + degradation.holdMs;
+  const healthyAt = degradationEndsAt(degradation);
+
+  const simulation: SimulatorConfig = {
+    seed,
+    startAt,
+    durationMs: healthyAt - startAt + options.tailMs,
+    attemptsPerMinute: options.attemptsPerMinute,
+    profiles: INDIA_PROFILES,
+    degradations: [degradation],
+  };
+
+  const engine = new DetectionEngine(engineConfig(threshold));
+  const gapMs = 60_000 / options.attemptsPerMinute;
+  const endsAt = startAt + simulation.durationMs;
+
+  /* Asked of the open set rather than of the event stream, and that is not a detail.
+     Rollup moves an incident between altitudes mid-flight: a leaf degradation can be reported at
+     its issuer, superseded by its method, and closed there. Following one slice's `resolved` event
+     would score that as an early clear while the degradation was still covered a level up. What
+     the merchant experiences is whether *anything* covering the broken rail is open, so that is
+     what gets measured. */
+  const covered = (): boolean =>
+    engine.openIncidents().some((i) => related(i.slice, degradation.slice));
+
+  let openedAt: number | null = null;
+  let lastCoveredAt: number | null = null;
+  let heldThroughPeak = false;
+  let clearedEarly = false;
+
+  for (const attempt of generate(simulation)) {
+    for (const event of engine.observe(attempt)) {
+      if (
+        event.kind === "opened" &&
+        openedAt === null &&
+        related(event.incident.slice, degradation.slice) &&
+        event.incident.detectedAt >= onsetAt
+      ) {
+        openedAt = event.incident.detectedAt;
+      }
+    }
+
+    const open = covered();
+    if (open) lastCoveredAt = attempt.at;
+
+    if (openedAt !== null && attempt.at > openedAt) {
+      // A gap in cover while the rail is still at its worst. Nothing else in the sweep sees this.
+      if (!open && attempt.at < stillPeakUntil) clearedEarly = true;
+      if (Math.abs(attempt.at - peakAt) < gapMs * 5 && open) heldThroughPeak = true;
+    }
+  }
+
+  /* The moment it finally let go, measured as the last instant anything covering the rail was
+     open. Robust to an incident closing and a milder one opening in its place, which is a real
+     outcome rather than a defect — but which the merchant still experiences as one continuous
+     stretch of being steered. */
+  const stillOpen = lastCoveredAt !== null && lastCoveredAt >= endsAt - gapMs * 20;
+
+  /* A resolution latency only means anything on a trial where the incident actually outlived the
+     outage. Where cover ended *before* the rail healed, the difference is negative, and folding a
+     negative into the median would make the headline smaller for the one reason that is not an
+     improvement. Those trials report no latency and are counted in `clearedEarly` instead, which
+     the report prints in the next column along. */
+  const outlived =
+    openedAt !== null && !stillOpen && lastCoveredAt !== null && lastCoveredAt >= healthyAt;
+
+  return {
+    scenario: scenario.name,
+    seed,
+    opened: openedAt !== null,
+    resolved: openedAt !== null && !stillOpen,
+    resolutionLatencyMs: outlived && lastCoveredAt !== null ? lastCoveredAt - healthyAt : null,
+    heldThroughPeak,
+    clearedEarly,
+  };
+}
+
+export interface ResolutionScenarioResult {
+  readonly scenario: string;
+  readonly description: string;
+  readonly trials: number;
+  readonly opened: number;
+  readonly resolved: number;
+  readonly medianResolutionMs: number | null;
+  readonly p90ResolutionMs: number | null;
+  readonly heldThroughPeak: number;
+  readonly clearedEarly: number;
+}
+
+export interface ResolutionThresholdResult {
+  readonly threshold: number;
+  readonly trials: number;
+  readonly opened: number;
+  readonly resolved: number;
+  readonly medianResolutionMs: number | null;
+  readonly p90ResolutionMs: number | null;
+  /** Trials where an incident was open at the worst moment. Should equal `opened`. */
+  readonly heldThroughPeak: number;
+  /** Trials where it let go while the rail was still at peak. Should be zero. */
+  readonly clearedEarly: number;
+  readonly scenarios: readonly ResolutionScenarioResult[];
+}
+
+export interface ResolutionResult {
+  readonly options: ResolutionOptions;
+  readonly thresholds: readonly ResolutionThresholdResult[];
+}
+
+/** The resolution sweep. Deterministic, like everything else here. */
+export function runResolutionStudy(
+  options: ResolutionOptions = DEFAULT_RESOLUTION_OPTIONS,
+  onProgress?: (done: number, total: number) => void,
+): ResolutionResult {
+  const total = options.thresholds.length * options.scenarios.length * options.seedsPerCell;
+  let done = 0;
+
+  const thresholds = options.thresholds.map((threshold) => {
+    const all: ResolutionOutcome[] = [];
+
+    const scenarios = options.scenarios.map((scenario) => {
+      const outcomes: ResolutionOutcome[] = [];
+      for (let s = 0; s < options.seedsPerCell; s++) {
+        outcomes.push(
+          runResolutionTrial(scenario, threshold, options.seedBase + 1000 + s * 31, options),
+        );
+        onProgress?.(++done, total);
+      }
+      all.push(...outcomes);
+
+      const latencies = outcomes
+        .map((o) => o.resolutionLatencyMs)
+        .filter((v): v is number => v !== null);
+
+      return {
+        scenario: scenario.name,
+        description: scenario.description,
+        trials: outcomes.length,
+        opened: outcomes.filter((o) => o.opened).length,
+        resolved: outcomes.filter((o) => o.resolved).length,
+        medianResolutionMs: percentile(latencies, 50),
+        p90ResolutionMs: percentile(latencies, 90),
+        heldThroughPeak: outcomes.filter((o) => o.heldThroughPeak).length,
+        clearedEarly: outcomes.filter((o) => o.clearedEarly).length,
+      };
+    });
+
+    const latencies = all.map((o) => o.resolutionLatencyMs).filter((v): v is number => v !== null);
+
+    return {
+      threshold,
+      trials: all.length,
+      opened: all.filter((o) => o.opened).length,
+      resolved: all.filter((o) => o.resolved).length,
+      medianResolutionMs: percentile(latencies, 50),
+      p90ResolutionMs: percentile(latencies, 90),
+      heldThroughPeak: all.filter((o) => o.heldThroughPeak).length,
+      clearedEarly: all.filter((o) => o.clearedEarly).length,
+      scenarios,
+    };
+  });
+
+  return { options, thresholds };
+}
+
 export function percentile(values: readonly number[], p: number): number | null {
   if (values.length === 0) return null;
   const sorted = [...values].sort((a, b) => a - b);
