@@ -244,27 +244,23 @@ export class Stage {
     const state = actState(act);
     if (!state.onscreen) return;
 
-    const { rate } = drawChart(this.#args(this.#chart, state.t));
+    const { rate, closed } = drawChart(this.#args(this.#chart, state.t));
     blit(this.#chart);
 
-    // The trace is back at baseline and the incident marker is still lit. That mismatch is the whole
-    // of question four, and it is drawn rather than merely asserted.
-    const stillOpen = state.t > 0.55;
+    /* Two bars under one trace: where the incident ends now, and where it used to. The second runs
+       off the edge of the paper, which is the honest length of it. Question four is no longer the
+       defect — it is that the defect was published, measured, and then cost something to fix. */
     html(
       "chart-tag",
-      stillOpen
-        ? '<b style="color:var(--bad)">STILL OPEN</b>'
-        : rate > 0.5
-          ? '<b style="color:var(--bad)">INCIDENT OPEN</b>'
+      rate > 0.5
+        ? '<b style="color:var(--bad)">INCIDENT OPEN</b>'
+        : closed
+          ? '<b style="color:var(--good)">CLOSED · +3.9 MIN</b>'
           : "BASELINE",
     );
     text(
       "chart-cap",
-      rate > 0.5
-        ? "RATE 72% · ALARMED"
-        : stillOpen
-          ? "RATE 10% · STILL STEERING"
-          : "RATE 10% · QUIET",
+      rate > 0.5 ? "RATE 72% · ALARMED" : closed ? "RATE 10% · RELEASED" : "RATE 10% · QUIET",
     );
   }
 

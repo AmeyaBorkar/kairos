@@ -197,7 +197,7 @@
   <div class="grid-3">
     <div class="panel">
       <h3 class="sell">The loss you never take</h3>
-      <div class="stat"><span class="n">11–35</span><span class="cap">percentage points fewer failed
+      <div class="stat"><span class="n">11–50</span><span class="cap">percentage points fewer failed
         payments, among the customers who would have landed on the broken method</span></div>
       <p class="aside">The range is two different incidents: UPI through one bank failing 42% of its attempts, and
         netbanking through another failing 55%. The worse a method is behaving, the more there is to save.</p>
@@ -205,7 +205,7 @@
 
     <div class="panel lit">
       <h3 class="sell">The money you get back</h3>
-      <div class="stat"><span class="n">75×</span><span class="cap">recovered for every rupee spent
+      <div class="stat"><span class="n">65×</span><span class="cap">recovered for every rupee spent
         trying — and that rupee already prices every customer lost to an opt-out</span></div>
       <p class="aside">Counted as <b>incremental</b>: what came back <em class="hot">because of</em>
         the system, on top of what would have come back on its own. Most dunning numbers are gross,
@@ -214,9 +214,9 @@
 
     <div class="panel">
       <h3 class="sell">The customers you keep</h3>
-      <div class="stat"><span class="n">72%</span><span class="cap">fewer opt-outs than a fixed
+      <div class="stat"><span class="n">68%</span><span class="cap">fewer opt-outs than a fixed
         reminder schedule — which sent twice as many messages and still recovered less</span></div>
-      <p class="aside">Against that schedule: <b>9% more money on 54% fewer messages</b>. An opt-out
+      <p class="aside">Against that schedule: <b>8% more money on 54% fewer messages</b>. An opt-out
         is permanent, so the channel is an asset you spend, and almost nothing prices it.</p>
     </div>
   </div>
@@ -341,7 +341,7 @@
       <div class="step beat"><p>A holdout is <em>always</em> kept back.</p></div>
       <div class="step beat"><p>Counted as incremental, never gross.</p></div>
       <div class="step">
-        <p class="huge"><em>9% more money</em> on half the messages.</p>
+        <p class="huge"><em>8% more money</em> on half the messages.</p>
         <button type="button" class="more" data-goto="benchmarks">ALL FIVE ARMS →</button>
       </div>
     </div>
@@ -393,18 +393,21 @@
     <div class="art">
       <div class="frame">
         <canvas id="c-chart" width="320" height="120" role="img"
-                aria-label="Pixel art: a chart recorder. The failure-rate trace spikes, returns to baseline, and the incident marker stays lit long after."></canvas>
+                aria-label="Pixel art: a chart recorder. The failure-rate trace spikes and returns to baseline. Two bars run underneath it — a short green one ending just after the trace recovers, and a red one that runs off the edge of the paper."></canvas>
         <div class="tagline" style="left:5%;top:8%">NETBANKING · HDFC</div>
         <div class="tagline" id="chart-tag" style="right:5%;top:8%">BASELINE</div>
+        <div class="tagline good" style="left:4%;top:76%">STEERED <b>NOW</b></div>
+        <div class="tagline bad" style="left:4%;top:88%">STEERED <b>BEFORE</b></div>
       </div>
       <div class="frame-cap"><span>CHART RECORDER</span><span id="chart-cap">RATE 10% · QUIET</span></div>
     </div>
     <div class="steps">
-      <div class="step beat"><p>It opens an incident in three minutes.</p></div>
-      <div class="step beat"><p class="huge">It closes one <em class="no">six hours late</em>.</p></div>
+      <div class="step beat"><p>It opened in three minutes.</p></div>
+      <div class="step beat"><p class="huge">It closed <em class="no">six hours late</em>.</p></div>
+      <div class="step beat"><p>We published that, unfixed, for a month.</p></div>
       <div class="step">
-        <p>Published, unfixed, asserted in a test.</p>
-        <button type="button" class="more" data-goto="benchmarks">OPEN QUESTION 19 →</button>
+        <p class="huge">Now <em>3.9 minutes</em> — and here's the bill.</p>
+        <button type="button" class="more" data-goto="benchmarks">WHAT IT COST →</button>
       </div>
     </div>
   </div>
@@ -493,7 +496,7 @@
 
       <div class="panel flat">
         <span class="lbl">RECOVERY</span>
-        <p class="aside" style="margin:0;border-left-color:var(--warn)">Not driven by this run. The recovery arm is measured in the benchmark, where it recovers <b>₹6,96,678</b> — but the console does not yet step it, so <b>contact-cap</b> and <b>campaign-budget</b> never bind here. That gap is why <b>budget-exhaustion</b> below never exhausts its ₹20: a steer reserves ₹3 and reconciles to zero.</p>
+        <p class="aside" style="margin:0;border-left-color:var(--warn)">Not driven by this run. The recovery arm is measured in the benchmark, where it recovers <b>₹6,93,293</b> — but the console does not yet step it, so <b>contact-cap</b> and <b>campaign-budget</b> never bind here. That gap is why <b>budget-exhaustion</b> below never exhausts its ₹20: a steer reserves ₹3 and reconciles to zero.</p>
       </div>
     </div>
   </div>
@@ -650,9 +653,13 @@
   <div class="grid-3">
     <div class="panel"><div class="stat"><span class="n">93s</span><span class="cap">median detection latency</span></div></div>
     <div class="panel"><div class="stat"><span class="n">83%</span><span class="cap">of degradations caught</span></div></div>
-    <div class="panel"><div class="stat"><span class="n">0.21</span><span class="cap">false alarms per hour — about one every five hours of healthy traffic</span></div></div>
+    <div class="panel"><div class="stat"><span class="n">0.14</span><span class="cap">false alarms per hour — two, across fourteen hours of healthy traffic</span></div></div>
   </div>
-  <p class="aside" style="max-width:74ch">Measuring from the alarm rather than the changepoint would make any detector look instant. It is the single most common way this number is inflated.<br><br>The false-alarm rate rests on <b>one or two observed alarms</b> across the healthy runs, so the interval around it is wide — a later scorecard puts it at 0.14. Read it as <b>roughly one an evening</b>, not as two decimal places.</p>
+  <div class="grid-2" style="margin-top:18px">
+    <div class="panel"><div class="stat"><span class="n">2.5</span><span class="cap">minutes, median, from the rail recovering to the incident closing</span></div></div>
+    <div class="panel"><div class="stat"><span class="n">100%</span><span class="cap">of incidents still open at the worst moment of the outage they describe</span></div></div>
+  </div>
+  <p class="aside" style="max-width:74ch">Measuring from the alarm rather than the changepoint would make any detector look instant. It is the single most common way this number is inflated.<br><br>The false-alarm rate rests on <b>two observed alarms</b> across fourteen hours of healthy traffic, so the interval around it is wide. Read it as <b>roughly one an evening</b>, not as two decimal places.</p>
 
   <div class="strip">
     <span class="lbl">SPEND — 64 CONCURRENT WORKERS AGAINST A ₹500 BUDGET</span>
@@ -699,19 +706,33 @@
   <div class="strip">
     <span class="lbl">THE FINDING WE DIDN'T WANT</span>
     <div class="caveat" style="max-width:78ch">
-      Generated copy was expected to win on <b>writing</b> — naming the rail, saying what to do next. Swept against the readability weight it rests on, across four seeds, it wins on <b>readability alone</b>: at an illegibility penalty of 1.00 the advantage is <b>−₹1,076</b>, and its range straddles zero.
+      Generated copy was expected to win on <b>writing</b> — naming the rail, saying what to do next. Swept against the readability weight it rests on, across four seeds, it wins on <b>readability alone</b>: at an illegibility penalty of 1.00 the advantage falls from <b>₹1.05 lakh</b> to <b>₹10,367</b>, on a range that straddles zero.
       <br><br>
       The generated column does not move across the sweep at all. We published the sweep rather than the headline.
     </div>
   </div>
 
   <div class="strip">
-    <span class="lbl">WHAT WE DON'T KNOW — OPEN QUESTION 19</span>
+    <span class="lbl">THE ONE WE PUBLISHED BROKEN — OPEN QUESTION 19</span>
     <div class="caveat" style="max-width:78ch">
-      The detector opens an incident in about <b>three minutes</b> and closes one about <b>six hours</b> after the rail recovers. A one-sided CUSUM decays only while the rate is <b>below</b> the frozen baseline, so a rail returning to normal leaves the statistic plateaued — still above 10 against a clear threshold of 3.6, three hours later.
+      For a month this page said the detector opened an incident in about <b>three minutes</b> and closed one about <b>six hours</b> after the rail recovered, and that we had not fixed it. That was true. Traffic stayed steered off a healthy rail the whole time, and every retry waiting on the recovery edge was late.
       <br><br>
-      It is expensive: traffic stays steered off a healthy rail, and every retry waiting on the recovery edge is delayed. It is <b>not fixed</b>, because either repair re-baselines every published measurement on this page. So it is written down, and asserted in a test — which means it cannot be fixed quietly, and the day it is fixed every number here gets re-earned.
+      The cause was sharper than we first wrote down. Several statistics run in parallel, one per size of degradation, and the detector reads whichever is highest. After a rail heals they all fall — but the <b>most sensitive one falls slowest</b>, by a factor of forty. So the alarm was decided by the fastest of them and the release by the slowest. <b>Adding a statistic to catch milder outages made every incident close later</b>, and nobody had a reason to look, because the detection study measured how fast an incident opens and had never once measured how fast it closes.
+      <br><br>
+      It is fixed. Letting go has its own test now — the same arithmetic run backwards, asking whether the evidence has turned against the claim the alarm was raised on. It runs only while an incident is open, which is what makes it unable to touch anything above: <b>every detection figure on this page is identical to the millisecond</b>, at the operating threshold and every threshold above it.
     </div>
+  </div>
+
+  <div class="strip">
+    <span class="lbl">AND WHAT FIXING IT COST</span>
+    <div class="grid-3">
+      <div class="panel lit"><div class="stat"><span class="n">9.6 → 2.5</span><span class="cap">minutes, median, from a rail recovering to its incident closing — measured from the simulator's clock, not the detector's opinion</span></div></div>
+      <div class="panel"><div class="stat"><span class="n">331→93</span><span class="cap">minutes of steering a rail that had already recovered, across the sweep's twenty incidents</span></div></div>
+      <div class="panel"><div class="stat"><span class="n" style="color:var(--bad)">0→10</span><span class="cap">minutes of <em>not</em> steering a rail that was still broken — two trials in twenty</span></div></div>
+    </div>
+    <p class="aside" style="max-width:78ch">Those ten minutes are the honest price and they are on the scorecard with a band, not in a footnote. Both come from the same thing: a burst of failures can trip the alarm on a claim the traffic never sustains — one incident opened saying a rail had gone from 12% to 52% while it was running at 19%. The new test correctly demolishes a claim like that, and cover lapses for one detection latency until a second incident opens with the right one and holds.
+    <br><br>
+    Fixing it also moved the recovery arm <b>the wrong way</b>. Retrying on the true recovery edge overlaps more with the customers who were coming back anyway, so incremental recovery fell 1.7% while messages rose. The arm now does what it always claimed, and what it claimed is worth slightly less than the version that was accidentally late. That is open question 20, and it is open.</p>
   </div>
 
   <div class="strip">

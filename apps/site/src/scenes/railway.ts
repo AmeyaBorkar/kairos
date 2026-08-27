@@ -129,12 +129,23 @@ function trace(x: number): number {
 export interface ChartState {
   /** The rate under the pen right now. */
   readonly rate: number;
+  /** Whether the pen has passed the moment the incident now closes. */
+  readonly closed: boolean;
 }
 
+/* The three instants the two bars below are drawn against, in chart widths.
+ *
+ * Scaled from the console's `issuer-outage`, where the rail breaks at +40 minutes, is healthy again
+ * at +81, and the incident opened at +49. One chart width is about 114 minutes of it. */
+const ALARM_AT = 0.44;
+const HEALTHY_AT = 0.7;
+/** +84.9 minutes: 3.9 after the rail is healthy. */
+const CLOSES_AT = 0.734;
+
 /**
- * Tuned so the pen spikes on "three minutes from the changepoint" and returns to baseline on "six
- * hours after the rail recovers" — leaving the last lines to be read against a healthy rail with the
- * incident marker still lit, which is the whole of question four.
+ * Tuned so the pen spikes about three minutes after the rail breaks and the incident closes a few
+ * minutes after it heals — with the bar underneath showing where that used to happen, which is off
+ * the right-hand edge of the paper and then some.
  */
 export function drawChart({ ctx, p, t }: SceneArgs): ChartState {
   const q = band(t, 0.02, 0.45);
@@ -142,22 +153,46 @@ export function drawChart({ ctx, p, t }: SceneArgs): ChartState {
   px(ctx, 0, 0, CHART_W, CHART_H, p.panel);
   for (let x = 0; x < CHART_W; x += 8) px(ctx, x, 0, 1, CHART_H, p.panel2);
   for (let y = 0; y < CHART_H; y += 8) px(ctx, 0, y, CHART_W, 1, p.panel2);
-  px(ctx, 0, 98, CHART_W, 1, p.line);
+  px(ctx, 0, 88, CHART_W, 1, p.line);
 
   const upto = q * CHART_W;
   for (let x = 0; x < upto; x += 1) {
     const v = trace(x / CHART_W);
-    px(ctx, x, 98 - v * 80, 1, 2, v > 0.5 ? p.bad : p.accent);
+    px(ctx, x, 88 - v * 74, 1, 2, v > 0.5 ? p.bad : p.accent);
+  }
+
+  /* Two incident bars under the trace, both drawn only as far as the pen has travelled, so the
+     comparison arrives as the paper does rather than sitting there waiting to be explained.
+     The lower one runs off the edge because it genuinely did: six hours is three of these charts. */
+  const alarmX = ALARM_AT * CHART_W;
+  if (upto > alarmX) {
+    // A tick where the rail is actually healthy, so the gap to the end of the green bar is the
+    // claim — three point nine minutes — rather than something the caption has to assert.
+    const healthyX = HEALTHY_AT * CHART_W;
+    if (upto > healthyX) px(ctx, healthyX, 90, 1, 24, p.ink);
+
+    const nowBar = Math.min(upto, CLOSES_AT * CHART_W);
+    px(ctx, alarmX, 96, nowBar - alarmX, 5, p.good);
+    px(ctx, alarmX, 96, 2, 5, p.ink);
+    if (upto >= CLOSES_AT * CHART_W) px(ctx, nowBar - 2, 96, 2, 5, p.ink);
+
+    px(ctx, alarmX, 106, upto - alarmX, 5, p.bad);
+    px(ctx, alarmX, 106, 2, 5, p.ink);
+    // No closing cap on the old bar: it has none on this scale. The dither says "continues".
+    if (upto > CHART_W - 10) dither(ctx, CHART_W - 10, 106, 10, 5, p.ink, 1);
   }
 
   if (upto > 2) {
     const now = trace(clamp(upto - 1, 0, CHART_W - 1) / CHART_W);
-    const penY = 98 - now * 80;
+    const penY = 88 - now * 74;
     px(ctx, upto - 2, 6, 3, penY - 8, p.line);
     px(ctx, upto - 4, penY - 3, 7, 7, p.ink);
   }
 
-  return { rate: trace(clamp(upto - 1, 0, CHART_W - 1) / CHART_W) };
+  return {
+    rate: trace(clamp(upto - 1, 0, CHART_W - 1) / CHART_W),
+    closed: upto >= CLOSES_AT * CHART_W,
+  };
 }
 
 /* ── The home signal ───────────────────────────────────────────────────── */
