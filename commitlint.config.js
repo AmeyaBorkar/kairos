@@ -26,6 +26,7 @@ export default {
         "worker",
         "checkout",
         "console",
+        "site",
         "bench",
         "build",
         "ci",
