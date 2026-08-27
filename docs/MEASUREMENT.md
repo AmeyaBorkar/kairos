@@ -42,11 +42,17 @@ and per-slice baseline failure rates.
 
 Each threshold gets two arms:
 
-- **Healthy arm** — 4 independent runs of 70 minutes with no degradation. Every incident opened is a
-  false alarm, including ones raised during warm-up: a detector that fires while it is still
-  learning is still firing.
+- **Healthy arm** — 12 independent runs of 70 minutes with no degradation, 14 hours in total. Every
+  incident opened is a false alarm, including ones raised during warm-up: a detector that fires
+  while it is still learning is still firing. This arm was 4 runs when the curve below was first
+  published and the count was raised in Phase 5 to give the rate a denominator it could be resolved
+  against; the table has been regenerated at the current size.
 - **Detection arm** — 6 scenarios × 4 seeds. A degradation is injected after 25 minutes of quiet
   traffic and the detector has 45 minutes to catch it.
+- **Resolution arm** — the same 6 scenarios × 4 seeds, watched for 90 minutes *past* the moment the
+  rail is healthy again. Its own window rather than a longer shared one, because stretching the
+  detection window would move the healthy arm's denominator and the detection arm's deadline with
+  it — re-baselining two published measurements in order to add a third.
 
 **Detection latency is measured from the true onset injected by the simulator**, not from the
 detector's own changepoint estimate. Measuring from the estimate would flatter the result by exactly
@@ -56,34 +62,46 @@ the quantity being measured. The estimate's own accuracy is reported separately 
 
 | threshold | false alarms/hr | count | detected | median latency |
 |---:|---:|---:|---:|---:|
-| 6 | 16.71 | 78 | 67% | 81s |
-| 8 | 3.00 | 14 | 88% | 71s |
-| 10 | 0.86 | 4 | 83% | 84s |
-| **12** | **0.21** | **1** | **83%** | **93s** |
+| 6 | 16.29 | 228 | 92% | 68s |
+| 8 | 3.07 | 43 | 88% | 71s |
+| 10 | 0.79 | 11 | 83% | 84s |
+| **12** | **0.14** | **2** | **83%** | **93s** |
 | 14 | 0.00 | 0 | 83% | 106s |
 | 17 | 0.00 | 0 | 83% | 122s |
 | 21 | 0.00 | 0 | 83% | 135s |
 
+Two rows moved since this table was first published, for two unrelated reasons, and both are worth
+separating. Every false-alarm figure changed when the healthy arm grew from 4 runs to 12 — the same
+detector, a bigger denominator, which is why `h = 12` reads 0.14 here and 0.21 in older text. The
+`h = 6` row changed because of the fix described in [the way back](#the-way-back); see the note
+under **low thresholds** below. Everything at `h = 10` and above is otherwise untouched, and the
+per-scenario table further down is identical to the cell.
+
 Two things worth reading off it.
 
-**Low thresholds are worse in both directions at once.** At `h = 6` the detector fires 16.7 times an
-hour on healthy traffic *and* detects less often than `h = 12` — because a false alarm early in a run
-leaves the slice already alarmed when the real degradation arrives, so the genuine event is never
-raised. Noise does not merely add cost; it destroys sensitivity.
+**Low thresholds are worse in both directions at once — and they used to look worse still.** At
+`h = 6` the detector fires 16.3 times an hour on healthy traffic, which is 116× the operating
+point's rate for 25 seconds of latency. It also *used* to detect less often than `h = 12`, at 67%,
+because a false alarm early in a run left the slice already alarmed when the real degradation
+arrived and the genuine event was never raised. That symptom is gone — `h = 6` now detects 92% —
+because an incident that closes on time stops occupying the slice. The underlying trade did not
+change: noise still costs, it simply no longer destroys sensitivity as well. The operating point is
+chosen on the false-alarm rate regardless, and 16 an hour is not a rate anybody can leave running.
 
 **Above `h = 14` you pay latency for nothing.** False alarms are already zero, detection rate is
 flat, and every further step just makes the system slower to react.
 
 ### Operating point
 
-**`h = 12`**, selected as the fastest threshold within a budget of 0.25 false alarms per hour.
+**`h = 12`**, selected as the fastest threshold within a budget of 0.25 false alarms per hour —
+0.14 measured, two alarms across 14 hours of healthy traffic.
 
 The budget is deliberately tight and is a product decision, not a statistical one: a false alarm
 steers customers off a healthy rail and causes precisely the loss the system exists to prevent.
 
 `h = 14` is the honest alternative — zero false alarms across the healthy arm at the cost of 13
-seconds of median latency. Given that a single false alarm was observed at `h = 12` across 4.7 hours
-of healthy traffic, and that steering carries a mandatory holdout that bounds the damage of a wrong
+seconds of median latency. Given that two false alarms were observed at `h = 12` across 14 hours of
+healthy traffic, and that steering carries a mandatory holdout that bounds the damage of a wrong
 call, the faster point is defensible. It is worth revisiting once the steering arm can price a false
 alarm in rupees rather than in counts.
 
@@ -113,6 +131,85 @@ has no sharp changepoint to find — but it means incident onset times should be
 for slow degradations, and any rupee figure attributed to the pre-detection window inherits that
 error.
 
+### The way back
+
+**How long an incident outlives the outage that opened it.** At `h = 12`:
+
+| | median | p90 | resolved | held at peak | cover lost |
+|---|---:|---:|---:|---:|---:|
+| before | 576s | 1440s | 19/20 | 20/20 | 0 |
+| **now** | **150s** | **949s** | **20/20** | **20/20** | **2** |
+
+Across the whole sweep, and per scenario at the operating point:
+
+| threshold | resolved | median | p90 | held at peak | cover lost |
+|---:|---:|---:|---:|---:|---:|
+| 6 | 15/24 | 4948s | 5359s | 17/24 | 13 |
+| 8 | 19/24 | 3210s | 5164s | 16/24 | 10 |
+| 10 | 20/23 | 132s | 1922s | 17/23 | 6 |
+| **12** | **20/20** | **150s** | **949s** | **20/20** | **2** |
+| 14 | 20/20 | 142s | 639s | 19/20 | 1 |
+| 17 | 20/20 | 183s | 748s | 19/20 | 2 |
+| 21 | 20/20 | 273s | 749s | 20/20 | 0 |
+
+| scenario | opened | resolved | median | p90 | cover lost |
+|---|---:|---:|---:|---:|---:|
+| issuer-collapse | 4/4 | 4 | 114s | 116s | 0 |
+| issuer-moderate | 4/4 | 4 | 66s | 303s | 1 |
+| slow-bleed | 4/4 | 4 | 262s | 407s | 0 |
+| single-app | 4/4 | 4 | 150s | 153s | 0 |
+| thin-slice | 0/4 | — | — | — | 0 |
+| card-network | 4/4 | 4 | 762s | 1174s | 1 |
+
+**The low thresholds are bad at this too**, and worse than they are at detecting. At `h = 6` nine of
+twenty-four incidents never close at all and thirteen lose cover mid-outage — a detector alarming
+sixteen times an hour spends its whole time opening and abandoning incidents. That the resolution
+column degrades in the same direction as the false-alarm column is a useful consistency check: they
+are measuring the same thing going wrong.
+
+Both rows are measured the same way, at the same threshold, on the same seeds. A resolution latency
+is only recorded for a trial where the incident actually outlived the outage: where cover ended
+*before* the rail healed, the difference is negative, and folding a negative into this median would
+shrink the headline for the one reason that is not an improvement. Those trials appear in
+`cover lost` instead.
+
+This arm did not exist until [open question 19](ARCHITECTURE.md#18-open-questions) was closed, and
+its absence is the reason that question survived five phases: the sweep above could report a
+93-second median detection latency while the same detector held incidents open for six hours, and
+nothing in this repository disagreed with either number. It took building a console to notice.
+
+**The defect.** After a rail heals, statistic `i` drifts at `−KL(p₀ ‖ p₀+δᵢ)`, which is monotone
+increasing in δ. The bank reports its maximum, so the alarm was governed by the fastest riser and
+the clear by the *slowest faller* — always the most sensitive shift in the bank, whose entire job is
+to be slow. Sensitivity and resolution latency were coupled through a quantity nobody chose. On the
+console's four-hour run, δ=0.18 and δ=0.40 were back at zero within forty minutes of the rail
+recovering; δ=0.03 was still at 3.63 six hours later and kept the incident open on its own.
+
+**The repair.** Closing has its own statistic — the same Bernoulli log-likelihood ratio with `p₀`
+and `p₁` exchanged, accumulating evidence for "the rate is back at baseline" against "it is still
+at the rate the alarm was raised on". It runs only while an incident is open, which is what makes
+it unable to touch anything above: detection latency and the false-alarm rate are properties of the
+path out of `quiet`, and this statistic does not exist there.
+
+**The curve did not move.** At `h = 10, 12, 14, 17` and `21` every figure in the tables above is
+bit-identical before and after — false-alarm counts, detection rates, medians and p90s, to the
+millisecond. Below the operating point it does move, and it moves better: `h = 6` goes from 67% to
+92% detected, because "a false alarm early in a run leaves the slice already alarmed when the real
+degradation arrives" is itself a symptom of incidents that never close.
+
+**What it cost.** Two of twenty trials lose cover while the rail is still at its worst, against zero
+before. Both are the same mechanism: a burst of failures pushes the most aggressive statistic across
+the threshold first, so the alarm freezes a claim the sustained traffic never supports — on
+`card-network`, an incident opened saying the rail had gone from 12% to 52% while it was running at
+19%. The recovery test demolishes that in under four minutes, correctly, and cover lapses for one
+detection latency until a second incident opens with the right claim and holds. Freezing the
+*smallest* crossing shift rather than the leading one removed a third such case; it does not remove
+them all.
+
+Totalled across the sweep's twenty incidents, the trade is **331 minutes of steering a healthy rail
+down to 93**, against **0 minutes of not steering a broken one up to 10**. It is reported as a
+banded metric rather than an invariant because it is not a thing that cannot happen.
+
 ### The blind spot
 
 **Kairos does not detect a degradation confined to a very-low-volume slice.**
@@ -141,9 +238,11 @@ These bind every number above.
 1. **The traffic is simulated.** Volumes, method mix and baseline failure rates are modelled on
    published Indian payments behaviour, not measured from a live merchant. The detector's behaviour
    on real traffic will differ, and by how much is unknown until it sees some.
-2. **The sample is small.** 24 detection trials and 4 healthy runs per threshold. Confidence
-   intervals on a 0.21/hour false-alarm rate estimated from a single observed alarm are wide.
-   Treat the curve's shape as informative and any individual cell as indicative.
+2. **The sample is small.** 24 detection trials and 12 healthy runs per threshold. Confidence
+   intervals on a 0.14/hour false-alarm rate estimated from **two** observed alarms are wide — wide
+   enough that the honest reading is "roughly one an evening", not two decimal places. Treat the
+   curve's shape as informative and any individual cell as indicative. The same applies with more
+   force to the resolution arm's `cover lost` column, which is two events out of twenty.
 3. **Degradations are injected one at a time.** Concurrent outages on unrelated rails are not yet
    exercised, and neither is a degradation that begins during another's recovery.
 4. **`right slice` is measured only where detection happened**, so a 0% detection rate reports no
@@ -481,9 +580,17 @@ on an eighth of them. See
 | Arm | Recovered | Incremental | Postage | Lost | True cost | Messages | Retries | Wasted |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 | do nothing | ₹11,39,929 | — | ₹0 | 0 | ₹0 | 0 | 0 | 0 |
-| chronos ladder (+1h, +24h, +72h) | ₹18,82,021 | ₹7,42,092 | ₹2,402 | 153 | ₹33,002 | 12,249 | 0 | 749 |
-| message everyone, immediately | ₹13,05,958 | ₹1,66,029 | ₹1,088 | 67 | ₹14,488 | 5,556 | 0 | 758 |
-| **kairos** | **₹18,36,607** | **₹6,96,678** | **₹642** | **43** | **₹9,242** | 5,719 | 249 | 730 |
+| chronos ladder (+1h, +24h, +72h) | ₹17,81,031 | ₹6,41,102 | ₹2,436 | 155 | ₹33,436 | 12,420 | 0 | 753 |
+| message everyone, immediately | ₹12,80,665 | ₹1,40,736 | ₹1,088 | 67 | ₹14,488 | 5,556 | 0 | 758 |
+| kairos + template copy | ₹17,61,372 | ₹6,21,443 | ₹973 | 67 | ₹14,373 | 6,221 | 251 | 770 |
+| **kairos + generated copy** | **₹18,33,222** | **₹6,93,293** | **₹627** | **50** | **₹10,627** | 5,730 | 251 | 757 |
+
+Regenerated at `f163eb1`. The copy this table carried until now was a mix of two eras — its Kairos
+row had been refreshed when the fifth arm arrived in Phase 5.75 and its baseline rows had not, so it
+reported a ladder that no configuration in the repository produces. That is [open question
+16](ARCHITECTURE.md#18-open-questions) again: nothing re-runs the full profile, so it drifts, and it
+drifted here in the most misleading possible direction — the comparison got easier without anybody
+choosing to make it easier.
 
 **`incremental` is recovery minus what the do-nothing arm collected**, and it is the column no
 dunning dashboard shows. The do-nothing arm recovered ₹11.4 lakh with no help at all — 24% of the
@@ -497,15 +604,17 @@ hundred rupees — and it is the term that dominates. Postage is almost free; co
 
 ### The result, stated the way it came out
 
-**Kairos recovers about 6% less than the fixed ladder.** Brute force works: messaging every casualty
-three times finds money that thinking about it does not.
+**On templates, Kairos recovers about 3% less than the fixed ladder.** Brute force works: messaging
+every casualty three times finds money that thinking about it does not.
 
-It works by sending **2.1× the messages** and costing **153 customers their consent rather than 43**.
-Priced, that is **72% more true cost** for 6% more revenue. The claim worth making is that Kairos
-matches brute force at a third of the damage — not that it beats it.
+It works by sending **2.0× the messages** and costing **155 customers their consent rather than 67**.
+Priced, that is **133% more true cost** for 3% more revenue. The claim worth making on this row is
+that Kairos matches brute force at well under half the damage — not that it beats it. With generated
+copy it does beat it, on both counts at once, and that is the [Phase 5.75
+result](#the-result) rather than this one.
 
 The immediate-blast arm is the useful control on the other side: one message to everyone, at once,
-recovers only ₹1.66 lakh incremental against the ladder's ₹7.42 lakh. Timing is most of what the
+recovers only ₹1.41 lakh incremental against the ladder's ₹6.41 lakh. Timing is most of what the
 ladder is doing, and most of what Kairos improves on.
 
 ### The spontaneous window, which reversed
@@ -515,17 +624,25 @@ paid for by people already reaching for another card — so waiting trades recov
 
 | Window | Incremental | Messages | Wasted | Opt-outs | True cost |
 |---|---:|---:|---:|---:|---:|
-| none | ₹6,78,411 | 6,084 | 1,074 | 56 | ₹11,892 |
-| 5 min | ₹6,68,524 | 6,021 | 993 | 69 | ₹14,781 |
-| 15 min | ₹6,56,834 | 5,914 | 900 | 61 | ₹12,945 |
-| **45 min** (default) | ₹6,96,678 | 5,719 | 730 | 43 | **₹9,242** |
-| 120 min | **₹7,27,726** | **5,404** | **537** | 56 | ₹11,878 |
+| none | ₹5,16,393 | 6,583 | 1,093 | 42 | **₹9,094** |
+| 5 min | ₹5,78,793 | 6,136 | 1,024 | 65 | ₹13,959 |
+| 15 min | ₹5,89,826 | 6,081 | 931 | 64 | ₹13,634 |
+| **45 min** (default) | **₹6,21,443** | 6,221 | 770 | 67 | ₹14,373 |
+| 120 min | ₹6,12,956 | **5,514** | **537** | 55 | ₹11,851 |
 
-**There is no trade.** Messages and wasted actions fall monotonically with the window and incremental
-recovery does not fall with them, because the two mechanisms point the same way: a customer who
-returns unaided closes their own casualty and never costs a message, and a transient casualty asked
-later is asked when its rail is likelier to have healed. Waiting two hours rather than none sends
-11% fewer messages, wastes 50% fewer of them, and recovers 7% more.
+**There is no trade.** Wasted actions fall monotonically with the window and incremental recovery
+does not fall with them, because the two mechanisms point the same way: a customer who returns
+unaided closes their own casualty and never costs a message, and a transient casualty asked later is
+asked when its rail is likelier to have healed. Waiting two hours rather than none sends 16% fewer
+messages, wastes 51% fewer of them, and recovers 19% more.
+
+**The default is now at the peak of this curve**, which it was not when the window was chosen — and
+that is a coincidence rather than tuning, because nothing about the window changed. The detector did:
+closing [open question 19](ARCHITECTURE.md#18-open-questions) moved every row, and 45 minutes came
+out on top of the one that matters. It is still worth re-sweeping, because the difference between 45
+and 120 is ₹8,487 on a quantity whose eight-seed standard deviation is ₹38,973 — which is to say the
+peak is not resolvable and this table cannot pick between the middle three rows. See [open question
+13](ARCHITECTURE.md#18-open-questions).
 
 The 45-minute default was chosen before this table existed and the sweep says it is too short. It was
 left alone rather than tuned to one run, because the opt-out counts are noisy enough that the
@@ -533,7 +650,7 @@ cheapest row is not stable — see open question 13.
 
 ### Calibration
 
-5,968 predictions. **Expected calibration error 1.6%**, Brier 0.1404, skill score 0.236.
+6,472 predictions. **Expected calibration error 1.3%**, Brier 0.1244, skill score 0.255.
 
 | Predicted | n | Mean p | Actual | Gap |
 |---|---:|---:|---:|---:|
@@ -561,7 +678,7 @@ is perfectly calibrated and worth nothing.
 
 ### The recovery control arm
 
-**2,343 casualties held out of treatment entirely**, of which **₹5,83,753 came back unaided**.
+**2,172 casualties held out of treatment entirely**, of which **₹5,56,747 came back unaided**.
 
 That population costs real recovered revenue and is the only reason any number above has a
 denominator. It answers open question 11.
@@ -626,7 +743,7 @@ The reasoning is in
 
 ### The full scorecard
 
-`docs/results/scorecard-full.{txt,json}`, config `2f9911374bc4681d`, 28.7s.
+`docs/results/scorecard-full.{txt,json}`, config `1715c07b4cfff993`.
 
 | | Full profile |
 |---|---:|
@@ -634,14 +751,31 @@ The reasoning is in
 | False alarms per hour of healthy traffic | **0.143** |
 | Degradations detected | 83.3% |
 | Incidents reported at the right slice | 79.2% |
+| Resolution latency, median | **2.5 min** |
+| Resolution latency, p90 | 15.8 min |
+| Incidents open at the worst moment of their outage | 100% |
+| Trials where cover lapsed mid-outage | 2 of 20 |
 | Overspend, reserving the worst case | **₹0** |
 | Overspend, adaptive sizers, bounded | ₹7 |
-| Loss rate avoided, suppressible incident | **35.5%** |
+| Loss rate avoided, suppressible incident | **49.8%** |
 | Loss rate avoided, demotable incident | 11.0% |
-| Recovered above what came back unaided | **₹6,96,678** |
-| True cost of recovering it | ₹9,242 |
-| Calibration error | **1.58%** |
-| Brier skill over the base rate | 0.236 |
+| Recovered above what came back unaided | **₹6,21,443** |
+| True cost of recovering it | ₹14,373 |
+| Calibration error | **1.33%** |
+| Brier skill over the base rate | 0.255 |
+
+The previous published copy of this table was generated at revision `28ffd73` and had been overtaken
+by three phases of work before anything noticed — which is [open question
+16](ARCHITECTURE.md#18-open-questions) happening rather than being hypothesised about. Nothing
+re-runs the full profile, so it drifted. The figures above were regenerated at `f163eb1`.
+
+Four rows moved for a reason worth stating plainly, and it is not the detector's accuracy: closing
+[open question 19](ARCHITECTURE.md#18-open-questions) made incidents end when the rail is actually
+healthy. Steering on the netbanking incident now avoids 49.8 points of loss rather than 35.5, over a
+much shorter window. Recovery moved the other way — the arm now retries on the true recovery edge,
+which overlaps more with the customers who were coming back unaided, so incremental recovery falls
+1.7% and cost rises. That is [open question 20](ARCHITECTURE.md#18-open-questions), and the
+recovery arm's own comparison below has not been re-tuned against it.
 
 ### How much the gate is actually worth
 
@@ -741,7 +875,7 @@ character budget, and it is reported rather than smoothed over.
 
 ### What it cost
 
-**190 calls, ₹8.15 at list rate**, for a library that serves 5,719 messages in a four-hour window
+**190 calls, ₹8.15 at list rate**, for a library that serves 5,730 messages in a four-hour window
 and every window after it until somebody changes the prompt. Per-message generation would have been
 about forty times the calls, and would have to be paid again every window.
 
@@ -891,16 +1025,24 @@ both places would have billed it twice and flattered every multilingual result b
 | do nothing | — | 0 | 0 | ₹0.00 | — |
 | chronos ladder | ₹6,41,102.00 | 12,420 | 155 | ₹33,435.80 | 53.6% |
 | message everyone | ₹1,40,736.00 | 5,556 | 67 | ₹14,487.80 | 54.5% |
-| kairos + template copy | ₹6,32,030.00 | 5,845 | 54 | ₹11,496.33 | 53.9% |
-| **kairos + generated copy** | **₹6,96,678.00** | **5,719** | **43** | **₹9,241.73** | **100%** |
+| kairos + template copy | ₹6,21,443.00 | 6,221 | 67 | ₹14,372.63 | 53.7% |
+| **kairos + generated copy** | **₹6,93,293.00** | **5,730** | **50** | **₹10,626.95** | **100%** |
 
-Generated copy recovered **₹64,648 more** than the same system running templates, on 126 fewer
-messages and 11 fewer opt-outs. Fewer messages is not a separate saving — a customer who acts on the
+Generated copy recovered **₹71,850 more** than the same system running templates, on 491 fewer
+messages and 17 fewer opt-outs. Fewer messages is not a separate saving — a customer who acts on the
 first message never receives the second.
 
 It also moves the headline the recovery report has carried since Phase 4. Kairos previously recovered
 about 6% *less* incremental revenue than the fixed ladder and won on cost; with generated copy it
-recovers more, on 54% fewer messages and with 112 fewer customers lost to opt-out.
+recovers **8% more, on 54% fewer messages and with 105 fewer customers lost to opt-out**.
+
+**Both Kairos rows moved when open question 19 was closed**, and the baselines did not — the ladder
+and the blast arm do not consult the detector, so they are untouched, which is a useful check that
+nothing else drifted. The Kairos arms lost about 1.7% of incremental recovery and gained messages
+and opt-outs, because an incident that closes on time means a `transient` casualty is retried on the
+true recovery edge, and acting sooner overlaps more with customers who were returning unaided. The
+window sweep above was measured against the old behaviour and has not been re-run; see [open question
+20](ARCHITECTURE.md#18-open-questions).
 
 ### Do not read that number without this table
 
@@ -909,9 +1051,9 @@ it, the harness sweeps the readability penalty across its whole range, four seed
 
 | penalty | template | generated | mean gain | worst seed | best seed |
 |---:|---:|---:|---:|---:|---:|
-| 0.00 | ₹5,23,612.75 | ₹7,19,031.25 | ₹1,95,418.50 | ₹1,74,322.00 | ₹2,17,464.00 |
-| 0.50 | ₹6,19,180.75 | ₹7,19,031.25 | ₹99,850.50 | ₹64,648.00 | ₹1,39,404.00 |
-| 1.00 | ₹7,20,107.50 | ₹7,19,031.25 | **−₹1,076.25** | −₹17,927.00 | ₹5,922.00 |
+| 0.00 | ₹5,12,356.00 | ₹7,19,345.50 | ₹2,06,989.50 | ₹1,74,151.00 | ₹2,47,377.00 |
+| 0.50 | ₹6,14,368.50 | ₹7,19,345.50 | ₹1,04,977.00 | ₹71,850.00 | ₹1,69,829.00 |
+| 1.00 | ₹7,08,978.25 | ₹7,19,345.50 | **₹10,367.25** | −₹3,021.00 | ₹33,220.00 |
 
 **The generated column does not move.** Every message that arm sends is legible, so the penalty has
 nothing to bite on; all the movement is in the baseline. That is the whole finding: what the library
@@ -961,27 +1103,38 @@ The console API and its scenarios are built and tested; the UI is not. `pnpm exp
 Nothing here is a measurement, with one exception that belongs in this document because it was found
 by building the console and is a fact about the detector rather than about the demo.
 
-### The detector resolves an incident six hours after the rail recovers
+### The detector resolved an incident six hours after the rail recovered
 
-Detection latency has been measured since Phase 1 — a median of 93 seconds at `h=12`. **Resolution
-latency has never been measured**, and it is roughly two orders of magnitude worse.
+Detection latency had been measured since Phase 1 — a median of 93 seconds at `h=12`. **Resolution
+latency had never been measured at all**, and it was roughly two orders of magnitude worse. Building
+a console is what found it; the sweep could not, because it stops watching two minutes after the
+rail heals.
 
-On the `issuer-outage` scenario the rail is healthy again at +81 minutes. The incident opens at +49
-and does not resolve until **+442**:
+On the `issuer-outage` scenario the rail is healthy again at +81 minutes. The incident opened at +49
+and did not resolve until **+442**. Traced per shift, the cause is not that a one-sided CUSUM decays
+slowly in general — it is *which* statistic decays slowest:
 
 ```
-+ 60m  phase=alarmed  statistic=18.28
-+ 80m  phase=alarmed  statistic=22.40   <- rail has recovered
-+240m  phase=alarmed  statistic=10.04   <- three hours later
+        S(δ=0.03)  S(δ=0.08)  S(δ=0.18)  S(δ=0.40)
++ 80m       12.02      21.90      21.94      17.18   <- rail has recovered
++120m       10.69      15.51       0.00       0.00
++240m        9.87       4.01       0.00       0.00
++440m        3.63       0.00       0.00       0.00   <- clears, at last
         clearThreshold = 3.6
 ```
 
-A one-sided CUSUM accumulates while the observed rate exceeds the frozen baseline and decays only
-while it is *below* it. A rail that recovers to exactly its baseline produces a drift near zero, so
-the statistic plateaus near its peak and descends on noise alone.
+After a rail heals, statistic `i` drifts at `−KL(p₀ ‖ p₀+δᵢ)`, which is monotone increasing in δ.
+The bank reports its **maximum**, so the alarm was decided by the fastest riser and the release by
+the slowest faller — and the slowest faller is always the most sensitive shift, whose entire job is
+to be slow. The two aggressive statistics were back at zero within forty minutes of recovery;
+`δ=0.03` alone held the incident open for another five hours. **Adding a hypothesis to catch milder
+degradations made every incident close later**, which is a coupling nobody chose and nobody would
+have chosen.
 
-This is expensive rather than untidy. Steering keeps diverting traffic off a healed rail for as long
-as the incident is open, which is collateral damage buying nothing, and the recovery arm's whole
-timing claim is that it retries on the recovery edge. See open question 19. It is asserted in a
-console test rather than patched, because changing the detector re-baselines every number in this
-document.
+It was expensive rather than untidy: steering kept diverting traffic off a healed rail for as long
+as the incident stayed open, and the recovery arm's whole timing claim is that it retries on the
+recovery edge.
+
+**Fixed.** Closing has its own statistic now — see [the way back](#the-way-back) for the repair, the
+measured before-and-after, and what it cost. The console test that used to assert this defect now
+asserts its absence, so it cannot come back quietly either.

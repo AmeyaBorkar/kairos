@@ -65,8 +65,8 @@ In the recovery benchmark, against a merchant mix with 14% of payments carrying 
 |---|---:|
 | Casualties whose rail was `transient` — the class the whole recovery-edge idea is for | **48%** |
 | Casualties that can be charged again without the customer | **12%** |
-| Retries actually made across 5,556 casualties | **249** |
-| Messages sent | **5,719** |
+| Retries actually made across 5,556 casualties | **251** |
+| Messages sent | **5,730** |
 
 The arm is overwhelmingly made of messages. The recovery edge still matters for those — a message
 sent while a rail is still broken reaches a customer who responds and fails — but it matters as

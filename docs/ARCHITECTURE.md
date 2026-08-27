@@ -990,7 +990,8 @@ confidence.
    now with the sensitivity measured.** Phase 5.75 swept the readability penalty across its whole
    range instead of quoting one point from it, and the answer is sharper than expected: at a
    penalty of 1.00, where a message in the wrong script works exactly as well as one in the right
-   one, generated copy is worth **−₹1,076** and its range across seeds straddles zero. The
+   one, generated copy is worth **₹10,367** against ₹1.05 lakh at the default, on a range across
+   seeds that straddles zero — a tenth of the value, and not distinguishable from none. The
    generated arm's own figure does not move across the sweep at all, because every message it sends
    is legible and the penalty has nothing to bite on. **All of the value is readability; none of it
    is better writing.** Everything the model produced about naming the rail, being specific about
@@ -1009,26 +1010,95 @@ confidence.
    double postage for an Indic SMS on the strength of it. If the true penalty is milder than a
    half, that decision loses money and nothing in this repository would notice.
 
-19. **The detector opens an incident in three minutes and closes it in six hours.** Found while
-   building the console, and it is the sharpest unaddressed defect in the repository. On the
-   `issuer-outage` scenario the rail is healthy again at +81 minutes and the incident does not
-   resolve until **+442**. The detection study measures latency and false alarms and has never
-   measured *resolution* latency, so nothing caught it.
+19. ~~**The detector opens an incident in three minutes and closes it in six hours.**~~
+   **Answered.** The way back now has its own test, and the detection curve did not move.
 
-   The cause is the shape of a one-sided CUSUM. The statistic accumulates while the observed rate
-   exceeds the frozen baseline and decays only while it is *below* it, so a rail that recovers to
-   exactly its baseline produces a drift near zero: the statistic plateaus near its peak and comes
-   down on noise alone. Clearing needs it under 3.6, and three hours after recovery it is still
-   above 10.
+   The original defect: on the console's `issuer-outage` the rail is healthy again at +81 minutes
+   and the incident did not resolve until **+442**. The detection study measures latency and false
+   alarms and had never measured *resolution* latency, so nothing caught it for five phases.
 
-   It is not cosmetic, and it is worst where it costs most. Steering keeps diverting traffic off a
-   healed rail for as long as the incident is open, which is collateral damage buying nothing — the
-   30-minute reservation TTL does not help, because a still-open incident is re-affirmed. And the
-   recovery arm's entire timing claim is that it retries on the recovery edge, so a `transient`
-   casualty on a rolled-up incident waits hours past the moment it should have been retried.
+   **The diagnosis was sharper than the first write-up.** It is not that a one-sided CUSUM decays
+   slowly in general — it is that after a rail heals, statistic `i` drifts at `−KL(p₀ ‖ p₀+δᵢ)`,
+   which is monotone increasing in δ. The bank reports its *maximum*, so the alarm was governed by
+   the fastest riser and the clear by the slowest faller — and which statistic falls slowest is not
+   luck, it is always the most sensitive shift, whose entire job is to be slow. **Sensitivity and
+   resolution latency were coupled through a quantity nobody chose**: adding a δ to catch milder
+   degradations silently made every incident close later. Traced on the console run, δ=0.18 and
+   δ=0.40 were back at zero within forty minutes of recovery while δ=0.03 was still at 3.63 six
+   hours later, and it alone kept the incident open.
 
-   The obvious repairs are to reset the statistic when the phase moves to `clearing`, or to give
-   the CUSUM a forgetting factor so evidence ages. Neither is done, because either changes the
-   detector and re-baselines every published measurement here — that is a decision to take
-   deliberately rather than in passing. `apps/console` asserts the current behaviour in a test so
-   it cannot be fixed by accident and go unnoticed.
+   That also disposes of one of the two repairs this entry used to propose. Resetting the statistic
+   on the move to `clearing` cannot help, because `clearing` is only entered once the statistic is
+   already below `clearThreshold` — it would have saved the two-minute dwell out of 361 minutes. A
+   forgetting factor is the other, and it fails differently: the same λ has to hold the alarm up
+   while the rail is broken and let it go when the rail heals, and no value does both.
+
+   **What was done instead.** Closing is now decided by its own statistic — the same Bernoulli
+   log-likelihood ratio with its two rates exchanged, accumulating evidence for "the rate is back
+   at `p₀`" against "it is still at the rate the alarm was raised on". Three properties make it the
+   right instrument: under the alternative its drift is `−KL(p₁ ‖ p₀) < 0`, so it pins at its floor
+   and *no* amount of time clears a rail that is still broken; it crosses at the standard CUSUM
+   crossover between the two rates rather than at either of them; and resolution latency now mirrors
+   detection latency, because it is the same test run backwards. Two changes travel with it — the
+   bank restarts when an incident closes, which is Page's own procedure and the step this detector
+   was missing, and an incident that resolves retires the evidence of the slices rollup had it
+   standing in for.
+
+   **It is free where it matters.** The measured detection curve is *bit-identical* at h=10, 12, 14,
+   17 and 21 — every false-alarm count, every detection rate, every median and p90 latency, to the
+   millisecond. That is not luck either: detection latency and the false-alarm rate are properties
+   of the path out of `quiet`, and the recovery statistic does not exist there. Below the operating
+   point the curve moves, and it moves *better*: at h=6 detection goes from 67% to 92%, because the
+   pathology [MEASUREMENT.md](MEASUREMENT.md) describes — "a false alarm early in a run leaves the
+   slice already alarmed when the real degradation arrives" — is itself a consequence of incidents
+   that never close.
+
+   **What it cost, measured rather than asserted.** Across the detection sweep's twenty opened
+   incidents, cover held on a healthy rail falls from 331 to 93 minutes, and cover lost on a rail
+   still at its worst rises from 0 to 10 — two trials in twenty, both the same mechanism: an alarm
+   raised during a burst freezes a claim the sustained traffic never supports, the recovery test
+   correctly demolishes it, and cover lapses for one detection latency until a second incident opens
+   with the right claim and holds. Reading the *smallest* crossing shift rather than the leading one
+   removed a third such case; it does not remove them all. That is a metric with a band, not an
+   invariant, because it is not a thing that cannot happen — see
+   [MEASUREMENT.md](MEASUREMENT.md#the-way-back).
+
+   The downstream arms moved, which is the point: steering on the netbanking incident now cuts the
+   loss rate by 49.8 points rather than 35.5, over a much shorter window. The recovery arm moved the
+   other way — see open question 20.
+
+20. **Acting on the true recovery edge makes more of the acting unnecessary.** Fixing question 19
+   moved the recovery arm, and not the way the entry predicted. Incidents now close when the rail
+   is genuinely healthy rather than hours later, so a `transient` casualty is retried on the edge
+   the arm's whole timing claim is about — and incremental recovery went *down* 1.7%, messages up
+   6.4%, opt-outs from 43 to 50, wasted actions up 5.2%.
+
+   The mechanism is the same one open question 11 is about. Acting sooner after a rail heals means
+   overlapping more with the customers who were coming back on their own, and incremental recovery
+   subtracts exactly those. The arm is now doing what it says, and what it says is worth slightly
+   less than the version that was accidentally late. Calibration improved on the same run —
+   expected calibration error 1.51% → 1.33%, skill 0.237 → 0.255 — which is consistent: the
+   probability model is being asked about rails whose health it can actually observe.
+
+   The obvious response is that the spontaneous window is now tuned against a detector that no
+   longer exists, and open question 13 already suspected 45 minutes was too short. Re-sweeping it
+   against the fixed detector is the work, and it is not done. Until it is, the honest reading of
+   the recovery figures is that they are a floor set by a parameter chosen for different behaviour.
+
+21. **A slice that is cold when an outage starts learns the outage as its baseline.** Surfaced by
+   fixing question 19, which stopped a six-hour incident from hiding it. `minObservations` stops a
+   young slice *alarming*, but nothing stops it learning: `observeBaseline` folds in every attempt
+   while the slice is `quiet`, and a slice that never alarms never freezes. On the console's
+   `issuer-outage` the HDFC netbanking slice ends the outage with a baseline of 23.8% against a true
+   9.4%, and it decays back over roughly two thousand observations — sixteen hours at that rail's
+   volume. The direction is safe (it under-detects rather than over-detects) and rollup covers the
+   slice throughout, but a rail that has just had an outage is exactly the one most likely to have
+   another.
+
+   The natural repair is to freeze a slice's baseline whenever an ancestor has an open incident,
+   which the engine already knows and the detector does not. It was not done here because it
+   changes what every covered slice learns and would re-baseline the detection curve — the thing
+   this change was careful not to do. Gating the *accumulation* on `minObservations` was tried and
+   rejected on measurement: it silently lost the incident entirely on two of the six console
+   scenarios, because a method-level slice at 90 attempts a minute takes 35 minutes to warm up and
+   both of those outages start before that.

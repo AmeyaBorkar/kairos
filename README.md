@@ -52,10 +52,12 @@ Every number here is produced by a seeded experiment in this repo, reproducible 
 reported alongside what it cost and where it fails. Full results and caveats in
 **[docs/MEASUREMENT.md](docs/MEASUREMENT.md)**.
 
-**Detection** — at the chosen operating point, **0.21 false alarms an hour, 83% of degradations
-caught, 93s median latency**, and an issuer collapse caught in **5 seconds**. A degradation confined
-to a slice seeing four attempts a minute is **not detected at all**, which is a limit of the available
-evidence rather than a bug, and is documented as such.
+**Detection** — at the chosen operating point, **0.14 false alarms an hour, 83% of degradations
+caught, 93s median latency**, and an issuer collapse caught in **5 seconds**. An incident closes a
+median of **2.5 minutes** after the rail is genuinely healthy, measured from the simulator's clock
+rather than the detector's opinion of it. A degradation confined to a slice seeing four attempts a
+minute is **not detected at all**, which is a limit of the available evidence rather than a bug, and
+is documented as such.
 
 **Spend** — a naive check-then-spend worker overruns a ₹500 budget by **₹100 at 64 workers**, and
 delivers **271 messages past a three-per-week contact cap**. Through the kernel, at every fleet size
@@ -71,10 +73,10 @@ reported, not netted away. A moderate UPI outage produces **no steer at all** �
 better to send anyone, and a system that steered anyway would cause the loss it exists to prevent.
 
 **Recovery** — against a fixed +1h/+24h/+72h ladder given the same budget, contact cap and quiet
-hours, Kairos recovers **6% less money** and does it with **half the messages** and **43 customers
-lost to opt-outs rather than 153**. Priced at what consent is worth, that is a **72% lower true
+hours, Kairos recovers **8% more money** and does it with **half the messages** and **50 customers
+lost to opt-outs rather than 155**. Priced at what consent is worth, that is a **68% lower true
 cost**. Brute force finds money; it finds it by spending goodwill nobody put on the invoice. The
-recovery probability is calibrated to **1.6% expected error**, which is the property an
+recovery probability is calibrated to **1.3% expected error**, which is the property an
 expected-value gate actually needs — not accuracy, but that 30% means thirty per cent.
 
 A tenth of casualties are held out of treatment entirely, so every recovery figure above is
@@ -92,7 +94,7 @@ claim that cannot break and one that merely cannot be measured this cheaply
 ([ADR 0005](docs/decisions/0005-a-benchmark-that-reproduces-exactly-still-needs-a-band.md)).
 
 **Language** — a model writes the recovery copy, once per *situation* rather than once per message:
-180 calls instead of 5,719, into a file that is reviewed in a pull request and committed. No
+180 calls instead of 5,730, into a file that is reviewed in a pull request and committed. No
 inference happens on the path where money moves, the benchmark stays seeded while using real model
 output, and CI never makes a call. The prompt cannot contain a customer's name because a customer's
 name is never assembled — the model writes a sentence with holes and a pure function fills them. An
@@ -101,11 +103,11 @@ call, reconciled against the tokens the provider reports, and priced at list rat
 tier ([ADR 0006](docs/decisions/0006-copy-is-written-once-reviewed-and-committed.md)).
 
 The library is now read at send time, and a fifth benchmark arm measures what it is worth against the
-same system running hand-written templates: **₹64,648 more recovered, on 126 fewer messages and 11
+same system running hand-written templates: **₹71,850 more recovered, on 491 fewer messages and 17
 fewer opt-outs.** The result is narrower than it sounds, and the sweep beside it is the honest part —
 the entire gain is *readability*, not better writing. Set the readability penalty to 1, where a
 message in the wrong script works as well as one in the right script, and generated copy is worth
-−₹1,076 with its range across seeds straddling zero. Everything the model produced about naming the
+₹10,367 against ₹1.05 lakh at the default, on a range across seeds that straddles zero. Everything the model produced about naming the
 rail and being specific about the next step is worth approximately nothing on this evidence.
 
 `pnpm explain <target>` answers "why did Kairos do that?" from the audit chain. Every figure in the
@@ -146,14 +148,22 @@ quietly:
   sharing an identical 829-token prefix — the ordering stays, the claim is gone (Phase 5.5);
 - generated copy was expected to win on *writing* — naming the rail, saying what to do next. Swept
   against the readability weight it rests on, it wins on **readability alone**: at a penalty of 1.00
-  the advantage is −₹1,076 and straddles zero (Phase 5.75);
+  the advantage is ₹10,367 on a range that straddles zero, against ₹1.05 lakh at the default
+  (Phase 5.75);
 - an unreadable message was modelled as slightly worse at helping people and exactly as good at
   bringing them back, which is not a model of anything — legibility now prices the response rate,
   once, where it acts (Phase 5.75);
-- the detector was measured on how fast it opens an incident and never on how fast it closes one: it
-  detects in about three minutes and resolves about **six hours** after the rail recovers, which
-  keeps traffic steered off a healthy rail and delays every retry that waits on the recovery edge
-  (open question 19).
+- the detector was measured on how fast it opens an incident and never on how fast it closes one. It
+  detected in about three minutes and resolved about **six hours** after the rail recovered, because
+  a bank of CUSUMs reports its maximum and after a recovery that maximum is always the most sensitive
+  statistic — the one whose job is to be slow. The alarm was decided by the fastest riser and the
+  clear by the slowest faller, so *adding* a hypothesis to catch milder degradations made every
+  incident close later. Fixed by giving the way back its own statistic, at no measurable cost to the
+  detection curve at or above the operating threshold (open question 19);
+- and fixing it moved the recovery arm the wrong way. Retrying on the true recovery edge overlaps
+  more with the customers who were coming back unaided, so incremental recovery fell 1.7% while
+  messages rose — the arm now does what it claimed, and what it claimed is worth slightly less than
+  the version that was accidentally late (open question 20).
 
 ## Status
 

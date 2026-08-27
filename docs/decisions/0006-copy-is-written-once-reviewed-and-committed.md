@@ -31,7 +31,7 @@ human saw. The first time anybody reads a message is when a customer complains a
 amount, their bank and their order into a string and posting it to a third party. Free tiers
 generally reserve the right to train on what they are sent.
 
-**And it costs about forty times more.** 5,719 messages in a four-hour window, one call each.
+**And it costs about forty times more.** 5,730 messages in a four-hour window, one call each.
 
 ## Decision
 
@@ -62,7 +62,7 @@ budget. It cannot contain a customer's name because a customer's name is never a
 argument `ResidualInput` is built on. This is what makes a free tier's data-training terms
 acceptable: there is nothing in these prompts to learn.
 
-**180 calls, not 5,719.** Measured: ₹0.32 for eight calls at list rate, so a whole library costs
+**180 calls, not 5,730.** Measured: ₹0.32 for eight calls at list rate, so a whole library costs
 about ₹7 and fits inside a free tier's daily quota. On a metered account this is the difference
 between a few rupees and a few hundred, every four hours.
 
@@ -104,7 +104,7 @@ being a solvency one.
 what makes about a hundred and eighty calls cost roughly one prompt's worth of input". Sixteen
 consecutive live calls sharing an identical 829-token prefix reported cached tokens on none of them.
 The ordering stays; the claim is gone. What makes a library affordable is 180 calls instead of
-5,719, which needs no cache and which anybody can check.
+5,730, which needs no cache and which anybody can check.
 
 **Thinking tokens are billed as output, and the default is not free.** With no thinking
 configuration, a request for three SMS variants on `gemini-3.6-flash` spent 751 thinking tokens
