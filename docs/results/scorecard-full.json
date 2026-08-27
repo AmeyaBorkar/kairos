@@ -2,12 +2,36 @@
   "scorecard": {
     "provenance": {
       "profile": "full",
-      "configHash": "2f9911374bc4681d",
-      "codeRevision": "28ffd73-dirty",
+      "configHash": "1715c07b4cfff993",
+      "codeRevision": "f163eb1-dirty",
       "node": "v24.13.1",
       "config": {
         "profile": "full",
         "seed": 20260825,
+        "resolve": {
+          "thresholds": [
+            6,
+            8,
+            10,
+            12,
+            14,
+            17,
+            21
+          ],
+          "seedsPerCell": 4,
+          "seedBase": 0,
+          "attemptsPerMinute": 400,
+          "warmupMs": 1500000,
+          "tailMs": 5400000,
+          "scenarios": [
+            "issuer-collapse",
+            "issuer-moderate",
+            "slow-bleed",
+            "single-app",
+            "thin-slice",
+            "card-network"
+          ]
+        },
         "detect": {
           "thresholds": [
             6,
@@ -121,151 +145,193 @@
     },
     "metrics": [
       {
+        "id": "detect.medianResolutionMs",
+        "value": 149892,
+        "direction": "lower-is-better",
+        "unit": "ms",
+        "label": "median time from a rail recovering to its incident closing"
+      },
+      {
+        "id": "detect.p90ResolutionMs",
+        "value": 949032,
+        "direction": "lower-is-better",
+        "unit": "ms",
+        "label": "ninetieth-percentile time from a rail recovering to its incident closing"
+      },
+      {
+        "id": "detect.lostCoverTrials",
+        "value": 2,
+        "direction": "lower-is-better",
+        "unit": "count",
+        "label": "trials where cover lapsed while the rail was still at its peak failure rate"
+      },
+      {
+        "id": "detect.heldThroughPeakRate",
+        "value": 1,
+        "direction": "higher-is-better",
+        "unit": "ratio",
+        "label": "share of incidents that were open at the worst moment of the outage they describe"
+      },
+      {
         "id": "detect.falseAlarmsPerHour",
-        "label": "alarms raised per hour of healthy traffic at h=12",
         "value": 0.14285714285714288,
         "direction": "lower-is-better",
-        "unit": "rate"
+        "unit": "rate",
+        "label": "alarms raised per hour of healthy traffic at h=12"
       },
       {
         "id": "detect.detectionRate",
-        "label": "share of injected degradations the detector opened an incident for",
         "value": 0.8333333333333334,
         "direction": "higher-is-better",
-        "unit": "ratio"
+        "unit": "ratio",
+        "label": "share of injected degradations the detector opened an incident for"
       },
       {
         "id": "detect.medianLatencyMs",
-        "label": "median time from a rail actually breaking to an incident opening",
         "value": 92783,
         "direction": "lower-is-better",
-        "unit": "ms"
+        "unit": "ms",
+        "label": "median time from a rail actually breaking to an incident opening"
       },
       {
         "id": "detect.rightAltitudeRate",
-        "label": "share of incidents reported at the degraded slice rather than above or below it",
         "value": 0.7916666666666666,
         "direction": "higher-is-better",
-        "unit": "ratio"
+        "unit": "ratio",
+        "label": "share of incidents reported at the degraded slice rather than above or below it"
       },
       {
         "id": "spend.adaptiveOverspendPaise",
-        "label": "worst residual an under-reserving sizer ran up — bounded by construction, and worth watching because the bound is what it is allowed rather than what it should cost",
         "value": 700,
         "direction": "lower-is-better",
-        "unit": "paise"
+        "unit": "paise",
+        "label": "worst residual an under-reserving sizer ran up — bounded by construction, and worth watching because the bound is what it is allowed rather than what it should cost"
       },
       {
         "id": "spend.actionsUnderContention",
-        "label": "actions the kernel admitted at the highest worker count — safety bought by refusing everything is not safety",
         "value": 292,
         "direction": "higher-is-better",
-        "unit": "count"
+        "unit": "count",
+        "label": "actions the kernel admitted at the highest worker count — safety bought by refusing everything is not safety"
       },
       {
         "id": "prevent.netbanking-hdfc.lossRateDelta",
-        "label": "loss rate avoided on netbanking-hdfc, among customers whose own rail was the failing one",
-        "value": 0.35456314878892736,
+        "value": 0.49783236994219654,
         "direction": "higher-is-better",
-        "unit": "ratio"
+        "unit": "ratio",
+        "label": "loss rate avoided on netbanking-hdfc, among customers whose own rail was the failing one"
       },
       {
         "id": "prevent.netbanking-hdfc.savedPaise",
-        "label": "payment value that did not fail on netbanking-hdfc because traffic was steered",
-        "value": 9356106,
+        "value": 7930121,
         "direction": "higher-is-better",
-        "unit": "paise"
+        "unit": "paise",
+        "label": "payment value that did not fail on netbanking-hdfc because traffic was steered"
       },
       {
         "id": "prevent.netbanking-hdfc.leverChanges",
-        "label": "times the lever or target changed mid-steer on netbanking-hdfc",
-        "value": 3,
+        "value": 2,
         "direction": "lower-is-better",
-        "unit": "count"
+        "unit": "count",
+        "label": "times the lever or target changed mid-steer on netbanking-hdfc"
       },
       {
         "id": "prevent.netbanking-hdfc.collateralDelta",
-        "label": "what happened to customers on netbanking-hdfc whose own rail was fine and who were moved anyway — negative is the cost of the lever, not a bug",
-        "value": 0.07085561497326204,
+        "value": 0.12028598365807669,
         "direction": "neutral",
-        "unit": "ratio"
+        "unit": "ratio",
+        "label": "what happened to customers on netbanking-hdfc whose own rail was fine and who were moved anyway — negative is the cost of the lever, not a bug"
       },
       {
         "id": "prevent.upi-hdfc-severe.lossRateDelta",
-        "label": "loss rate avoided on upi-hdfc-severe, among customers whose own rail was the failing one",
         "value": 0.11015194363226766,
         "direction": "higher-is-better",
-        "unit": "ratio"
+        "unit": "ratio",
+        "label": "loss rate avoided on upi-hdfc-severe, among customers whose own rail was the failing one"
       },
       {
         "id": "prevent.upi-hdfc-severe.savedPaise",
-        "label": "payment value that did not fail on upi-hdfc-severe because traffic was steered",
         "value": 25291977,
         "direction": "higher-is-better",
-        "unit": "paise"
+        "unit": "paise",
+        "label": "payment value that did not fail on upi-hdfc-severe because traffic was steered"
       },
       {
         "id": "prevent.upi-hdfc-severe.leverChanges",
-        "label": "times the lever or target changed mid-steer on upi-hdfc-severe",
         "value": 0,
         "direction": "lower-is-better",
-        "unit": "count"
+        "unit": "count",
+        "label": "times the lever or target changed mid-steer on upi-hdfc-severe"
       },
       {
         "id": "prevent.upi-hdfc-severe.collateralDelta",
-        "label": "what happened to customers on upi-hdfc-severe whose own rail was fine and who were moved anyway — negative is the cost of the lever, not a bug",
         "value": -0.02718313997934501,
         "direction": "neutral",
-        "unit": "ratio"
+        "unit": "ratio",
+        "label": "what happened to customers on upi-hdfc-severe whose own rail was fine and who were moved anyway — negative is the cost of the lever, not a bug"
       },
       {
         "id": "recover.incrementalPaise",
-        "label": "recovered because of the arm, over and above what came back unaided",
-        "value": 69667800,
+        "value": 62144300,
         "direction": "higher-is-better",
-        "unit": "paise"
+        "unit": "paise",
+        "label": "recovered because of the arm, over and above what came back unaided"
       },
       {
         "id": "recover.trueCostPaise",
-        "label": "postage plus the priced value of every customer lost to an opt-out",
-        "value": 924173,
+        "value": 1437263,
         "direction": "lower-is-better",
-        "unit": "paise"
+        "unit": "paise",
+        "label": "postage plus the priced value of every customer lost to an opt-out"
       },
       {
         "id": "recover.messages",
-        "label": "messages sent — the term the contact cap and the opt-out cost are both about",
-        "value": 5719,
+        "value": 6221,
         "direction": "lower-is-better",
-        "unit": "count"
+        "unit": "count",
+        "label": "messages sent — the term the contact cap and the opt-out cost are both about"
+      },
+      {
+        "id": "recover.copyLegibleRate",
+        "value": 0.5372126667738306,
+        "direction": "higher-is-better",
+        "unit": "ratio",
+        "label": "share of the baseline's messages that reached somebody in a script they read — the size of the problem the copy library exists to solve, measured on the arm that does not solve it"
+      },
+      {
+        "id": "recover.generatedGainPaise",
+        "value": 7185000,
+        "direction": "higher-is-better",
+        "unit": "paise",
+        "label": "what generated copy recovered over the same system running templates, at the default readability penalty — a figure that goes to zero if that penalty is wrong"
       },
       {
         "id": "recover.wastedActions",
-        "label": "actions that landed on somebody who was coming back anyway",
-        "value": 730,
+        "value": 770,
         "direction": "lower-is-better",
-        "unit": "count"
+        "unit": "count",
+        "label": "actions that landed on somebody who was coming back anyway"
       },
       {
         "id": "recover.calibrationError",
-        "label": "expected calibration error — whether a stated 30% means thirty per cent, which is what the gate multiplies by a rupee amount",
-        "value": 0.015773644734216892,
+        "value": 0.01325941984754358,
         "direction": "lower-is-better",
-        "unit": "ratio"
+        "unit": "ratio",
+        "label": "expected calibration error — whether a stated 30% means thirty per cent, which is what the gate multiplies by a rupee amount"
       },
       {
         "id": "recover.calibrationSkill",
-        "label": "Brier skill over the base rate — a model that repeats the base rate for ever is perfectly calibrated and worth nothing",
-        "value": 0.23570126020341664,
+        "value": 0.2546803079623857,
         "direction": "higher-is-better",
-        "unit": "rate"
+        "unit": "rate",
+        "label": "Brier skill over the base rate — a model that repeats the base rate for ever is perfectly calibrated and worth nothing"
       },
       {
         "id": "recover.autonomousShare",
-        "label": "share of casualties chargeable again without the customer present; a property of the merchant's mix rather than of Kairos",
         "value": 0.12005039596832254,
         "direction": "neutral",
-        "unit": "ratio"
+        "unit": "ratio",
+        "label": "share of casualties chargeable again without the customer present; a property of the merchant's mix rather than of Kairos"
       }
     ],
     "invariants": [
@@ -282,6 +348,13 @@
         "value": 13.999999999999998,
         "expected": null,
         "label": "healthy traffic was observed, so the false-alarm rate has a denominator"
+      },
+      {
+        "id": "detect.everyIncidentCloses",
+        "kind": "true",
+        "value": true,
+        "expected": null,
+        "label": "every incident opened against a degradation was closed once the rail recovered"
       },
       {
         "id": "spend.worstCaseOverspendPaise",
@@ -335,7 +408,7 @@
       {
         "id": "prevent.controlAttempts",
         "kind": "positive",
-        "value": 342,
+        "value": 326,
         "expected": null,
         "label": "customers were held out of steering, so the comparison has a control"
       },
@@ -349,7 +422,7 @@
       {
         "id": "recover.beatsDoNothing",
         "kind": "positive",
-        "value": 69667800,
+        "value": 62144300,
         "expected": null,
         "label": "the recovery arm collected more than the customers would have returned with unaided"
       },
@@ -363,14 +436,14 @@
       {
         "id": "recover.holdoutCasualties",
         "kind": "positive",
-        "value": 2343,
+        "value": 2172,
         "expected": null,
         "label": "casualties were held out of treatment entirely, which is the only reason any recovery figure has a denominator"
       },
       {
         "id": "recover.calibrationPredictions",
         "kind": "positive",
-        "value": 5968,
+        "value": 6472,
         "expected": null,
         "label": "the probability model made predictions there were outcomes for"
       },
@@ -387,9 +460,16 @@
         "value": 0,
         "expected": null,
         "label": "nothing was proposed that the kernel then had to decline; the worker checks the schedule before it asks"
+      },
+      {
+        "id": "recover.generatedCopyServed",
+        "kind": "true",
+        "value": true,
+        "expected": null,
+        "label": "the generated-copy arm was actually served by the library rather than falling back to templates on every message"
       }
     ],
-    "elapsedMs": 28729.1205
+    "elapsedMs": 84066.2779
   },
   "detail": {
     "detect": {
@@ -1367,86 +1447,84 @@
         "incidents": [
           {
             "incident": "inc_netbanking___mep1qvac",
-            "slice": "netbanking||",
-            "lever": "demote",
-            "steeredMs": 2130000,
-            "leverChanges": 3,
+            "slice": "netbanking|hdfc|",
+            "lever": "suppress",
+            "steeredMs": 1305000,
+            "leverChanges": 2,
             "affected": {
               "treated": {
-                "attempts": 289,
-                "lost": 33,
-                "lossRate": 0.11418685121107267,
-                "abandoned": 22,
-                "lostPaise": 5029200,
-                "volumePaise": 26387700
+                "attempts": 173,
+                "lost": 22,
+                "lossRate": 0.12716763005780346,
+                "abandoned": 15,
+                "lostPaise": 3190700,
+                "volumePaise": 15929300
               },
               "control": {
-                "attempts": 32,
-                "lost": 15,
-                "lossRate": 0.46875,
+                "attempts": 16,
+                "lost": 10,
+                "lossRate": 0.625,
                 "abandoned": 0,
-                "lostPaise": 776200,
-                "volumePaise": 1868600
+                "lostPaise": 580800,
+                "volumePaise": 1062500
               },
-              "lossRateDelta": 0.35456314878892736,
-              "confidenceHalfWidth": 0.17674784279871186,
+              "lossRateDelta": 0.49783236994219654,
+              "confidenceHalfWidth": 0.24235963118186768,
               "significant": true,
-              "savedPaise": 9356106
+              "savedPaise": 7930121
             },
             "collateral": {
               "treated": {
-                "attempts": 561,
-                "lost": 51,
-                "lossRate": 0.09090909090909091,
+                "attempts": 344,
+                "lost": 33,
+                "lossRate": 0.09593023255813954,
                 "abandoned": 0,
-                "lostPaise": 5226700,
-                "volumePaise": 44473100
+                "lostPaise": 3086600,
+                "volumePaise": 27182400
               },
               "control": {
-                "attempts": 68,
-                "lost": 11,
-                "lossRate": 0.16176470588235295,
+                "attempts": 37,
+                "lost": 8,
+                "lossRate": 0.21621621621621623,
                 "abandoned": 0,
-                "lostPaise": 1043500,
-                "volumePaise": 6350000
+                "lostPaise": 851800,
+                "volumePaise": 3428500
               },
-              "lossRateDelta": 0.07085561497326204,
-              "confidenceHalfWidth": 0.09069927219331826,
+              "lossRateDelta": 0.12028598365807669,
+              "confidenceHalfWidth": 0.13624887515268239,
               "significant": false,
-              "savedPaise": 3151169
+              "savedPaise": 3269662
             },
             "overall": {
               "treated": {
-                "attempts": 12848,
-                "lost": 666,
-                "lossRate": 0.05183686176836862,
-                "abandoned": 22,
-                "lostPaise": 63335100,
-                "volumePaise": 1113363300
+                "attempts": 7933,
+                "lost": 429,
+                "lossRate": 0.05407790243287533,
+                "abandoned": 15,
+                "lostPaise": 39285800,
+                "volumePaise": 681054200
               },
               "control": {
-                "attempts": 1453,
-                "lost": 95,
-                "lossRate": 0.0653819683413627,
+                "attempts": 900,
+                "lost": 59,
+                "lossRate": 0.06555555555555556,
                 "abandoned": 0,
-                "lostPaise": 8092900,
-                "volumePaise": 122116900
+                "lostPaise": 4730000,
+                "volumePaise": 75974100
               },
-              "lossRateDelta": 0.013545106572994084,
-              "confidenceHalfWidth": 0.013276210727621555,
-              "significant": true,
-              "savedPaise": 15080625
+              "lossRateDelta": 0.011477653122680231,
+              "confidenceHalfWidth": 0.016918860417383164,
+              "significant": false,
+              "savedPaise": 7816904
             }
           }
         ],
-        "declines": {
-          "the expected improvement is too small to be worth moving customers for": 11
-        },
+        "declines": {},
         "steersIssued": 1,
         "steersRefused": 0,
         "detectionHeld": true,
         "ledgerVerified": true,
-        "totalAttempts": 26064
+        "totalAttempts": 26092
       },
       {
         "scenario": "upi-hdfc-severe",
@@ -1548,8 +1626,7 @@
           }
         ],
         "declines": {
-          "the failing rail is no worse than where its customers would be moved to": 45,
-          "the expected improvement is too small to be worth moving customers for": 1
+          "the failing rail is no worse than where its customers would be moved to": 9
         },
         "steersIssued": 1,
         "steersRefused": 0,
@@ -1583,7 +1660,7 @@
         },
         "incidents": [],
         "declines": {
-          "the failing rail is no worse than where its customers would be moved to": 106,
+          "the failing rail is no worse than where its customers would be moved to": 63,
           "the destination rails are no better than the failing one": 24
         },
         "steersIssued": 0,
@@ -1610,32 +1687,44 @@
           "wastedPaise": 0,
           "refusals": {},
           "ledgerVerified": true,
-          "auditRecords": 0
+          "auditRecords": 0,
+          "copy": {
+            "source": "none — sends nothing",
+            "sent": 0,
+            "fromLibrary": 0,
+            "legible": 0
+          }
         },
         {
           "name": "chronos ladder (+1h, +24h, +72h)",
           "casualties": 5556,
           "lostPaise": 480450400,
-          "recovered": 2144,
-          "recoveredPaise": 188202100,
-          "incrementalPaise": 74209200,
-          "spentPaise": 240220,
-          "messages": 12249,
+          "recovered": 2014,
+          "recoveredPaise": 178103100,
+          "incrementalPaise": 64110200,
+          "spentPaise": 243580,
+          "messages": 12420,
           "retries": 0,
-          "optOuts": 153,
-          "wastedActions": 749,
-          "wastedPaise": 14980,
+          "optOuts": 155,
+          "wastedActions": 753,
+          "wastedPaise": 15060,
           "refusals": {},
           "ledgerVerified": true,
-          "auditRecords": 24498
+          "auditRecords": 24840,
+          "copy": {
+            "source": "hand-written templates (English)",
+            "sent": 12420,
+            "fromLibrary": 0,
+            "legible": 6655
+          }
         },
         {
           "name": "message everyone, immediately",
           "casualties": 5556,
           "lostPaise": 480450400,
-          "recovered": 1477,
-          "recoveredPaise": 130595800,
-          "incrementalPaise": 16602900,
+          "recovered": 1441,
+          "recoveredPaise": 128066500,
+          "incrementalPaise": 14073600,
           "spentPaise": 108780,
           "messages": 5556,
           "retries": 0,
@@ -1644,81 +1733,123 @@
           "wastedPaise": 15160,
           "refusals": {},
           "ledgerVerified": true,
-          "auditRecords": 11112
+          "auditRecords": 11112,
+          "copy": {
+            "source": "hand-written templates (English)",
+            "sent": 5556,
+            "fromLibrary": 0,
+            "legible": 3029
+          }
         },
         {
-          "name": "kairos",
+          "name": "kairos + template copy",
           "casualties": 5556,
           "lostPaise": 480450400,
-          "recovered": 2101,
-          "recoveredPaise": 183660700,
-          "incrementalPaise": 69667800,
-          "spentPaise": 64173,
-          "messages": 5719,
-          "retries": 249,
-          "optOuts": 43,
-          "wastedActions": 730,
-          "wastedPaise": 8110,
+          "recovered": 1993,
+          "recoveredPaise": 176137200,
+          "incrementalPaise": 62144300,
+          "spentPaise": 97263,
+          "messages": 6221,
+          "retries": 251,
+          "optOuts": 67,
+          "wastedActions": 770,
+          "wastedPaise": 12688,
           "refusals": {},
           "ledgerVerified": true,
-          "auditRecords": 11936
+          "auditRecords": 12944,
+          "copy": {
+            "source": "hand-written templates (English)",
+            "sent": 6221,
+            "fromLibrary": 0,
+            "legible": 3342
+          }
+        },
+        {
+          "name": "kairos + generated copy",
+          "casualties": 5556,
+          "lostPaise": 480450400,
+          "recovered": 2099,
+          "recoveredPaise": 183322200,
+          "incrementalPaise": 69329300,
+          "spentPaise": 62695,
+          "messages": 5730,
+          "retries": 251,
+          "optOuts": 50,
+          "wastedActions": 757,
+          "wastedPaise": 8392,
+          "refusals": {},
+          "ledgerVerified": true,
+          "auditRecords": 11962,
+          "copy": {
+            "source": "library(gemini-3.1-flash-lite) → hand-written templates (English)",
+            "sent": 5730,
+            "fromLibrary": 5730,
+            "legible": 5730
+          }
         }
       ],
       "windowSweep": [],
+      "legibilitySweep": [],
+      "languageMix": {
+        "en": 0.5451763858891289,
+        "hi": 0.24874010079193665,
+        "mr": 0.11393088552915767,
+        "ta": 0.09215262778977681
+      },
       "holdout": {
-        "casualties": 2343,
-        "recoveredPaise": 58375300
+        "casualties": 2172,
+        "recoveredPaise": 55674700
       },
       "calibration": {
         "bins": [
           {
             "lower": 0,
             "upper": 0.1,
-            "count": 1418,
-            "predicted": 0.05778020907328361,
-            "observed": 0.04724964739069112
+            "count": 2458,
+            "predicted": 0.05750361156868418,
+            "observed": 0.051668022782750206
           },
           {
             "lower": 0.1,
             "upper": 0.2,
-            "count": 1594,
-            "predicted": 0.137398772490731,
-            "observed": 0.1191969887076537
+            "count": 1167,
+            "predicted": 0.12759730704484348,
+            "observed": 0.10882604970008569
           },
           {
             "lower": 0.2,
             "upper": 0.3,
-            "count": 818,
-            "predicted": 0.24704662373559014,
-            "observed": 0.23838630806845965
+            "count": 758,
+            "predicted": 0.24257828214476462,
+            "observed": 0.22163588390501318
           },
           {
             "lower": 0.3,
             "upper": 0.4,
-            "count": 505,
-            "predicted": 0.3757340093590932,
-            "observed": 0.3782178217821782
+            "count": 1155,
+            "predicted": 0.38328846415496015,
+            "observed": 0.37575757575757573
           },
           {
             "lower": 0.4,
             "upper": 0.5,
-            "count": 1379,
-            "predicted": 0.4253671437523161,
-            "observed": 0.40609137055837563
+            "count": 678,
+            "predicted": 0.4097475955371462,
+            "observed": 0.3952802359882006
           },
           {
             "lower": 0.5,
             "upper": 0.6,
-            "count": 18,
-            "predicted": 0.578611647155054,
-            "observed": 0.8333333333333334
+            "count": 16,
+            "predicted": 0.5791950135334878,
+            "observed": 0.8125
           },
           {
             "lower": 0.6,
             "upper": 0.7,
-            "count": 9,
-            "predicted": 0.6413597301076681,
-            "observed": 0.6666666666666666
+            "count": 11,
+            "predicted": 0.646177347053261,
+            "observed": 0.7272727272727273
           },
           {
             "lower": 0.7,
@@ -1737,15 +1868,15 @@
           {
             "lower": 0.9,
             "upper": 1,
-            "count": 220,
-            "predicted": 0.9490535457567635,
-            "observed": 0.990909090909091
+            "count": 222,
+            "predicted": 0.949061651030308,
+            "observed": 0.990990990990991
           }
         ],
-        "expectedError": 0.015773644734216892,
-        "brier": 0.14044701432716686,
-        "skill": 0.23570126020341664,
-        "predictions": 5968
+        "expectedError": 0.01325941984754358,
+        "brier": 0.12443952851558109,
+        "skill": 0.2546803079623857,
+        "predictions": 6472
       },
       "autonomousShare": 0.12005039596832254,
       "classMix": {

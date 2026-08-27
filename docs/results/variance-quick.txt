@@ -1,6 +1,6 @@
 How far each number moves when only the seed changes
 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-8 seeds, quick profile, 122s. Suggested tolerance is 3 sd, rounded up to a readable figure.
+8 seeds, quick profile, 268s. Suggested tolerance is 3 sd, rounded up to a readable figure.
 
 A code change that consumes randomness differently re-rolls a fixed-seed benchmark, so it moves
 a metric by about one seed's worth. That is what these tolerances are sized to survive. They are
@@ -10,7 +10,11 @@ metric                                           mean            sd         rang
 ───────────────────────────────────────  ────────────  ────────────  ────────────  ────────  ──────────────
 detect.detectionRate                           83.33%             —             —      0.0%  make it an invariant
 detect.falseAlarmsPerHour                       0.070         0.066         0.188     94.3%           0.200
+detect.heldThroughPeakRate                     94.38%         4.17%        10.00%      4.4%          15.00%
+detect.lostCoverTrials                              2             1             4     66.6%               5
 detect.medianLatencyMs                         1.8min          8.9s         24.7s      8.3%           30.0s
+detect.medianResolutionMs                      2.5min         27.1s        1.4min     18.3%          1.7min
+detect.p90ResolutionMs                        20.6min        7.4min       22.6min     35.7%         25.0min
 detect.rightAltitudeRate                       70.49%         7.71%        22.22%     10.9%          30.00%
 prevent.netbanking-hdfc.collateralDelta        -1.99%         2.59%         6.36%    130.5%          10.00%
 prevent.netbanking-hdfc.leverChanges                0             —             —         —  make it an invariant
@@ -21,14 +25,14 @@ prevent.upi-hdfc-severe.leverChanges                0             —           
 prevent.upi-hdfc-severe.lossRateDelta          16.35%         2.12%         6.50%     13.0%           7.00%
 prevent.upi-hdfc-severe.savedPaise       ₹5,69,335.29    ₹65,946.86  ₹1,79,295.50     11.6%    ₹2,00,000.00
 recover.autonomousShare                        14.60%         1.18%         3.04%      8.1%           5.00%
-recover.calibrationError                        2.08%         0.52%         1.45%     24.9%           2.00%
-recover.calibrationSkill                        0.288         0.020         0.066      7.0%           0.070
-recover.copyLegibleRate                        53.39%         0.89%         2.13%      1.7%           3.00%
-recover.generatedGainPaise                 ₹78,509.13    ₹29,485.85    ₹87,038.00     37.6%    ₹1,00,000.00
-recover.incrementalPaise                 ₹4,31,028.13    ₹28,783.31    ₹75,103.00      6.7%    ₹1,00,000.00
-recover.messages                                3,856           198           653      5.1%             700
-recover.trueCostPaise                       ₹7,006.85     ₹2,358.31     ₹7,256.60     33.7%      ₹10,000.00
-recover.wastedActions                             469            37           106      7.9%             150
+recover.calibrationError                        1.97%         0.43%         1.27%     22.0%           1.50%
+recover.calibrationSkill                        0.280         0.033         0.105     11.8%           0.100
+recover.copyLegibleRate                        53.38%         0.87%         2.18%      1.6%           3.00%
+recover.generatedGainPaise                 ₹71,515.50    ₹17,446.46    ₹51,089.00     24.4%      ₹70,000.00
+recover.incrementalPaise                 ₹4,33,566.25    ₹38,972.52  ₹1,19,050.00      9.0%    ₹1,50,000.00
+recover.messages                                3,886           220           716      5.7%             700
+recover.trueCostPaise                       ₹7,262.06     ₹1,969.39     ₹6,062.78     27.1%       ₹7,000.00
+recover.wastedActions                             496            31            96      6.3%             100
 spend.actionsUnderContention                      296            14            45      4.7%              50
 spend.adaptiveOverspendPaise                    ₹5.25         ₹2.05         ₹6.00     39.1%           ₹7.00
 
@@ -38,4 +42,4 @@ the simulation, and belongs in the baseline as an `exact` invariant instead.
 
 Invariants across seeds
 ────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-All 18 held on every one of the 8 seeds.
+All 19 held on every one of the 8 seeds.
