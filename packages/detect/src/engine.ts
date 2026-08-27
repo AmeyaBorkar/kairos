@@ -2,12 +2,15 @@ import {
   type Attempt,
   isFailure,
   isResolved,
+  parseSliceKey,
   type Slice,
+  sliceCovers,
   sliceKey,
   sliceParents,
 } from "@kairos/domain";
 import type { BaselineState } from "./baseline.js";
 import { baselineRate, EMPTY_BASELINE, observeBaseline } from "./baseline.js";
+import { emptyCusum } from "./cusum.js";
 import { type DetectorConfig, type DetectorState, emptyDetector, observe } from "./detector.js";
 
 export interface EngineConfig extends DetectorConfig {
@@ -138,6 +141,7 @@ export class DetectionEngine {
         const incident = this.#open.get(key);
         if (incident !== undefined) {
           this.#open.delete(key);
+          this.#retireCovered(slice);
           events.push({ kind: "resolved", slice, at, onsetAt: incident.onsetAt });
         }
       }
@@ -176,6 +180,36 @@ export class DetectionEngine {
       if (state !== undefined && state.phase !== "quiet") return parent;
     }
     return null;
+  }
+
+  /**
+   * Retire the evidence held by the slices this incident was standing in for.
+   *
+   * Rollup reports one event at the coarsest slice that explains it, and every slice underneath is
+   * left holding its own account of the same outage. A descendant that raised its own alarm has its
+   * own way out — the recovery statistic, running against its own frozen claim. A descendant that
+   * never alarmed has none, and its bank simply keeps whatever it accumulated until noise walks it
+   * down.
+   *
+   * That is not hypothetical. On the console's `issuer-outage` the HDFC netbanking slice sits below
+   * the alarm gate for the whole outage, banks a statistic well past `threshold`, crosses
+   * `minObservations` twelve minutes after the rail is healthy and opens an incident on it — an
+   * outage reported for the first time after it ended. The evidence is real; it is simply spent,
+   * because the incident that reported it has already been opened, watched and closed one level up.
+   *
+   * Only quiet descendants are touched, and only their statistic: a descendant mid-incident is
+   * making its own claim and is entitled to finish making it.
+   *
+   * Costs one pass over the slice table per resolved incident. Incidents are rare by construction;
+   * if that ever stops being true, this wants an index rather than a scan.
+   */
+  #retireCovered(slice: Slice): void {
+    const parent = sliceKey(slice);
+    for (const [key, state] of this.#states) {
+      if (key === parent || state.phase !== "quiet") continue;
+      if (!sliceCovers(slice, parseSliceKey(key))) continue;
+      this.#states.set(key, { ...state, cusum: emptyCusum(this.#config.cusum) });
+    }
   }
 
   #supersedeDescendants(slice: Slice, at: number): EngineEvent[] {

@@ -119,6 +119,22 @@ describe("the console run", () => {
     expect(latencyMs).toBeLessThan(15 * 60_000);
   });
 
+  it("shows one incident for one outage, and none after it", async () => {
+    // Two things the four-hour run must not contain: a second incident on the same outage, and any
+    // incident opened after the rail is healthy. The latter was real — rollup reported the outage
+    // at the netbanking method, the HDFC slice underneath banked its own evidence for the whole
+    // thing without ever being entitled to report it, crossed `minObservations` twelve minutes
+    // after the rail recovered and opened an incident on it. An outage reported for the first time
+    // after it ended.
+    const run = runFor("issuer-outage");
+    await run.runToEnd();
+    const incidents = run.snapshot().incidents;
+    expect(incidents).toHaveLength(1);
+
+    const healthyAt = START + 81 * 60_000;
+    for (const incident of incidents) expect(incident.openedAt).toBeLessThan(healthyAt);
+  });
+
   it("closes every incident it opens, across every scenario", async () => {
     // The property, rather than one scenario's number. An incident left open is a rail still being
     // steered away from, a casualty still waiting for a recovery edge that has already passed, and
