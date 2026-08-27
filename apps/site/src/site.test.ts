@@ -80,10 +80,30 @@ describe("the document and the code agree", () => {
     );
     expect(refs.length).toBeGreaterThan(5);
     for (const ref of refs) {
-      // The compiled bundle is a build artifact and is not in the tree until `pnpm build` runs.
-      if (ref.startsWith("app/")) continue;
+      // Two things the page links are cut by `pnpm build` and are not in the tree before it runs:
+      // the compiled bundle, and the icons `scripts/make-icons.mjs` renders from the mark. Skipping
+      // them here would leave a typo in either path unguarded, so the test below checks that the
+      // generator really does emit every icon this one waves through.
+      if (ref.startsWith("app/") || ref.startsWith("assets/icons/")) continue;
       expect(() => readFileSync(join(PUBLIC, ref)), `missing asset ${ref}`).not.toThrow();
     }
+  });
+
+  it("cuts every icon the page links, from the one grid", () => {
+    // The exemption above is only honest if it is backed by something. `make-icons.mjs` names its
+    // outputs in `writeFileSync` calls; the page names them in `href`. Neither can drift from the
+    // other without this failing, which is the property the exemption was borrowing on credit.
+    const generator = readFileSync(join(ROOT, "scripts", "make-icons.mjs"), "utf8");
+    const emitted = new Set(
+      [...generator.matchAll(/writeFileSync\(join\(OUT,\s*"([^"]+)"/g)].map((m) => m[1] ?? ""),
+    );
+    expect(emitted.size).toBeGreaterThan(3);
+
+    const linked = [...html.matchAll(/(?:href|src)="assets\/icons\/([^"]+)"/g)].map(
+      (m) => m[1] ?? "",
+    );
+    expect(linked.length).toBeGreaterThan(0);
+    for (const icon of linked) expect(emitted, `nothing generates ${icon}`).toContain(icon);
   });
 
   it("offers a view for every nav link, and a nav link for every view", () => {
