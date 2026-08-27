@@ -31,6 +31,25 @@
  * The shift size δ is unknown, so several CUSUMs run in parallel over a spread of δ and the alarm
  * is the maximum. A small shift is detected eventually by the sensitive statistic; a collapse is
  * detected almost immediately by the aggressive one.
+ *
+ * ## Why there is a second statistic for the way back
+ *
+ * The bank above answers one question — "has the rate risen?" — and it answers it from a
+ * known-quiet start, which is what the floor at zero provides. It is a bad instrument for the
+ * opposite question, and for a reason that is structural rather than incidental.
+ *
+ * Once the rail heals, statistic `i` drifts at `−KL(p₀ ‖ p₀+δᵢ)`, which is monotone increasing in
+ * δ. The aggressive statistics collapse in minutes; the sensitive one, whose whole job is to be
+ * slow, walks down at a few thousandths of a nat per observation. Take the maximum over the bank
+ * and the alarm is governed by the fastest riser — correct — while the *clear* is governed by the
+ * slowest faller. Adding a more sensitive shift, to catch milder degradations, silently makes every
+ * incident close later. Sensitivity and resolution latency were coupled through a quantity nobody
+ * chose.
+ *
+ * So the way back gets its own test: {@link updateRecovery}, the same log-likelihood ratio with its
+ * two rates swapped. It runs only while an incident is open, which is what keeps it unable to touch
+ * detection latency or the false-alarm rate — both of those live entirely in the path out of
+ * `quiet`, and this statistic does not exist there.
  */
 export interface CusumConfig {
   /**
@@ -44,8 +63,23 @@ export interface CusumConfig {
    * Threshold for leaving the alarmed state, below `threshold`. The gap is a Schmitt trigger:
    * a single threshold makes the detector chatter at the boundary, steering on and off every few
    * seconds, which is worse for a merchant than never having steered.
+   *
+   * This is the *absence* of evidence for a rise, and it is still a legitimate reason to clear —
+   * it is simply not the only one, and on a sensitive shift it is not a reachable one. See
+   * {@link CusumConfig.recoveryThreshold}.
    */
   readonly clearThreshold: number;
+  /**
+   * Evidence required to call an open incident over — the threshold on {@link updateRecovery}.
+   *
+   * Set equal to `threshold` by default, so a clear claims exactly as much as an alarm did. That
+   * symmetry is a choice made for want of a better one: the costs are not symmetric — a false alarm
+   * steers traffic off a healthy rail, a false clear stops steering off a broken one and is
+   * self-correcting because the bank above is still running — but nothing here can price that
+   * difference, and a symmetric bar is the one that can be stated in a sentence. Swept like every
+   * other number rather than argued about.
+   */
+  readonly recoveryThreshold: number;
   /** Clamp on `p₁`. Keeps `log(1−p₁)` finite when baseline plus shift would reach 1. */
   readonly maxAlternativeRate: number;
   /**
@@ -118,6 +152,85 @@ export function updateCusum(
   }
 
   return { statistics, excursionStartedAt };
+}
+
+/**
+ * The rate an alarm is claiming the rail has moved to: `p₀ + δ` for the **smallest** δ whose
+ * statistic has crossed the threshold.
+ *
+ * Read once, at the moment an incident opens, and frozen alongside the baseline, because the honest
+ * way to end a claim is to test the claim that was made rather than a different one.
+ *
+ * The smallest rather than the leading δ, and the difference is not academic. `leadingIndex` is the
+ * argmax at one instant, and a burst of failures pushes the most aggressive statistic up fastest —
+ * so an alarm raised during a burst freezes a claim like "this rail has gone from 12% to 52%" when
+ * the sustained rate is nineteen. Measured on the `card-network` scenario, that is exactly what
+ * happens: the incident opens on a hypothesis the traffic never supported, the recovery test
+ * demolishes it in under four minutes and cover is lost on a rail that is genuinely degraded, until
+ * a second incident opens with the right claim and holds. Reading the smallest crossing shift makes
+ * the frozen claim the weakest one consistent with the alarm, which is the hardest to disprove and
+ * therefore the safe direction to be wrong in.
+ *
+ * The leader is the fallback rather than the rule, for the case where nothing has crossed — which
+ * cannot happen on the path that calls this, and is handled anyway rather than trusted.
+ */
+export function alternativeRate(state: CusumState, baseline: number, config: CusumConfig): number {
+  let shift = config.shifts[leadingIndex(state)] ?? 0;
+  for (let i = 0; i < config.shifts.length; i++) {
+    const candidate = config.shifts[i] ?? 0;
+    if (candidate < shift && (state.statistics[i] ?? 0) >= config.threshold) shift = candidate;
+  }
+  return Math.min(config.maxAlternativeRate, baseline + shift);
+}
+
+/**
+ * Page's CUSUM again, pointing the other way: evidence that an open incident is over.
+ *
+ * ```
+ *   LLR(success) = log( (1−p₀) / (1−p₁) )     positive — successes are evidence the rise has ended
+ *   LLR(fail)    = log( p₀ / p₁ )             negative — failures are evidence it has not
+ *   Rₙ = max(0, Rₙ₋₁ + LLR)                   clear when Rₙ ≥ recoveryThreshold
+ * ```
+ *
+ * Identical machinery to {@link updateCusum} with `p₀` and `p₁` exchanged, which is why it is the
+ * same function call with its arguments swapped rather than new arithmetic to get wrong.
+ *
+ * Three properties make it the right instrument for the job:
+ *
+ * - **It cannot clear a rail that is still broken.** Under the alternative the drift is
+ *   `−KL(p₁ ‖ p₀) < 0`, so the statistic pins at its floor and stays there. There is no threshold
+ *   and no amount of time that gets a genuinely degraded rail past it.
+ * - **It crosses at the point the evidence changes sides**, not at either hypothesis. The drift is
+ *   zero at `p* = log((1−p₀)/(1−p₁)) / [log((1−p₀)/(1−p₁)) + log(p₁/p₀)]`, which sits between the
+ *   two rates — the standard CUSUM crossover. Below `p*` it climbs; above it, it does not.
+ * - **Resolution latency mirrors detection latency**, because it is the same test run backwards
+ *   against the same pair of rates. A collapse proved in three minutes is disproved in about
+ *   three; a slow bleed that took twenty minutes to establish takes about twenty to retire. That
+ *   symmetry is the property the one-sided version never had.
+ *
+ * What it does *not* claim is that the rail is perfect — only that the evidence has turned
+ * decisively against the specific rise the incident was opened on. If the rate settles somewhere
+ * milder but still elevated, the right outcome is this incident closing and a smaller one opening
+ * to describe what is actually happening, and that is what the bank above then does.
+ */
+export function updateRecovery(
+  previous: number,
+  isFailure: boolean,
+  baseline: number,
+  alternative: number,
+  config: CusumConfig,
+): number {
+  // A degenerate pair carries no information either way, and `log(1)` would silently freeze the
+  // statistic at whatever it already held rather than saying so.
+  if (!(alternative > baseline)) return 0;
+  const accumulated = previous + logLikelihoodRatio(isFailure, alternative, baseline);
+  /* Its own ceiling, derived rather than configured, for the same reason the bank above has one:
+     without it a long stretch of healthy traffic banks unbounded credit for a recovery, and a rail
+     that breaks again has to spend all of it before the incident can be re-asserted. Twice the
+     threshold, which is the proportion `statisticCeiling` already keeps to — and separate from it,
+     because the two thresholds are not the same number and the up-statistic's ceiling is load-bearing
+     for detection. */
+  return Math.min(config.recoveryThreshold * 2, Math.max(0, accumulated));
 }
 
 /** Index of the statistic carrying the most evidence. */

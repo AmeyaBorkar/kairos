@@ -26,6 +26,9 @@ export const DEFAULT_DETECTOR_CONFIG: DetectorConfig = {
     // aggressive shift contributes log(0.42/0.02) ≈ 3.04. Set it lower and one ordinary failure
     // restarts the recovery dwell every time, so an incident can never clear at all.
     clearThreshold: 3.6,
+    // Symmetric with `threshold`: ending a claim takes the evidence that starting one took. See
+    // the note on the field for why symmetry is a default rather than a result.
+    recoveryThreshold: 12,
     maxAlternativeRate: 0.95,
     // Roughly twice the threshold: enough headroom that a marginal alarm is not instantly
     // reversible, bounded enough that a long outage still clears promptly once the rail recovers.
@@ -47,6 +50,8 @@ export function withThreshold(config: DetectorConfig, threshold: number): Detect
       threshold,
       // Proportional, but never below the single-failure jump — see the note on the default.
       clearThreshold: Math.max(3.6, threshold * 0.3),
+      // Moves with the alarm bar it mirrors, so a sweep over `h` sweeps both sides of the incident.
+      recoveryThreshold: threshold,
       statisticCeiling: Math.max(config.cusum.statisticCeiling, threshold * 2),
     },
   };

@@ -8,6 +8,7 @@ export {
 } from "./baseline.js";
 export { DEFAULT_DETECTOR_CONFIG, withThreshold } from "./config.js";
 export {
+  alternativeRate,
   type CusumConfig,
   type CusumState,
   changepoint,
@@ -17,6 +18,7 @@ export {
   logLikelihoodRatio,
   peakStatistic,
   updateCusum,
+  updateRecovery,
 } from "./cusum.js";
 export {
   type DetectorConfig,

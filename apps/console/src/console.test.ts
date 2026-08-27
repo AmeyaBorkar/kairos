@@ -87,26 +87,51 @@ describe("the console run", () => {
     expect(incident.detectionLatencyMs ?? 0).toBeGreaterThan(0);
   });
 
-  it("still shows the incident open hours after the rail recovered", async () => {
-    // **This asserts a defect, deliberately.** The `issuer-outage` scenario's rail is healthy again
-    // about 81 minutes in, and the incident is still open at the end of the four-hour run. Measured
-    // over a longer window it resolves at about +442 minutes — a resolution latency near six hours
-    // for an outage that lasted thirty-five minutes, against a detection latency of about three.
+  it("lets go of the rail within minutes of it recovering, not hours", async () => {
+    // This assertion used to run the other way. It read `expect(incident?.closedAt).toBeNull()`
+    // and it was correct: the `issuer-outage` rail is healthy again at +81 minutes and the
+    // incident was still open at the end of the four-hour run — resolving, when measured over a
+    // longer window, at **+442**. Six hours of resolution latency behind three minutes of
+    // detection latency, recorded as open question 19.
     //
-    // The cause is the shape of a one-sided CUSUM. The statistic accumulates while the observed
-    // rate exceeds the frozen baseline and decays only while it is *below* it; a rail that returns
-    // to exactly its baseline produces a drift of roughly zero, so the statistic plateaus near its
-    // peak and drifts down on noise alone. Clearing needs it under 3.6 and it is still above 10
-    // three hours later.
+    // The cause was the shape of a one-sided CUSUM. After a rail heals, statistic `i` drifts at
+    // `-KL(p0 || p0+delta_i)`, which is monotone increasing in delta — so the bank's maximum, which
+    // is what the detector reads, is governed by the *slowest* faller. The alarm was decided by the
+    // fastest riser and the clear by the most sensitive statistic in the bank, whose whole job is
+    // to be slow. Adding a shift to catch milder degradations made every incident close later.
     //
-    // It matters beyond cosmetics: steering keeps diverting traffic off a healthy rail for as long
-    // as the incident is open, and the recovery arm's whole timing claim is that it retries on the
-    // recovery edge. Recorded as open question 19 rather than patched here, because changing the
-    // detector re-baselines every published measurement.
+    // The way back now has its own test: the same log-likelihood ratio with its two rates
+    // exchanged, running only while an incident is open — which is what keeps it unable to touch
+    // detection latency or the false-alarm rate, both of which live entirely in the path out of
+    // `quiet`. The detection curve is unchanged at every threshold from 10 up, to the millisecond.
     const run = runFor("issuer-outage");
     await run.runToEnd();
     const [incident] = run.snapshot().incidents;
-    expect(incident?.closedAt).toBeNull();
+    if (incident === undefined) throw new Error("expected an incident");
+
+    expect(incident.closedAt).not.toBeNull();
+
+    // The simulator's rail is genuinely healthy at +81 minutes: onset +40, a minute of ramp,
+    // thirty-five held, five recovering.
+    const healthyAt = START + 81 * 60_000;
+    const latencyMs = (incident.closedAt ?? 0) - healthyAt;
+    expect(latencyMs).toBeGreaterThan(0);
+    expect(latencyMs).toBeLessThan(15 * 60_000);
+  });
+
+  it("closes every incident it opens, across every scenario", async () => {
+    // The property, rather than one scenario's number. An incident left open is a rail still being
+    // steered away from, a casualty still waiting for a recovery edge that has already passed, and
+    // a merchant reading an outage that is over.
+    for (const name of ["issuer-outage", "invisible-issuer", "two-at-once", "kill-switch"]) {
+      const run = runFor(name);
+      await run.runToEnd();
+      const incidents = run.snapshot().incidents;
+      expect(incidents.length, name).toBeGreaterThan(0);
+      for (const incident of incidents) {
+        expect(incident.closedAt, `${name} — ${incident.slice}`).not.toBeNull();
+      }
+    }
   });
 
   it("raises no incident on a quiet afternoon", async () => {
