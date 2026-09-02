@@ -87,14 +87,26 @@ export class SteeringController {
     return [...this.#held.values()].map((h) => h.directive);
   }
 
-  /** One customer's checkout configuration. Pure and cheap — the hot path calls this. */
-  planFor(customer: CustomerRef, health: RailHealth): SteeringPlan {
+  /**
+   * One customer's checkout configuration. Pure and cheap — the hot path calls this.
+   *
+   * `offered` is the method list of the page being rendered. A merchant has more than one
+   * checkout — a subscription upgrade offers different methods than a one-rupee verification — and
+   * the set is a property of the page rather than of the deployment, so a caller that knows it
+   * says so and one that does not gets the order this controller was constructed with. Kairos
+   * perturbs whichever list it is given; it never adds a method the merchant did not offer.
+   */
+  planFor(
+    customer: CustomerRef,
+    health: RailHealth,
+    offered?: readonly PaymentMethod[],
+  ): SteeringPlan {
     return planFor(
       customer,
       this.directives(),
       health,
       this.#config,
-      this.#defaultSequence,
+      offered ?? this.#defaultSequence,
       this.#clock.now(),
     );
   }
