@@ -1,0 +1,38 @@
+{
+  "name": "@kairos/postgres",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The casualty queue in Postgres. Turns the recovery worker from one instance into a fleet.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "kairos-casualty-schema": "./dist/schema-main.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "schema": "node dist/schema-main.js",
+    "typecheck": "tsc -p tsconfig.json"
+  },
+  "dependencies": {
+    "@kairos/domain": "workspace:*",
+    "@kairos/recover": "workspace:*"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
+    "@kairos/ledger": "workspace:*",
+    "@kairos/terminus": "workspace:*",
+    "@types/node": "^22.10.0",
+    "throttlekit": "^1.7.0"
+  }
+}

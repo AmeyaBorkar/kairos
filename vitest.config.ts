@@ -21,6 +21,7 @@ export default defineConfig({
       "@kairos/reason": pkg("reason"),
       "@kairos/recover": pkg("recover"),
       "@kairos/terminus": pkg("terminus"),
+      "@kairos/postgres": adapter("postgres"),
       "@kairos/razorpay": adapter("razorpay"),
       "@kairos/reasoner-gemini": adapter("reasoner-gemini"),
       "@kairos/simulator": adapter("simulator"),

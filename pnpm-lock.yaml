@@ -17,6 +17,9 @@ importers:
       '@commitlint/config-conventional':
         specifier: ^21.2.2
         version: 21.2.2
+      '@electric-sql/pglite':
+        specifier: ^0.5.8
+        version: 0.5.8
       '@types/node':
         specifier: ^22.10.0
         version: 22.20.1
@@ -29,6 +32,31 @@ importers:
       vitest:
         specifier: ^4.1.11
         version: 4.1.11(@types/node@22.20.1)(@vitest/coverage-v8@4.1.11)(vite@8.2.2(@types/node@22.20.1)(jiti@2.6.1))
+
+  adapters/postgres:
+    dependencies:
+      '@kairos/domain':
+        specifier: workspace:*
+        version: link:../../packages/domain
+      '@kairos/recover':
+        specifier: workspace:*
+        version: link:../../packages/recover
+    devDependencies:
+      '@electric-sql/pglite':
+        specifier: ^0.5.8
+        version: 0.5.8
+      '@kairos/ledger':
+        specifier: workspace:*
+        version: link:../../packages/ledger
+      '@kairos/terminus':
+        specifier: workspace:*
+        version: link:../../packages/terminus
+      '@types/node':
+        specifier: ^22.10.0
+        version: 22.20.1
+      throttlekit:
+        specifier: ^1.7.0
+        version: 1.7.0(fastify@5.12.1)(pg@8.23.0)
 
   adapters/razorpay:
     dependencies:
@@ -59,7 +87,7 @@ importers:
         version: link:../../packages/recover
       throttlekit:
         specifier: ^1.7.0
-        version: 1.7.0(fastify@5.12.1)
+        version: 1.7.0(fastify@5.12.1)(pg@8.23.0)
       zod:
         specifier: ^4.1.0
         version: 4.4.3
@@ -108,7 +136,7 @@ importers:
         version: link:../../packages/terminus
       throttlekit:
         specifier: ^1.7.0
-        version: 1.7.0(fastify@5.12.1)
+        version: 1.7.0(fastify@5.12.1)(pg@8.23.0)
     devDependencies:
       '@types/node':
         specifier: ^22.10.0
@@ -148,11 +176,33 @@ importers:
         version: 5.12.1
       throttlekit:
         specifier: ^1.7.0
-        version: 1.7.0(fastify@5.12.1)
+        version: 1.7.0(fastify@5.12.1)(pg@8.23.0)
     devDependencies:
       '@types/node':
         specifier: ^22.10.0
         version: 22.20.1
+
+  apps/mandate:
+    dependencies:
+      '@kairos/domain':
+        specifier: workspace:*
+        version: link:../../packages/domain
+      '@kairos/recover':
+        specifier: workspace:*
+        version: link:../../packages/recover
+      '@kairos/terminus':
+        specifier: workspace:*
+        version: link:../../packages/terminus
+    devDependencies:
+      '@kairos/ledger':
+        specifier: workspace:*
+        version: link:../../packages/ledger
+      '@types/node':
+        specifier: ^22.10.0
+        version: 22.20.1
+      throttlekit:
+        specifier: ^1.7.0
+        version: 1.7.0(fastify@5.12.1)(pg@8.23.0)
 
   apps/recover-worker:
     dependencies:
@@ -162,6 +212,9 @@ importers:
       '@kairos/ledger':
         specifier: workspace:*
         version: link:../../packages/ledger
+      '@kairos/postgres':
+        specifier: workspace:*
+        version: link:../../adapters/postgres
       '@kairos/razorpay':
         specifier: workspace:*
         version: link:../../adapters/razorpay
@@ -174,13 +227,19 @@ importers:
       '@kairos/terminus':
         specifier: workspace:*
         version: link:../../packages/terminus
+      pg:
+        specifier: ^8.23.0
+        version: 8.23.0
       throttlekit:
         specifier: ^1.7.0
-        version: 1.7.0(fastify@5.12.1)
+        version: 1.7.0(fastify@5.12.1)(pg@8.23.0)
     devDependencies:
       '@types/node':
         specifier: ^22.10.0
         version: 22.20.1
+      '@types/pg':
+        specifier: ^8.23.1
+        version: 8.23.1
 
   apps/scribe:
     dependencies:
@@ -204,7 +263,7 @@ importers:
         version: link:../../packages/terminus
       throttlekit:
         specifier: ^1.7.0
-        version: 1.7.0(fastify@5.12.1)
+        version: 1.7.0(fastify@5.12.1)(pg@8.23.0)
     devDependencies:
       '@types/node':
         specifier: ^22.10.0
@@ -235,7 +294,7 @@ importers:
         version: 5.12.1
       throttlekit:
         specifier: ^1.7.0
-        version: 1.7.0(fastify@5.12.1)
+        version: 1.7.0(fastify@5.12.1)(pg@8.23.0)
       zod:
         specifier: ^4.1.0
         version: 4.4.3
@@ -310,7 +369,7 @@ importers:
         version: 22.20.1
       throttlekit:
         specifier: ^1.7.0
-        version: 1.7.0(fastify@5.12.1)
+        version: 1.7.0(fastify@5.12.1)(pg@8.23.0)
 
   packages/proof:
     dependencies:
@@ -358,7 +417,7 @@ importers:
         version: 22.20.1
       throttlekit:
         specifier: ^1.7.0
-        version: 1.7.0(fastify@5.12.1)
+        version: 1.7.0(fastify@5.12.1)(pg@8.23.0)
 
   packages/terminus:
     dependencies:
@@ -370,7 +429,7 @@ importers:
         version: link:../ledger
       throttlekit:
         specifier: ^1.7.0
-        version: 1.7.0(fastify@5.12.1)
+        version: 1.7.0(fastify@5.12.1)(pg@8.23.0)
     devDependencies:
       '@types/node':
         specifier: ^22.10.0
@@ -545,6 +604,9 @@ packages:
     resolution: {integrity: sha512-aalGyl7dbB5PArRebDIX43ZvBlXrYm9uWzGJ26t+4SzJVPsOuvfILGGbw5X4yX7i50YEmJ8zvbiWnqH/AAnZqg==}
     engines: {node: '>=22'}
 
+  '@electric-sql/pglite@0.5.8':
+    resolution: {integrity: sha512-n9tsbUOhwx2epK1V0ZG9Ar4SHWUju04dhmzZXiSBXwBoleOvIfals33NAaWgagQVAL4Rbvx/Ptsu3P+pA09f6Q==}
+
   '@fastify/ajv-compiler@4.0.6':
     resolution: {integrity: sha512-NtuzM0SfaMJbGlnjr9LWQUN5LzgSrbB8tf/wRZNas+4E1O/Nmzl53e7ruT61HDZyRCJGC6FxIogmNZO1c5ETBA==}
 
@@ -700,6 +762,9 @@ packages:
 
   '@types/node@22.20.1':
     resolution: {integrity: sha512-EANqOCF9QFyra+4pfxUcX9STKJpCLjMbObVzljIJomAWSnuSIEAvyzEU53GaajbXJEgdh0iEcPL+DGvpUd4k1Q==}
+
+  '@types/pg@8.23.1':
+    resolution: {integrity: sha512-fKVHpikPdg4GKks3JuLEhvwSyvwzF23hnabPy6DD8ljVbC7+6J5dQzdv4arV6jqq57djnMgs1HKBxX4P8aBI3A==}
 
   '@typescript/typescript-aix-ppc64@7.0.2':
     resolution: {integrity: sha512-MTKKkWB7p/0E9xi1d1tHtZ5PiLkGEMIq88pK2CubZjOsLtYTLqhgIgi6zepFa+9GHZ6h05NMCkQxGKiPXMxXtQ==}
@@ -1215,6 +1280,40 @@ packages:
   pathe@2.0.3:
     resolution: {integrity: sha512-WUjGcAqP1gQacoQe+OBJsFA7Ld4DyXuUIjZ5cc75cLHvJ7dtNsTugphxIADwspS+AraAUePCKrSVtPLFj/F88w==}
 
+  pg-cloudflare@1.4.0:
+    resolution: {integrity: sha512-Vo7z/6rrQYxpNRylp4Tlob2elzbh+N/MOQbxFVWCxS7oEx6jF53GTJFxK2WWpKuBRkmiin4Mt+xofFDjx09R0A==}
+
+  pg-connection-string@2.14.0:
+    resolution: {integrity: sha512-XwWDGcLRGCXAR8F/AM5bG7Q+A3Wm2s6QeEjlOKZLlH3UYcguiqCWKyWXVag5TLTIjR7oOJUY8kcADaZgWPyLeg==}
+
+  pg-int8@1.0.1:
+    resolution: {integrity: sha512-WCtabS6t3c8SkpDBUlb1kjOs7l66xsGdKpIPZsg4wR+B3+u9UAum2odSsF9tnvxg80h4ZxLWMy4pRjOsFIqQpw==}
+    engines: {node: '>=4.0.0'}
+
+  pg-pool@3.14.0:
+    resolution: {integrity: sha512-gKtPkFdQPU3DksooVLi9LsjZxrsBUZIpa+7aVx+LV5pNh0KzP4Zleud2po+ConrxbuXGBJ6Hfer6hdgpIBpBaw==}
+    peerDependencies:
+      pg: '>=8.0'
+
+  pg-protocol@1.16.0:
+    resolution: {integrity: sha512-sILXutLVjCLjcDuOmvhX5e2Z4cS5qG/6Bu3VkpFwdf/633ElGLpEh9bgmuI5I4sqKqkifQiGyiCcx1HdtrK7tg==}
+
+  pg-types@2.2.0:
+    resolution: {integrity: sha512-qTAAlrEsl8s4OiEQY69wDvcMIdQN6wdz5ojQiOy6YRMuynxenON0O5oCpJI6lshc6scgAY8qvJ2On/p+CXY0GA==}
+    engines: {node: '>=4'}
+
+  pg@8.23.0:
+    resolution: {integrity: sha512-Ip2EQCngowJLGOfCwkFhPXU7/ljlhn6Rxlmy4XYfL2Y+vyRM59+8uR2xqRWKdYmbXmxCFOAmKxBuSUCdF34qLg==}
+    engines: {node: '>= 16.0.0'}
+    peerDependencies:
+      pg-native: '>=3.0.1'
+    peerDependenciesMeta:
+      pg-native:
+        optional: true
+
+  pgpass@1.0.5:
+    resolution: {integrity: sha512-FdW9r/jQZhSeohs1Z3sI1yxFQNFvMcnmfuj4WBMUTxOrAyLMaTcE1aAMBiTlbMNaXvBCQuVi0R7hd8udDSP7ug==}
+
   picocolors@1.1.1:
     resolution: {integrity: sha512-xceH2snhtb5M9liqDsmEw56le376mTZkEX/jEb/RxNFyegNul7eNslCXP9FDj/Lcu0X8KEyMceP2ntpaHrDEVA==}
 
@@ -1235,6 +1334,22 @@ packages:
   postcss@8.5.26:
     resolution: {integrity: sha512-u82N74LFzG8ca+dD8puPnplTXoGH4fTPpVGuIbt36G3qvNlkvfD0lEAZSxaly3KX8TS/L1A1gsCEmvKmBcVbkQ==}
     engines: {node: ^10 || ^12 || >=14}
+
+  postgres-array@2.0.0:
+    resolution: {integrity: sha512-VpZrUqU5A69eQyW2c5CA1jtLecCsN2U/bD6VilrFDWq5+5UIEVO7nazS3TEcHf1zuPYO/sqGvUvW62g86RXZuA==}
+    engines: {node: '>=4'}
+
+  postgres-bytea@1.0.1:
+    resolution: {integrity: sha512-5+5HqXnsZPE65IJZSMkZtURARZelel2oXUEO8rH83VS/hxH5vv1uHquPg5wZs8yMAfdv971IU+kcPUczi7NVBQ==}
+    engines: {node: '>=0.10.0'}
+
+  postgres-date@1.0.7:
+    resolution: {integrity: sha512-suDmjLVQg78nMK2UZ454hAG+OAW+HQPZ6n++TNDUX+L0+uUlLywnoxJKDou51Zm+zTCjrCl0Nq6J9C5hP9vK/Q==}
+    engines: {node: '>=0.10.0'}
+
+  postgres-interval@1.2.0:
+    resolution: {integrity: sha512-9ZhXKM/rw350N1ovuWHbGxnGh/SNJ4cnxHiM0rxE4VN41wsg8P8zWn9hv/buK00RP4WvlOyr/RBDiptyxVbkZQ==}
+    engines: {node: '>=0.10.0'}
 
   process-warning@4.0.1:
     resolution: {integrity: sha512-3c2LzQ3rY9d0hc1emcsHhfT9Jwz0cChib/QN89oME2R451w5fy3f0afAhERFZAwrbDU43wk12d0ORBpDVME50Q==}
@@ -1487,6 +1602,10 @@ packages:
     resolution: {integrity: sha512-42AtmgqjV+X1VpdOfyTGOYRi0/zsoLqtXQckTmqTeybT+BDIbM/Guxo7x3pE2vtpr1ok6xRqM9OpBe+Jyoqyww==}
     engines: {node: '>=18'}
 
+  xtend@4.0.2:
+    resolution: {integrity: sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ==}
+    engines: {node: '>=0.4'}
+
   y18n@5.0.8:
     resolution: {integrity: sha512-0pfFzegeDWJHJIAmTLRP2DwHjdF5s7jo9tuztdQxAhINCdvS+3nGINqPd00AphqJR/0LhANUS6/+7SCb98YOfA==}
     engines: {node: '>=10'}
@@ -1679,6 +1798,8 @@ snapshots:
 
   '@conventional-changelog/template@1.4.0': {}
 
+  '@electric-sql/pglite@0.5.8': {}
+
   '@fastify/ajv-compiler@4.0.6':
     dependencies:
       ajv: 8.20.0
@@ -1782,6 +1903,12 @@ snapshots:
   '@types/node@22.20.1':
     dependencies:
       undici-types: 6.21.0
+
+  '@types/pg@8.23.1':
+    dependencies:
+      '@types/node': 22.20.1
+      pg-protocol: 1.16.0
+      pg-types: 2.2.0
 
   '@typescript/typescript-aix-ppc64@7.0.2':
     optional: true
@@ -2203,6 +2330,41 @@ snapshots:
 
   pathe@2.0.3: {}
 
+  pg-cloudflare@1.4.0:
+    optional: true
+
+  pg-connection-string@2.14.0: {}
+
+  pg-int8@1.0.1: {}
+
+  pg-pool@3.14.0(pg@8.23.0):
+    dependencies:
+      pg: 8.23.0
+
+  pg-protocol@1.16.0: {}
+
+  pg-types@2.2.0:
+    dependencies:
+      pg-int8: 1.0.1
+      postgres-array: 2.0.0
+      postgres-bytea: 1.0.1
+      postgres-date: 1.0.7
+      postgres-interval: 1.2.0
+
+  pg@8.23.0:
+    dependencies:
+      pg-connection-string: 2.14.0
+      pg-pool: 3.14.0(pg@8.23.0)
+      pg-protocol: 1.16.0
+      pg-types: 2.2.0
+      pgpass: 1.0.5
+    optionalDependencies:
+      pg-cloudflare: 1.4.0
+
+  pgpass@1.0.5:
+    dependencies:
+      split2: 4.2.0
+
   picocolors@1.1.1: {}
 
   picomatch@4.0.5: {}
@@ -2232,6 +2394,16 @@ snapshots:
       nanoid: 3.3.18
       picocolors: 1.1.1
       source-map-js: 1.2.1
+
+  postgres-array@2.0.0: {}
+
+  postgres-bytea@1.0.1: {}
+
+  postgres-date@1.0.7: {}
+
+  postgres-interval@1.2.0:
+    dependencies:
+      xtend: 4.0.2
 
   process-warning@4.0.1: {}
 
@@ -2325,9 +2497,10 @@ snapshots:
     dependencies:
       real-require: 1.0.0
 
-  throttlekit@1.7.0(fastify@5.12.1):
+  throttlekit@1.7.0(fastify@5.12.1)(pg@8.23.0):
     optionalDependencies:
       fastify: 5.12.1
+      pg: 8.23.0
 
   tinybench@2.9.0: {}
 
@@ -2417,6 +2590,8 @@ snapshots:
       ansi-styles: 6.2.3
       string-width: 7.2.0
       strip-ansi: 7.2.0
+
+  xtend@4.0.2: {}
 
   y18n@5.0.8: {}
 
