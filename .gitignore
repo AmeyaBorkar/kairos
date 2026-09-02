@@ -5,6 +5,9 @@ coverage/
 
 .env
 .env.*
+# Any file whose name *ends* in .env — `elevenlabs.env` was not covered by the two
+# rules above, and this repository is public.
+*.env
 !.env.example
 
 .DS_Store
