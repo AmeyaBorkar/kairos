@@ -209,11 +209,11 @@
 }
 .wipe-name {
   position: relative;
-  font-family: "Silkscreen", monospace;
-  font-weight: 700;
-  font-size: clamp(15px, 2.4vw, 26px);
-  letter-spacing: 4px;
+  font-family: "Archivo", system-ui, sans-serif;
+  font-size: clamp(17px, 2.4vw, 28px);
   color: var(--ink);
   opacity: 0;
   transform: translateY(15vh);
+  font-weight: 800;
+  letter-spacing: 0.1em;
 }

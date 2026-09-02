@@ -35,9 +35,10 @@
   font-size: 22px;
 }
 .gauge-head b {
-  font-family: "Silkscreen", monospace;
-  font-size: 12px;
-  font-weight: 400;
+  font-family: "Archivo", system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
 }
 
 .led {
@@ -104,12 +105,14 @@ td {
   border-bottom: 2px solid var(--line);
 }
 th {
-  font-size: 14px;
-  font-family: "Silkscreen", monospace;
+  font-family: "Archivo", system-ui, sans-serif;
   color: var(--ink-dim);
   background: var(--panel-2);
   border-bottom: 3px solid var(--line);
   white-space: nowrap;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
 }
 td.num,
 th.num {
@@ -152,28 +155,30 @@ tr.win td:first-child::before {
 }
 
 .stat .n {
-  font-family: "Silkscreen", monospace;
-  font-weight: 700;
-  font-size: clamp(24px, 4vw, 36px);
+  font-family: "Archivo", system-ui, sans-serif;
+  font-size: clamp(30px, 4vw, 44px);
   color: var(--accent);
   text-shadow: var(--glow);
   display: block;
   line-height: 1.2;
   margin-bottom: 8px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
 }
 .stat .cap {
-  font-size: 23px;
+  font-size: 17px;
   color: var(--ink-dim);
-  line-height: 1.35;
+  line-height: 1.5;
 }
 
 .payoff {
-  font-family: "VT323", monospace;
-  font-weight: 400;
-  font-size: clamp(24px, 2.8vw, 33px);
+  font-family: "Archivo", system-ui, sans-serif;
+  font-size: clamp(21px, 2.4vw, 28px);
   color: var(--ink);
   max-width: 32ch;
-  line-height: 1.25;
+  font-weight: 700;
+  line-height: 1.35;
 }
 
 .close {
@@ -219,13 +224,14 @@ footer {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  /* biome-ignore lint/complexity/noImportantStyles: a reduced-motion override has to beat every
-     animation on the page, including ones declared later and more specifically. That is what the
-     rule is for. */
+  /* A reduced-motion override has to beat every animation on the page, including ones declared
+     later and more specifically. That is what !important is for. */
   *,
   *::before,
   *::after {
+    /* biome-ignore lint/complexity/noImportantStyles: see above */
     animation: none !important;
+    /* biome-ignore lint/complexity/noImportantStyles: see above */
     transition: none !important;
   }
   html {

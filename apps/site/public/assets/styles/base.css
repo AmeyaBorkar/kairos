@@ -11,17 +11,36 @@ html {
   scroll-behavior: smooth;
 }
 
+/* Two voices, and the split is the rule. Archivo is the site talking to a
+   reader; Silkscreen is the product talking, and it only ever appears on an
+   instrument — a readout, a tagline sitting on the artwork, a frame caption.
+   Nothing that has to be *read* is set in a bitmap face any more, and nothing
+   is rendered without antialiasing except the bitmap faces themselves. */
 body {
   background: var(--bg);
   color: var(--ink);
   margin: 0;
   padding: 0;
-  font-family: "VT323", ui-monospace, "SF Mono", Consolas, monospace;
-  font-size: 27px;
-  line-height: 1.42;
-  image-rendering: pixelated;
-  -webkit-font-smoothing: none;
+  font-family: "Archivo", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+}
+/* The pixel art still wants nearest-neighbour; the text does not. */
+canvas,
+img {
+  image-rendering: pixelated;
+}
+.tagline,
+.frame-cap,
+.brand,
+.lcd,
+.lcd b,
+.lcd span {
+  -webkit-font-smoothing: none;
 }
 body::after {
   content: "";
@@ -54,11 +73,14 @@ h4,
 .lbl,
 .btn,
 th,
-.tagline,
 .cue,
-.nav-link,
+.nav-link {
+  font-family: "Archivo", system-ui, sans-serif;
+  font-weight: 700;
+}
+.tagline,
 .brand {
-  font-family: "Silkscreen", "VT323", monospace;
+  font-family: "Silkscreen", monospace;
   font-weight: 700;
 }
 h1,
@@ -70,15 +92,16 @@ h4 {
   line-height: 1.35;
 }
 .panel h3 {
-  font-size: 13px;
+  font-size: 15px;
   color: var(--accent);
-  letter-spacing: 0.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   margin-bottom: 14px;
 }
 .panel > p {
-  font-size: 23px;
+  font-size: 18px;
   color: var(--ink-dim);
-  line-height: 1.45;
+  line-height: 1.55;
 }
 p {
   margin: 0 0 16px;
@@ -104,10 +127,12 @@ a:focus-visible,
 }
 .lbl {
   font-size: 15px;
+  font-weight: 800;
   color: var(--ink-dim);
   display: block;
   margin-bottom: 12px;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
 }
 .lbl::before {
   content: "▚ ";
@@ -139,15 +164,15 @@ a:focus-visible,
 }
 
 .aside {
-  font-size: 23px;
+  font-size: 18px;
   color: var(--ink-dim);
-  max-width: 42ch;
-  line-height: 1.48;
+  max-width: 62ch;
+  line-height: 1.6;
   margin: 16px 0 0;
   padding-left: 13px;
   border-left: 3px solid var(--line);
 }
 .aside b {
   color: var(--ink);
-  font-weight: 400;
+  font-weight: 700;
 }
