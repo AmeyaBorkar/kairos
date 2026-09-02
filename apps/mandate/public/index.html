@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Kairos · author a mandate</title>
+<!--
+  Served by `kairos-mandate form` on 127.0.0.1.
+
+  No fonts, no CDN, no build step. An operator authorising spend may well be doing it on a locked-down
+  machine or a bastion host with no route to the internet, and a page that degrades to Times New Roman
+  and a dead stylesheet at exactly that moment is a page that gets skimmed instead of read.
+
+  Nothing here does arithmetic. Every number on the right-hand side comes from `toMandate` and
+  `explainMandate` on the server, because a form that converted rupees to paise itself would be a
+  second implementation of the one conversion in this system that must never be wrong twice.
+-->
+<style>
+  :root {
+    --bg: #101214;
+    --panel: #17191d;
+    --panel-2: #1e2126;
+    --line: #2c3037;
+    --ink: #e9e7e4;
+    --dim: #98a0a8;
+    --accent: #e0a33e;
+    --good: #5eb87c;
+    --bad: #e0655c;
+    --mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font: 15px/1.55 var(--sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  header {
+    border-bottom: 1px solid var(--line);
+    padding: 22px 28px 20px;
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  header h1 { margin: 0; font-size: 19px; letter-spacing: -0.01em; font-weight: 650; }
+  header p { margin: 0; color: var(--dim); font-size: 14px; max-width: 62ch; }
+  main { display: grid; grid-template-columns: minmax(340px, 460px) 1fr; gap: 0; align-items: start; }
+  @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
+
+  form { padding: 24px 28px 40px; border-right: 1px solid var(--line); }
+  fieldset { border: 0; margin: 0 0 26px; padding: 0; }
+  legend {
+    padding: 0;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--dim);
+    margin-bottom: 12px;
+  }
+  .row { display: grid; gap: 5px; margin-bottom: 14px; }
+  .row.pair { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .row.pair > .row { margin-bottom: 0; }
+  label, .fieldlabel { font-size: 13px; color: var(--dim); }
+  label b, .fieldlabel b { color: var(--ink); font-weight: 550; }
+  input, select {
+    background: var(--panel-2);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    border-radius: 3px;
+    padding: 8px 10px;
+    font: 14px var(--mono);
+    width: 100%;
+  }
+  input:focus-visible, select:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+  }
+  .hint { font-size: 12px; color: var(--dim); }
+  .checks { display: grid; gap: 7px; }
+  .check { display: flex; align-items: center; gap: 9px; font: 13px var(--mono); color: var(--ink); }
+  .check input { width: auto; }
+  fieldset[data-dimmed="yes"] { opacity: 0.4; }
+  fieldset[data-dimmed="yes"] legend::after {
+    content: " · not used by a steering mandate";
+    letter-spacing: 0;
+    text-transform: none;
+    font-weight: 400;
+  }
+
+  .actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  button {
+    font: 600 14px/1 var(--sans);
+    padding: 11px 18px;
+    border-radius: 3px;
+    border: 1px solid var(--line);
+    background: var(--panel-2);
+    color: var(--ink);
+    cursor: pointer;
+  }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #17140c; }
+  button:hover { border-color: var(--accent); }
+  button.primary:hover { filter: brightness(1.08); }
+
+  .reading { padding: 24px 28px 48px; min-width: 0; }
+  .reading h2 {
+    margin: 0 0 4px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+  .reading > p { margin: 0 0 16px; color: var(--dim); font-size: 13px; max-width: 68ch; }
+  pre {
+    margin: 0;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--accent);
+    border-radius: 3px;
+    padding: 18px 20px;
+    font: 13px/1.62 var(--mono);
+    white-space: pre-wrap;
+    overflow-x: auto;
+    color: var(--ink);
+  }
+  pre.error { border-left-color: var(--bad); color: var(--bad); }
+  pre.sealed { border-left-color: var(--good); }
+  .sealed-head { display: flex; align-items: baseline; gap: 12px; margin: 26px 0 8px; }
+  .sealed-head h2 { margin: 0; }
+  .sealed-head span { font-size: 12px; color: var(--good); }
+  /* `display: flex` on .actions would otherwise beat the UA stylesheet's [hidden]. */
+  .actions[hidden], .sealed-head[hidden] { display: none; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Author a mandate</h1>
+  <p>
+    A mandate is the only thing that lets Kairos spend money. Nothing here is signed until you press
+    <b>Seal it</b>, and nothing typed on this page reaches anything but the process serving it.
+  </p>
+</header>
+
+<main>
+  <form id="spec" autocomplete="off">
+    <fieldset>
+      <legend>Who and what for</legend>
+      <div class="row pair">
+        <div class="row">
+          <label for="merchantId"><b>Merchant</b></label>
+          <input id="merchantId" name="merchantId" value="acme" required />
+        </div>
+        <div class="row">
+          <label for="campaignId"><b>Campaign</b></label>
+          <input id="campaignId" name="campaignId" value="diwali-recovery" required />
+        </div>
+      </div>
+      <div class="row">
+        <label for="purpose"><b>Purpose</b></label>
+        <select id="purpose" name="purpose">
+          <option value="recovery">recovery — chase payments that failed</option>
+          <option value="steering">steering — reorder the checkout while a rail is degraded</option>
+        </select>
+        <span class="hint">
+          Decides what the mandate may do and what one action of it may cost. The per-action ceiling
+          comes from the price list, not from this form: set below the worst message Kairos can
+          compose, it would refuse that message after sending it.
+        </span>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Money</legend>
+      <div class="row pair">
+        <div class="row">
+          <label for="budgetRupees"><b>Budget</b> (₹, for the whole campaign)</label>
+          <input id="budgetRupees" name="budgetRupees" type="number" min="0" step="1" value="5000" />
+        </div>
+        <div class="row">
+          <label for="maxInFlight"><b>In flight at once</b></label>
+          <input id="maxInFlight" name="maxInFlight" type="number" min="1" step="1" value="16" />
+        </div>
+      </div>
+      <span class="hint">
+        The budget is a ceiling for the campaign's whole life, not a rate. In flight is the blast
+        radius — how much can be committed but not yet settled at any instant.
+      </span>
+    </fieldset>
+
+    <fieldset>
+      <legend>When</legend>
+      <div class="row pair">
+        <div class="row">
+          <label for="runsForDays"><b>Runs for</b> (days)</label>
+          <input id="runsForDays" name="runsForDays" type="number" min="1" step="1" value="30" />
+        </div>
+        <div class="row">
+          <label for="reservationTtlSeconds"><b>Reservation TTL</b> (s)</label>
+          <input id="reservationTtlSeconds" name="reservationTtlSeconds" type="number" min="1" value="120" />
+        </div>
+      </div>
+      <span class="hint">
+        A reservation left unreconciled for longer than its TTL returns its authority to the pool, so
+        a worker that dies mid-action leaks nothing. It must outlast the slowest action.
+      </span>
+    </fieldset>
+
+    <fieldset id="people">
+      <legend>People</legend>
+      <div class="row pair">
+        <div class="row">
+          <label for="contactLimit"><b>Messages</b> per person</label>
+          <input id="contactLimit" name="contactLimit" type="number" min="1" step="1" value="3" />
+        </div>
+        <div class="row">
+          <label for="contactWindowDays"><b>per</b> (days)</label>
+          <input id="contactWindowDays" name="contactWindowDays" type="number" min="1" step="1" value="7" />
+        </div>
+      </div>
+      <div class="row">
+        <label class="check">
+          <input type="checkbox" id="quietOn" checked />
+          Quiet hours — send nothing between
+        </label>
+        <div class="row pair">
+          <div class="row"><input id="quietStart" type="time" value="21:00" /></div>
+          <div class="row"><input id="quietEnd" type="time" value="08:00" /></div>
+        </div>
+        <label for="quietOffset" class="hint">
+          at a fixed UTC offset (India is +05:30 all year, which is why this is an offset and not a
+          zone name)
+        </label>
+        <input id="quietOffset" value="+05:30" />
+      </div>
+      <div class="row">
+        <div class="fieldlabel"><b>Channels</b> — untick to narrow what this mandate may do</div>
+        <div class="checks" id="channels">
+          <label class="check"><input type="checkbox" value="retry" checked /> retry — charge a saved token again</label>
+          <label class="check"><input type="checkbox" value="contact-sms" checked /> contact-sms</label>
+          <label class="check"><input type="checkbox" value="contact-whatsapp" checked /> contact-whatsapp</label>
+          <label class="check"><input type="checkbox" value="contact-email" checked /> contact-email</label>
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Stop</legend>
+      <label class="check">
+        <input type="checkbox" id="killSwitch" />
+        Seal it already stopped — authorises nothing until re-signed without this
+      </label>
+    </fieldset>
+
+    <div class="actions">
+      <button type="button" class="primary" id="seal">Seal it</button>
+      <button type="button" id="copySpec">Copy the spec</button>
+    </div>
+  </form>
+
+  <section class="reading">
+    <h2>What this authorises</h2>
+    <p>
+      Updates as you type. This is the same text <code>kairos-mandate explain</code> prints, produced
+      by the same code the worker enforces — not a summary written for the form.
+    </p>
+    <pre id="reading">…</pre>
+
+    <div class="sealed-head" id="sealedHead" hidden>
+      <h2>The signed mandate</h2>
+      <span id="sealedNote"></span>
+    </div>
+    <pre id="sealed" class="sealed" hidden></pre>
+    <div class="actions" id="sealedActions" hidden style="margin-top:12px">
+      <button type="button" id="copyMandate">Copy it</button>
+      <button type="button" id="download">Download</button>
+    </div>
+  </section>
+</main>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const form = $("spec");
+  const reading = $("reading");
+  const sealedHead = $("sealedHead");
+  const sealedNote = $("sealedNote");
+  const sealedPre = $("sealed");
+  const sealedActions = $("sealedActions");
+  const purpose = $("purpose");
+  const people = $("people");
+  let lastMandate = null;
+  let timer = null;
+
+  const num = (id) => Number($(id).value);
+  const str = (id) => $(id).value.trim();
+  const on = (id) => $(id).checked;
+
+  const channels = () =>
+    [...document.querySelectorAll("#channels input")].filter((b) => b.checked).map((b) => b.value);
+
+  function spec() {
+    const steering = purpose.value === "steering";
+    const picked = channels();
+    const body = {
+      merchantId: str("merchantId"),
+      campaignId: str("campaignId"),
+      purpose: purpose.value,
+      budgetRupees: num("budgetRupees"),
+      maxInFlight: num("maxInFlight"),
+      runsForDays: num("runsForDays"),
+      reservationTtlSeconds: num("reservationTtlSeconds"),
+      contactCap: { limit: num("contactLimit"), windowDays: num("contactWindowDays") },
+      quietHours:
+        on("quietOn") && !steering
+          ? { start: str("quietStart"), end: str("quietEnd"), offset: str("quietOffset") }
+          : null,
+      killSwitch: on("killSwitch"),
+    };
+    // Sent only when it actually narrows something. An unchanged list is the purpose's own set, and
+    // stating it twice is how the two come to disagree.
+    if (!steering && picked.length > 0 && picked.length < 4) body.allowedActions = picked;
+    return body;
+  }
+
+  function show(text, kind) {
+    reading.textContent = text;
+    reading.className = kind === "error" ? "error" : "";
+  }
+
+  async function post(route) {
+    const response = await fetch(route, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ spec: spec() }),
+    });
+    return await response.json();
+  }
+
+  function preview() {
+    // A sealed mandate belongs to the spec that produced it. Once the spec moves it is stale, and
+    // leaving it on screen beside different numbers is how the wrong file gets shipped.
+    sealedHead.hidden = true;
+    sealedPre.hidden = true;
+    sealedActions.hidden = true;
+    lastMandate = null;
+
+    people.dataset.dimmed = purpose.value === "steering" ? "yes" : "no";
+    clearTimeout(timer);
+    timer = setTimeout(async () => {
+      try {
+        const body = await post("/preview");
+        if (body?.ok) show(body.explanation.join("\n"));
+        else show(body?.error ?? "Something is wrong with this spec.", "error");
+      } catch (error) {
+        show(`Could not reach the form's own server: ${error.message}`, "error");
+      }
+    }, 120);
+  }
+
+  form.addEventListener("input", preview);
+  form.addEventListener("change", preview);
+
+  $("seal").addEventListener("click", async () => {
+    try {
+      const body = await post("/seal");
+      if (!body?.ok) {
+        show(body?.error ?? "Could not seal this mandate.", "error");
+        return;
+      }
+      lastMandate = JSON.stringify(body.mandate, null, 2);
+      show(body.explanation.join("\n"));
+      sealedPre.textContent = lastMandate;
+      sealedNote.textContent = "signed · hand this to the operator, keep the key where it is";
+      sealedHead.hidden = false;
+      sealedPre.hidden = false;
+      sealedActions.hidden = false;
+    } catch (error) {
+      show(`Could not reach the form's own server: ${error.message}`, "error");
+    }
+  });
+
+  async function copy(button, text) {
+    if (text === null) return;
+    await navigator.clipboard.writeText(text);
+    const was = button.textContent;
+    button.textContent = "copied";
+    setTimeout(() => {
+      button.textContent = was;
+    }, 1200);
+  }
+
+  $("copySpec").addEventListener("click", function () {
+    void copy(this, JSON.stringify(spec(), null, 2));
+  });
+  $("copyMandate").addEventListener("click", function () {
+    void copy(this, lastMandate);
+  });
+
+  $("download").addEventListener("click", () => {
+    if (lastMandate === null) return;
+    const url = URL.createObjectURL(new Blob([lastMandate], { type: "application/json" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "mandate.json";
+    link.click();
+    URL.revokeObjectURL(url);
+  });
+
+  preview();
+})();
+</script>
+</body>
+</html>

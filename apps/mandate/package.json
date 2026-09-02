@@ -1,0 +1,26 @@
+{
+  "name": "@kairos/mandate",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Authors, signs, verifies and explains a mandate. The form never sees the signing key.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "kairos-mandate": "./dist/main.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json",
+    "start": "node dist/main.js"
+  },
+  "dependencies": {
+    "@kairos/domain": "workspace:*",
+    "@kairos/recover": "workspace:*",
+    "@kairos/terminus": "workspace:*"
+  },
+  "devDependencies": {
+    "@kairos/ledger": "workspace:*",
+    "@types/node": "^22.10.0",
+    "throttlekit": "^1.7.0"
+  }
+}
