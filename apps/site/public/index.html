@@ -626,8 +626,8 @@
   </div>
 
   <div class="strip">
-    <span class="lbl">THE CODE — TWELVE PACKAGES</span>
-    <p class="swipe">◀ <b>DRAG</b> ▶ &nbsp;·&nbsp; TWELVE OF THEM, NONE OF THE CORE ONES IMPORTING A NETWORK CLIENT</p>
+    <span class="lbl">THE CODE — FOURTEEN PACKAGES</span>
+    <p class="swipe">◀ <b>DRAG</b> ▶ &nbsp;·&nbsp; FOURTEEN OF THEM, NONE OF THE CORE ONES IMPORTING A NETWORK CLIENT</p>
     <div class="pkg hstrip">
       <article><h4>@kairos/domain</h4><p>Money, ids, time, rails. Paise as a branded integer, so a rupee float cannot reach a budget.</p><span class="dep">depends on: nothing</span></article>
       <article><h4>@kairos/detect</h4><p>One-sided CUSUM changepoint over a method's failure rate, with a frozen baseline and a rollup across slices.</p><span class="dep">depends on: domain</span></article>
@@ -641,7 +641,70 @@
       <article><h4>adapters/razorpay</h4><p>The real ports: Checkout ordering, messaging, retries. Template copy lives here as the control arm.</p><span class="dep">depends on: domain</span></article>
       <article><h4>apps/bench</h4><p>Five arms, eight seeds, regression bands. The gate CI runs.</p><span class="dep">depends on: everything</span></article>
       <article><h4>apps/console</h4><p>The read model behind the previous tab, plus <code>explain</code>.</p><span class="dep">depends on: everything</span></article>
+      <article><h4>adapters/postgres</h4><p>The casualty queue, durable. An atomic lease is what turns the worker from one instance into a fleet.</p><span class="dep">depends on: domain, recover</span></article>
+      <article><h4>apps/mandate</h4><p>A form that authors a mandate and a command that signs it — deliberately two programs, so the key stays where it is.</p><span class="dep">depends on: domain, recover, terminus</span></article>
     </div>
+  </div>
+
+  <div class="strip">
+    <span class="lbl">PLUGGING IT IN — THREE TOUCHPOINTS</span>
+    <p class="aside" style="max-width:82ch;margin-bottom:18px">A merchant already on Razorpay adds one call to the page they have, returns the outcomes they already get, and runs a worker. Nothing sits in the payment path, and nothing here is acquirer routing — that is Razorpay Optimizer's job, one level down.</p>
+    <div class="grid-2">
+      <div>
+        <pre class="sh"><span class="c"># 1 · the checkout asks what to render</span>
+<span class="p">$</span> curl -X POST localhost:8080/plan \
+    -H 'content-type: application/json' \
+    -d '{"customer":"cus_9f3b2a71c4e8d012",
+         "sequence":["upi","card","netbanking"]}'
+
+{ "sequence": ["upi","card","netbanking"],
+  "suppress": [], "demote": [],
+  "steered": false, "arm": "treated",
+  "checkout": { "display": { … } },
+  "maxAgeMs": 15000,
+  "reason": "nothing in force" }</pre>
+        <p class="aside">Answered in Kairos vocabulary <b>and</b> as the <code>config</code> object Razorpay Checkout takes, so a merchant on another gateway needs no translation layer. It always answers <em class="hot">200</em> — a malformed request gets the merchant's own ordering back with the fault named in <code>reason</code>, because the failure mode of a payment-health tool must never be "no payments".</p>
+      </div>
+      <div>
+        <pre class="sh"><span class="c"># 2 · the outcomes come back — the same</span>
+<span class="c">#     events a webhook already delivers</span>
+<span class="p">$</span> curl -X POST localhost:8080/outcomes \
+    -d '{"attempts":[{ … ,"arm":"treated"}]}'
+
+<span class="c"># 3 · a worker drains the casualties.</span>
+<span class="c">#     dry-run by default: it decides</span>
+<span class="c">#     everything and sends nothing.</span>
+<span class="p">$</span> pnpm --filter @kairos/recover-worker start
+
+<span class="c"># point it at a database and the same</span>
+<span class="c"># command is a fleet, not an instance</span>
+<span class="p">$</span> export KAIROS_DATABASE_URL=postgres://…</pre>
+        <p class="aside">The plan names the <code>arm</code> to echo back on the outcome, so the holdout stays honest at an integration that has never heard of one. A control counted as treated would move the measured lift toward zero with <b>nothing anywhere reporting a fault</b>.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="strip">
+    <span class="lbl">NOTHING SPENDS WITHOUT A MANDATE — SO THERE IS A FORM FOR WRITING ONE</span>
+    <p class="aside" style="max-width:82ch;margin-bottom:18px">A signed mandate is unreadable by design — paise and epoch milliseconds, and the two numbers that matter most are <b>not in it</b>, but are products of numbers that are. Somebody authorising spend cannot be asked to do that arithmetic in their head, so the tool does it and prints it before it signs.</p>
+    <pre class="sh"><span class="c"># author one in a browser, on loopback — or without one</span>
+<span class="p">$</span> pnpm --filter @kairos/mandate start form
+<span class="p">$</span> kairos-mandate seal spec.json &gt; mandate.json   <span class="c"># reading to stderr, mandate to stdout</span>
+
+MONEY
+  Ceiling for the whole campaign         ₹5,000.00
+  Most one action may cost                   ₹0.60
+  Most that can be committed at once         ₹9.60   (16 actions in flight)
+  Actions the budget buys, worst case        8,333
+
+PEOPLE
+  At most 3 messages to one person per 7 days.
+  Nothing sent between 21:00 and 08:00 at UTC+05:30.
+
+SIGNATURE
+  bb498b0eeb882107c7a193f177469705aa8af57581a70f6d7a0f063820eec3c6
+  Verified. Every field above is covered by this signature and none of them has been altered.</pre>
+    <p class="aside" style="max-width:82ch">The page collects a <em class="hot">spec</em> — rupees, days, clock times — and posts it back for conversion, so there is exactly one implementation of "₹5,000 for 30 days" and the form calls it rather than re-deriving it. It never holds the signing key: the process serving it seals, or says it cannot and refuses. Loopback only, and not configurable. <code>seal</code> prints the reading to stderr and the mandate to stdout, so redirecting the mandate to a file still shows you what you just authorised.</p>
   </div>
 
   <div class="strip">

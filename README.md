@@ -165,6 +165,89 @@ quietly:
   messages rose — the arm now does what it claimed, and what it claimed is worth slightly less than
   the version that was accidentally late (open question 20).
 
+## Plugging it in
+
+Three touchpoints, in the order a merchant reaches them.
+
+**1 · The checkout asks what to render.** One call, on the page that already exists. It answers in
+Kairos vocabulary *and* as the `config` object Razorpay Checkout takes, so a merchant on another
+gateway does not need a translation layer:
+
+```sh
+KAIROS_MANDATE_SECRET=$(openssl rand -hex 32) pnpm --filter @kairos/sentry run start
+curl -X POST localhost:8080/plan -H 'content-type: application/json' \
+  -d '{"customer":"cus_9f3b2a71c4e8d012","sequence":["upi","card","netbanking"]}'
+```
+
+```json
+{
+  "sequence": ["upi", "card", "netbanking"],
+  "suppress": [],
+  "demote": [],
+  "steered": false,
+  "arm": "treated",
+  "checkout": { "display": { "sequence": ["upi", "card", "netbanking"], "preferences": { "show_default_blocks": false } } },
+  "maxAgeMs": 15000,
+  "reason": "nothing in force"
+}
+```
+
+It always answers `200`, including when the body is wrong, because the failure mode of a
+payment-health tool must never be "no payments" — a malformed request gets the merchant's own
+ordering back with the fault named in `reason`. `arm` is the field worth wiring: echo it back on the
+outcome and the holdout analysis is correct without anyone having to know what a holdout is.
+
+**2 · The outcome stream comes back.** The same events a merchant already has a webhook for.
+
+```sh
+curl -X POST localhost:8080/outcomes -H 'content-type: application/json' \
+  -d '{"attempts":[{"id":"pay_1","orderId":"order_1","customer":"cus_9f3b2a71c4e8d012",
+       "amountPaise":120000,"method":"upi","issuer":"hdfc","status":"failed","at":1756900000000,
+       "arm":"treated"}]}'
+```
+
+**3 · A worker drains the casualties.** Dry-run by default: it decides everything and sends nothing.
+
+```sh
+KAIROS_MERCHANT_ID=acme KAIROS_LINK_BASE=https://pay.acme.test \
+KAIROS_MANDATE_SECRET=$(openssl rand -hex 32) pnpm --filter @kairos/recover-worker run start
+```
+
+Point `KAIROS_DATABASE_URL` at a Postgres and the same command is a fleet instead of an instance —
+the queue and the spend authority both move into the database, and an atomic lease stops two workers
+acting on one casualty. The schema is printable for a deployment that owns its own migrations:
+
+```sh
+pnpm --filter @kairos/postgres run schema | psql "$DATABASE_URL"
+```
+
+## Authoring a mandate
+
+Nothing spends money without one, and a mandate is unreadable by design: a flat object of paise and
+epoch milliseconds whose two most important numbers are not in it, but are products of numbers that
+are. So there is a form for writing one and a reading of what it authorises.
+
+```sh
+pnpm --filter @kairos/mandate run start form      # http://127.0.0.1:8181
+```
+
+The page collects a *spec* — rupees, days, clock times — and posts it back for conversion and
+explanation. It never holds the signing key: with `KAIROS_MANDATE_SECRET` set, the process serving
+the page seals it; without one, the page says so and refuses rather than pretending. Loopback only,
+and not configurable.
+
+The same thing without a browser:
+
+```sh
+export KAIROS_MANDATE_SECRET=$(openssl rand -hex 32)
+kairos-mandate seal spec.json > mandate.json   # reading to stderr, mandate to stdout
+kairos-mandate explain mandate.json
+kairos-mandate verify mandate.json             # exit 1 if a field was edited after signing
+```
+
+`seal` prints the plain-English reading to stderr and the mandate to stdout, so redirecting the
+mandate to a file still shows you what you just authorised.
+
 ## Status
 
 Under active development. See **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** for the full design:

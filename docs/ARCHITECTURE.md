@@ -198,7 +198,7 @@ interface Clock         { now(): number }
 
 ### Adapters
 
-`razorpay` · `simulator` · `reasoner-gemini` · `store-postgres` · `store-redis` · `messenger-sms`
+`razorpay` · `simulator` · `reasoner-gemini` · `postgres` · `store-redis` · `messenger-sms`
 · `messenger-whatsapp` · `ledger-postgres`
 
 Each adapter is independently swappable and independently tested against a shared conformance suite
@@ -210,10 +210,11 @@ what lets the entire system run offline in CI.
 | App | What it is |
 |---|---|
 | `sentry` | Ingests outcomes, runs detection, publishes the current steering plan. Stateless, horizontally scalable. |
-| `recover-worker` | Drains the casualty queue. **Deliberately multi-instance** — this is where a naive budget check would race, and where Terminus earns its place. Ships in dry-run delivery: every decision real, no message sent. |
+| `recover-worker` | Drains the casualty queue. **Deliberately multi-instance** — this is where a naive budget check would race, and where Terminus earns its place. `KAIROS_DATABASE_URL` is the whole difference between one instance and a fleet: with it the queue and the spend authority both live in Postgres, without it both live in memory and it is a single instance by construction. Ships in dry-run delivery: every decision real, no message sent. |
 | `checkout` | **Not built.** A demo storefront on Razorpay Checkout whose method configuration is driven by `sentry`. It needs a Razorpay test key and is the one place the steering claim would meet a rendered page rather than a documented API — see open question 6. |
 | `console` | Operator view: rail health, incidents, which bound is binding, the audit trail. A JSON API with no view layer, driving the real detector, controller, kernel and ledger over simulated traffic — every response carries `provenance: {kind: "simulated", scenario, seed}`, because a dashboard of red rails and rupee figures is what ends up in a slide. Six named scenarios, including one where nothing happens and two that end in a refusal. Also hosts `pnpm explain`. **The UI is not built.** |
 | `scribe` | Writes the copy library. Asks a model once per *situation* — 180 of them, not 5,719 messages — validates every answer, and commits the result. Runs under a signed mandate whose only permitted action is `reason`, so it could not send a message if its code asked it to. Resumable, because a free tier's daily quota is a real bound. |
+| `mandate` | Authors, signs, verifies and explains a mandate. Two programs on purpose: a loopback form that collects a *spec* in rupees and days, and a command that seals one from a key the form never sees. `explain` states the two bounds a mandate does not contain but implies — the most that can be in flight at once, and how many actions the budget buys — because nobody can be asked to sign a limit they have to compute in their head. See [ADR 0009](decisions/0009-the-form-authors-a-mandate-and-a-separate-command-signs-it.md). |
 | `bench` | The measurement harness. Four experiments on pinned seeds, a consolidated scorecard, the seed study its regression bands are derived from, and the gate CI runs on every change. |
 
 ---
@@ -646,6 +647,13 @@ is written field by field rather than spread, because the failure mode of the co
 limit that is silently unsigned, and the test suite asserts that perturbing any field changes the
 signature.
 
+A mandate is also, by construction, unreadable: every field is in the units the kernel enforces, and
+the two numbers a person signing one most needs — the most that can be committed at once, and how
+many actions the budget buys — are products of fields rather than fields. `apps/mandate` is the path
+from what a merchant can say to what the kernel can enforce, and it is deliberately two programs so
+the signing key never reaches a browser:
+[ADR 0009](decisions/0009-the-form-authors-a-mandate-and-a-separate-command-signs-it.md).
+
 There are **two kill switches and either one stops everything**. The signed flag cannot be cleared by
 anyone who cannot sign. The store-backed switch propagates fleet-wide within one admission with no
 redeploy and no re-signing. A switch that cannot be *read* counts as engaged — P2 applied to the stop
@@ -839,9 +847,9 @@ config is one less thing to keep aligned.
 ```
 kairos/
 ├── packages/          domain · detect · policy · recover · terminus · ledger · ports
-├── adapters/          razorpay · simulator · reasoner-gemini · store-postgres
+├── adapters/          razorpay · simulator · reasoner-gemini · postgres
 │                      store-redis · messenger-sms · messenger-whatsapp · ledger-postgres
-├── apps/              sentry · recover-worker · checkout · console · bench
+├── apps/              sentry · recover-worker · mandate · console · bench · scribe · site
 ├── docs/              ARCHITECTURE.md · MEASUREMENT.md · SECURITY.md · decisions/ (ADRs)
 └── .github/workflows/ ci · security · bench
 ```
@@ -968,10 +976,21 @@ confidence.
    rail health and attempt ordinal, on the argument that what predicts recovery is what the customer
    has to do next rather than which rail they did it on. That argument is untested; a real merchant's
    data would settle it in a week.
-15. **The casualty queue has no durable store.** `CasualtyStore` is an interface with an in-memory
-   implementation and an atomic lease, which is what makes a fleet safe — Terminus's idempotent
-   authority prevents double-*spending* but not double-*sending*. The Postgres implementation is not
-   built, so `recover-worker` today is a single instance holding its own queue.
+15. **A fleet shares its queue and its budget, but not its audit chain.** `CasualtyStore` now has a
+   Postgres implementation alongside the in-memory one, so `recover-worker` is horizontally scalable:
+   the lease is a guarded `UPDATE` rather than a row lock, because the lease has to outlive the
+   transaction that takes it, and two workers draining the same queue act on each casualty exactly
+   once. The SQL is tested against a real PostgreSQL 18 in the unit suite — PGlite, the server
+   compiled to WebAssembly, so the planner that runs it in CI is the planner that runs it in
+   production and no daemon is needed. Spend authority was already shared, through ThrottleKit's
+   Postgres `Store`. **What is still per-process is the audit ledger.** `MemoryLedger` is a hash
+   chain in one worker, so N workers produce N chains: each internally verifiable, none of them the
+   whole story. Nothing is lost and nothing is forgeable, but "show me everything done under this
+   mandate" has to be answered by interleaving N chains rather than reading one. A shared appender —
+   an insert serialised per campaign, deriving each record's `prev` from the committed head — is the
+   remaining piece, and it is not built. See
+   [ADR 0008](decisions/0008-the-casualty-lease-is-a-column-not-a-row-lock.md) for why the lease is a
+   column rather than the `SELECT … FOR UPDATE SKIP LOCKED` this file used to promise.
 16. **Nothing gates the full profile.** The regression gate runs the `quick` scorecard, because that
    is what fits in a pull request; the `full` numbers are the ones published in
    [MEASUREMENT.md](MEASUREMENT.md) and nothing re-checks them. The two profiles have different
