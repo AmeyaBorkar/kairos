@@ -6,6 +6,7 @@
  * each one is stored against the frame it first appeared in and the feed filters on that.
  */
 
+import { type DemoElements, Walkthrough } from "./demo.js";
 import {
   type Readout,
   renderBounds,
@@ -101,6 +102,8 @@ export class ConsolePlayer {
   #frame = 0;
   #playing = false;
   #lastStep = 0;
+  /** Told whenever the deck changes scenario, so the walkthrough can follow it. */
+  #onScenario: ((name: string) => void) | null = null;
 
   constructor(run: RecordedRun, el: Elements, still: boolean) {
     this.#run = run;
@@ -142,9 +145,26 @@ export class ConsolePlayer {
         this.pause();
         this.buildDeck();
         this.render();
+        this.#onScenario?.(name);
       });
       this.#el.deck.appendChild(button);
     }
+  }
+
+  /** Register the walkthrough's follower. Called once, at mount. */
+  follow(fn: (name: string) => void): void {
+    this.#onScenario = fn;
+    fn(this.#name);
+  }
+
+  /** Switch scenario from outside — the tutorial's picker uses this. */
+  select(name: string): void {
+    if (this.#run.scenarios[name] === undefined || name === this.#name) return;
+    this.#name = name;
+    this.#frame = 0;
+    this.pause();
+    this.buildDeck();
+    this.render();
   }
 
   pause(): void {
@@ -238,7 +258,41 @@ export class ConsolePlayer {
  * that draws the artwork, and a separate file is cached separately and replaced by re-running the
  * capture script without touching a line of code.
  */
-export async function mountConsole(still: boolean): Promise<ConsolePlayer | null> {
+export interface Mounted {
+  readonly player: ConsolePlayer;
+  readonly walkthrough: Walkthrough | null;
+}
+
+/** The walkthrough's own elements, or null when this page has no walkthrough on it. */
+function collectDemo(): DemoElements | null {
+  const ids = {
+    nav: need("dm-nav"),
+    headline: need("dm-head"),
+    panel: need("dm-panel"),
+    legend: need("dm-legend"),
+    prev: need<HTMLButtonElement>("dm-prev"),
+    play: need<HTMLButtonElement>("dm-play"),
+    next: need<HTMLButtonElement>("dm-next"),
+    where: need("dm-where"),
+    pick: need<HTMLButtonElement>("dm-pick"),
+    menu: need("dm-menu"),
+  };
+  if (Object.values(ids).some((v) => v === null)) return null;
+  return {
+    nav: ids.nav as HTMLElement,
+    headline: ids.headline as HTMLElement,
+    panel: ids.panel as HTMLElement,
+    legend: ids.legend as HTMLElement,
+    prev: ids.prev as HTMLButtonElement,
+    play: ids.play as HTMLButtonElement,
+    next: ids.next as HTMLButtonElement,
+    where: ids.where as HTMLElement,
+    pick: ids.pick as HTMLButtonElement,
+    menu: ids.menu as HTMLElement,
+  };
+}
+
+export async function mountConsole(still: boolean): Promise<Mounted | null> {
   const el = collect();
   if (el === null) return null;
 
@@ -249,5 +303,16 @@ export async function mountConsole(still: boolean): Promise<ConsolePlayer | null
     return null;
   }
   const run = (await response.json()) as RecordedRun;
-  return new ConsolePlayer(run, el, still);
+  const player = new ConsolePlayer(run, el, still);
+
+  const demoEl = collectDemo();
+  const walkthrough = demoEl === null ? null : new Walkthrough(run, demoEl, still);
+  if (walkthrough !== null) {
+    // Either control can change the scenario, and the other follows. The player notifies on the
+    // way in as well, which is what loads the walkthrough's first scenario.
+    player.follow((name) => walkthrough.load(name));
+    walkthrough.onPick((name) => player.select(name));
+  }
+
+  return { player, walkthrough };
 }

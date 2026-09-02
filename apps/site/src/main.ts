@@ -7,7 +7,7 @@
  */
 
 import { Stage } from "./case/stage.js";
-import { type ConsolePlayer, mountConsole } from "./console/player.js";
+import { type Mounted, mountConsole } from "./console/player.js";
 import { readPalette } from "./palette.js";
 import { Router, type View } from "./router.js";
 import { mountSettings } from "./settings.js";
@@ -48,11 +48,11 @@ function main(): void {
   readPalette();
 
   const stage = new Stage(still);
-  let console_: ConsolePlayer | null = null;
+  let console_: Mounted | null = null;
 
   const router = new Router((view: View) => {
     stage.repaintStatic();
-    if (view === "console") console_?.onShown();
+    if (view === "console") console_?.player.onShown();
   });
 
   /* The tab transition. Off entirely under reduced motion — not shortened, not faded: a reader who
@@ -89,15 +89,18 @@ function main(): void {
   // only advances while it is playing, so an idle tab costs a bounding-box read per frame.
   const loop = (now: number): void => {
     if (router.view === "case") stage.frame();
-    else if (router.view === "console") console_?.step(now);
+    else if (router.view === "console") {
+      console_?.walkthrough?.step(now);
+      console_?.player.step(now);
+    }
     requestAnimationFrame(loop);
   };
   requestAnimationFrame(loop);
 
   // The console is data, so it arrives late and must not hold up the artwork.
-  void mountConsole(still).then((player) => {
-    console_ = player;
-    if (router.view === "console") player?.onShown();
+  void mountConsole(still).then((mounted) => {
+    console_ = mounted;
+    if (router.view === "console") mounted?.player.onShown();
   });
 }
 

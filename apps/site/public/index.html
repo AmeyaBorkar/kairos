@@ -437,8 +437,10 @@
      ══════════════════════════════════════════════════════════════════════ -->
 <main class="view wrap" id="view-console" hidden>
   <div class="view-head">
-    <h2><span>02</span> &nbsp;THE OPERATOR CONSOLE</h2>
-    <p>Rail health, open incidents, which bound is binding, and the audit trail. Four sections, and deliberately no fifth — a console that grows a chart per available number becomes a thing nobody reads during an incident, which is the only time it matters.</p>
+    <h2><span>02</span> &nbsp;SEE IT WORK</h2>
+    <p>One payment method starts failing. Here is what Kairos does about it, a step at a time — and,
+       at the end, what it refuses to do. Every number below is read out of a recorded run of the real
+       detector, kernel and ledger. Nothing on this page is computed to make a point.</p>
   </div>
 
   <div class="prov">
@@ -447,63 +449,101 @@
     <span id="prov-line">simulated traffic · seed 20260826 · replayed, not live</span>
   </div>
 
-  <div class="deck" id="deck"></div>
-
-  <p class="aside" id="premise" style="max-width:76ch;margin:0 0 22px"></p>
-
-  <div class="transport">
-    <span class="clock" id="con-clock">--:--:--</span>
-    <input class="scrub" id="scrub" type="range" min="0" max="47" value="0" aria-label="Scrub through the recorded run">
-    <button type="button" class="btn" id="play">▶ PLAY</button>
-    <span class="tprogress" id="tprog">FRAME 1 / 48</span>
+  <!-- ── the tutorial ──────────────────────────────────────────────── -->
+  <div class="picker">
+    <button type="button" class="pickbtn" id="dm-pick" aria-expanded="false" aria-haspopup="true"></button>
+    <div class="pickmenu" id="dm-menu" hidden></div>
   </div>
 
-  <div class="lcd" id="lcd">
-    <div><span>SIM CLOCK</span><b id="lcd-clock">--:--:--</b></div>
-    <div id="lcd-inc-wrap"><span>INCIDENTS OPEN</span><b id="lcd-inc">0</b></div>
-    <div><span>LEDGER RECORDS</span><b id="lcd-rec">0</b></div>
-    <div id="lcd-worst-wrap"><span>WORST RAIL</span><b id="lcd-worst">—</b></div>
-    <div><span>STEERED</span><b id="lcd-steer">0</b></div>
-    <div><span>REFUSALS</span><b id="lcd-ref">0</b></div>
-  </div>
-
-  <div class="con-grid">
-    <div>
-      <div class="panel flat" style="margin-bottom:22px">
-        <span class="lbl">RAIL HEALTH — WHAT THE DETECTOR BELIEVES</span>
-        <div class="rails" id="rails"></div>
-        <p class="aside" style="margin-top:16px">The bar under each rail is the detector's running statistic against its threshold. The simulator knows the ground truth; this panel deliberately does not show it, because an operator will never have that comparison.</p>
+  <section class="tut">
+    <nav class="tutnav" aria-label="Walkthrough steps">
+      <ol id="dm-nav"></ol>
+    </nav>
+    <div class="tutmain">
+      <!-- Replaced by the walkthrough on load. Filled in here so the page has a heading before
+           any script runs, and so a screen reader is never handed an empty one. It is step one's
+           own headline, not a placeholder. -->
+      <h3 class="tuthead" id="dm-head">It watches every way to pay, separately.</h3>
+      <div class="tutart" id="dm-panel"></div>
+      <div class="tutlegend">
+        <span class="lbl" style="margin-bottom:8px">WHAT YOU ARE LOOKING AT</span>
+        <p id="dm-legend"></p>
       </div>
-
-      <div class="panel flat">
-        <span class="lbl">AUDIT TRAIL — NEWEST FIRST</span>
-        <div class="feed" id="feed"></div>
-        <div class="chain" id="chain">◆ LEDGER HASHES END TO END · <span id="rec-count">0</span> RECORDS</div>
+      <div class="tutnavbar">
+        <button type="button" class="btn" id="dm-prev">← BACK</button>
+        <button type="button" class="btn" id="dm-next">NEXT →</button>
+        <button type="button" class="btn ghost" id="dm-play">▶ PLAY ALL</button>
+        <span class="tutwhere" id="dm-where">1 / 7</span>
       </div>
     </div>
+  </section>
 
-    <div>
-      <div class="panel flat" style="margin-bottom:22px">
-        <span class="lbl">OPEN INCIDENTS</span>
-        <div id="incidents"></div>
-      </div>
+  <p class="aside" id="premise" style="max-width:78ch;margin:26px 0 30px"></p>
 
-      <div class="panel flat" style="margin-bottom:22px">
-        <span class="lbl">BOUNDS IN FORCE</span>
-        <div id="bounds"></div>
-      </div>
-
-      <div class="panel flat">
-        <span class="lbl">RECOVERY</span>
-        <p class="aside" style="margin:0;border-left-color:var(--warn)">Not driven by this run. The recovery arm is measured in the benchmark, where it recovers <b>₹6,93,293</b> — but the console does not yet step it, so <b>contact-cap</b> and <b>campaign-budget</b> never bind here. That gap is why <b>budget-exhaustion</b> below never exhausts its ₹20: a steer reserves ₹3 and reconciles to zero.</p>
-      </div>
-    </div>
-  </div>
-
-  <div class="strip">
+  <div class="strip" style="margin-bottom:34px">
     <span class="lbl">WHAT TO WATCH FOR</span>
-    <p id="watchfor" style="max-width:72ch;color:var(--ink-dim);font-size:21px"></p>
+    <p id="watchfor" style="max-width:74ch;color:var(--ink-dim);font-size:18px"></p>
   </div>
+
+  <!-- ── and the operator's view of the same run, for anyone who wants it ── -->
+  <details class="opcon" id="opcon">
+    <summary>
+      <span class="lbl" style="margin:0">THE SAME RUN, AS AN OPERATOR SEES IT</span>
+      <p>Rail health, open incidents, which bound is binding, and the audit trail — the dense view,
+         for reading during an incident rather than for learning the system.</p>
+    </summary>
+
+    <div class="deck" id="deck"></div>
+
+    <div class="transport">
+      <span class="clock" id="con-clock">--:--:--</span>
+      <input class="scrub" id="scrub" type="range" min="0" max="47" value="0" aria-label="Scrub through the recorded run">
+      <button type="button" class="btn" id="play">▶ PLAY</button>
+      <span class="tprogress" id="tprog">FRAME 1 / 48</span>
+    </div>
+
+    <div class="lcd" id="lcd">
+      <div><span>SIM CLOCK</span><b id="lcd-clock">--:--:--</b></div>
+      <div id="lcd-inc-wrap"><span>INCIDENTS OPEN</span><b id="lcd-inc">0</b></div>
+      <div><span>LEDGER RECORDS</span><b id="lcd-rec">0</b></div>
+      <div id="lcd-worst-wrap"><span>WORST RAIL</span><b id="lcd-worst">—</b></div>
+      <div><span>STEERED</span><b id="lcd-steer">0</b></div>
+      <div><span>REFUSALS</span><b id="lcd-ref">0</b></div>
+    </div>
+
+    <div class="con-grid">
+      <div>
+        <div class="panel flat" style="margin-bottom:22px">
+          <span class="lbl">RAIL HEALTH — WHAT THE DETECTOR BELIEVES</span>
+          <div class="rails" id="rails"></div>
+          <p class="aside" style="margin-top:16px">The bar under each rail is the detector's running statistic against its threshold. The simulator knows the ground truth; this panel deliberately does not show it, because an operator will never have that comparison.</p>
+        </div>
+
+        <div class="panel flat">
+          <span class="lbl">AUDIT TRAIL — NEWEST FIRST</span>
+          <div class="feed" id="feed"></div>
+          <div class="chain" id="chain">◆ LEDGER HASHES END TO END · <span id="rec-count">0</span> RECORDS</div>
+        </div>
+      </div>
+
+      <div>
+        <div class="panel flat" style="margin-bottom:22px">
+          <span class="lbl">OPEN INCIDENTS</span>
+          <div id="incidents"></div>
+        </div>
+
+        <div class="panel flat" style="margin-bottom:22px">
+          <span class="lbl">BOUNDS IN FORCE</span>
+          <div id="bounds"></div>
+        </div>
+
+        <div class="panel flat">
+          <span class="lbl">RECOVERY</span>
+          <p class="aside" style="margin:0;border-left-color:var(--warn)">Not driven by this run. The recovery arm is measured in the benchmark, where it recovers <b>₹6,93,293</b> — but the console does not yet step it, so <b>contact-cap</b> and <b>campaign-budget</b> never bind here. That gap is why <b>budget-exhaustion</b> below never exhausts its ₹20: a steer reserves ₹3 and reconciles to zero.</p>
+        </div>
+      </div>
+    </div>
+  </details>
 </main>
 
 <!-- ══════════════════════════════════════════════════════════════════════

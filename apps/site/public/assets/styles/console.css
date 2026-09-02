@@ -14,7 +14,7 @@
   gap: 10px;
   flex-wrap: wrap;
   font-family: "Silkscreen", monospace;
-  font-size: 11px;
+  font-size: 13px;
   color: var(--ink-dim);
   background: var(--panel-2);
   border-left: 5px solid var(--warn);
@@ -40,7 +40,7 @@
 }
 .deck .btn i {
   font-style: normal;
-  font-size: 12px;
+  font-size: 13px;
   opacity: 0.75;
   letter-spacing: 0.5px;
 }
@@ -96,7 +96,7 @@
   border: 2px solid var(--line);
   padding: 9px 10px 8px;
   font-family: "Silkscreen", monospace;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.5;
   color: var(--ink-dim);
 }
@@ -156,7 +156,7 @@
   align-items: baseline;
   gap: 10px;
   font-family: "Silkscreen", monospace;
-  font-size: 11px;
+  font-size: 13px;
   color: var(--ink-dim);
 }
 .bound-head b {
@@ -268,7 +268,7 @@
   gap: 9px;
   margin-top: 12px;
   font-family: "Silkscreen", monospace;
-  font-size: 11px;
+  font-size: 13px;
   color: var(--good);
 }
 
@@ -291,13 +291,13 @@
 .lcd span {
   display: block;
   font-family: "Silkscreen", monospace;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--ink-dim);
   margin-bottom: 6px;
 }
 .lcd b {
   font-family: "Silkscreen", monospace;
-  font-size: clamp(15px, 2.1vw, 20px);
+  font-size: clamp(17px, 2.1vw, 22px);
   color: var(--accent);
   font-weight: 700;
   letter-spacing: 0.5px;
@@ -325,5 +325,557 @@
 @media (prefers-reduced-motion: reduce) {
   .fresh {
     animation: none;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   The tutorial.
+
+   A vertical rail of steps on the left, one large panel on the right, and under
+   every panel a legend saying what the artwork *is*. That legend is the whole
+   reason this exists: the operator console below shows the same numbers and
+   teaches nobody, because a number with no referent is decoration.
+
+   Deliberately roomier than anything else on the site. It is read once, slowly,
+   by somebody meeting the system for the first time.
+   ══════════════════════════════════════════════════════════════════════════ */
+.picker {
+  position: relative;
+  margin-bottom: 20px;
+}
+.pickbtn {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  padding: 14px 20px;
+  background: var(--panel);
+  border: 3px solid var(--line);
+  color: var(--ink);
+  cursor: pointer;
+  font-family: inherit;
+  min-width: 430px;
+}
+.pickbtn::after {
+  content: "\25be";
+  margin-left: auto;
+  color: var(--accent);
+}
+.pickbtn span {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: var(--ink-dim);
+}
+.pickbtn b {
+  font-size: 21px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.pickbtn i {
+  font-style: normal;
+  font-size: 16px;
+  color: var(--ink-dim);
+}
+.pickbtn:hover {
+  border-color: var(--accent);
+}
+
+.pickmenu {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 430px;
+  background: var(--panel);
+  border: 3px solid var(--accent);
+  box-shadow: 6px 6px 0 var(--line);
+}
+.pickmenu button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 13px 20px;
+  background: none;
+  border: 0;
+  border-bottom: 2px solid var(--panel-2);
+  color: var(--ink);
+  cursor: pointer;
+  font-family: inherit;
+}
+.pickmenu button:last-child {
+  border-bottom: 0;
+}
+.pickmenu button:hover {
+  background: var(--panel-2);
+}
+.pickmenu button.on {
+  background: var(--accent);
+  color: var(--bg);
+}
+.pickmenu b {
+  display: block;
+  font-size: 17px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.pickmenu span {
+  font-size: 15px;
+  color: var(--ink-dim);
+}
+.pickmenu button.on span {
+  color: var(--bg);
+  opacity: 0.75;
+}
+
+.tut {
+  display: grid;
+  grid-template-columns: 246px 1fr;
+  border: 3px solid var(--line);
+  background: var(--panel);
+}
+.tutnav {
+  border-right: 3px solid var(--line);
+  background: var(--bg);
+}
+.tutnav ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.tutnav button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 17px 20px;
+  background: none;
+  border: 0;
+  border-bottom: 2px solid var(--panel-2);
+  border-left: 5px solid transparent;
+  color: var(--ink-dim);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.tutnav button span {
+  display: block;
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  color: var(--line);
+  margin-bottom: 3px;
+}
+.tutnav button:hover {
+  color: var(--ink);
+}
+.tutnav button.past span {
+  color: var(--good);
+}
+.tutnav button.on {
+  color: var(--ink);
+  background: var(--panel);
+  border-left-color: var(--accent);
+}
+.tutnav button.on span {
+  color: var(--accent);
+}
+
+.tutmain {
+  padding: 30px 34px 28px;
+  min-width: 0;
+}
+.tuthead {
+  font-size: clamp(25px, 2.7vw, 36px);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: var(--ink);
+  margin: 0 0 26px;
+  max-width: 27ch;
+}
+.tutart {
+  min-height: 210px;
+  margin-bottom: 26px;
+}
+.tutlegend {
+  border-top: 3px solid var(--line);
+  padding-top: 18px;
+}
+.tutlegend p {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.62;
+  color: var(--ink-dim);
+  max-width: 74ch;
+}
+.tutlegend b {
+  color: var(--ink);
+  font-weight: 700;
+}
+.tutlegend i {
+  font-style: normal;
+  color: var(--accent);
+}
+
+.tutnavbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 26px;
+}
+.tutnavbar .btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+.btn.ghost {
+  opacity: 0.72;
+}
+.tutwhere {
+  margin-left: auto;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: var(--ink-dim);
+  font-variant-numeric: tabular-nums;
+}
+
+.wgrid {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 150px;
+}
+.wcol {
+  flex: 1 1 0;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+}
+.wcol i {
+  display: block;
+  width: 100%;
+  background: var(--good);
+}
+.wcol i.s-watching {
+  background: var(--warn);
+}
+.wcol i.s-degraded {
+  background: var(--bad);
+}
+.wfoot {
+  display: flex;
+  gap: 26px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+.wfoot span {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink-dim);
+}
+
+.who {
+  font-size: 27px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  margin-bottom: 20px;
+  text-transform: uppercase;
+}
+.mtr {
+  margin-bottom: 20px;
+}
+.mtr-h {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  margin-bottom: 7px;
+}
+.mtr-h b {
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.mtr-h span {
+  font-size: 15px;
+  color: var(--ink-dim);
+  margin-left: auto;
+}
+.mtr-t {
+  height: 20px;
+  background: var(--panel-2);
+  border: 2px solid var(--line);
+}
+.mtr-t i {
+  display: block;
+  height: 100%;
+  background: var(--good);
+}
+.mtr.bad .mtr-t i {
+  background: var(--bad);
+}
+
+.prop {
+  padding: 14px 0;
+}
+.prop span {
+  display: block;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  color: var(--ink-dim);
+  margin-bottom: 14px;
+}
+.prop b {
+  font-size: clamp(24px, 2.4vw, 33px);
+  font-weight: 800;
+  color: var(--ink);
+}
+.prop em {
+  display: block;
+  font-style: normal;
+  font-size: clamp(27px, 2.9vw, 40px);
+  font-weight: 800;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.bnds {
+  margin-bottom: 22px;
+}
+.bnd {
+  display: grid;
+  grid-template-columns: 200px 1fr 92px 96px;
+  align-items: center;
+  gap: 14px;
+  padding: 11px 0;
+  border-bottom: 2px solid var(--panel-2);
+  font-size: 16px;
+  color: var(--ink-dim);
+}
+.bnd i {
+  display: block;
+  height: 10px;
+  background: var(--panel-2);
+}
+.bnd u {
+  display: block;
+  height: 10px;
+  background: var(--line);
+}
+.bnd b {
+  text-align: right;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  font-size: 17px;
+}
+.bnd em {
+  font-style: normal;
+  font-size: 14px;
+  color: var(--ink-dim);
+}
+.bnd.binding {
+  color: var(--warn);
+}
+.bnd.binding u {
+  background: var(--warn);
+}
+.bnd.binding b {
+  color: var(--warn);
+}
+
+.vd {
+  border: 3px solid var(--good);
+  padding: 16px 18px;
+}
+.vd.no {
+  border-color: var(--bad);
+}
+.vd.de {
+  border-color: var(--warn);
+}
+.vd span {
+  display: block;
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  color: var(--good);
+  margin-bottom: 7px;
+}
+.vd.no span {
+  color: var(--bad);
+}
+.vd.de span {
+  color: var(--warn);
+}
+.vd b {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.45;
+}
+.vd.big {
+  padding: 30px;
+}
+.vd.big b {
+  font-size: clamp(21px, 2.2vw, 30px);
+  font-weight: 700;
+}
+
+.ckhead {
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  color: var(--ink-dim);
+  margin-bottom: 12px;
+}
+.cklist {
+  border: 3px solid var(--line);
+  max-width: 580px;
+}
+.ck {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 13px 16px;
+  border-bottom: 2px solid var(--panel-2);
+  font-size: 18px;
+  color: var(--ink);
+}
+.ck:last-child {
+  border-bottom: 0;
+}
+.ck span {
+  width: 22px;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--ink-dim);
+  font-variant-numeric: tabular-nums;
+}
+.ck.gone {
+  color: var(--ink-dim);
+  text-decoration: line-through;
+  background: var(--panel-2);
+}
+.ck.gone b {
+  margin-left: auto;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--bad);
+}
+
+.lg {
+  display: grid;
+  grid-template-columns: 96px 104px 1fr;
+  gap: 14px;
+  padding: 11px 0;
+  border-bottom: 2px solid var(--panel-2);
+  font-size: 17px;
+  color: var(--ink-dim);
+  font-variant-numeric: tabular-nums;
+}
+.lg b {
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+.lg .v-ok {
+  color: var(--good);
+}
+.lg .v-no {
+  color: var(--bad);
+}
+.lg .v-de {
+  color: var(--warn);
+}
+.lg em {
+  font-style: normal;
+  color: var(--ink);
+}
+.chainline {
+  margin-top: 16px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  color: var(--good);
+}
+.none {
+  font-size: 18px;
+  color: var(--ink-dim);
+}
+
+.opcon {
+  border-top: 3px solid var(--line);
+  padding-top: 8px;
+  margin-top: 12px;
+}
+.opcon > summary {
+  cursor: pointer;
+  padding: 20px 0 18px;
+  list-style: none;
+}
+.opcon > summary::-webkit-details-marker {
+  display: none;
+}
+.opcon > summary::before {
+  content: "\25b8  ";
+  color: var(--accent);
+  font-weight: 800;
+}
+.opcon[open] > summary::before {
+  content: "\25be  ";
+}
+.opcon > summary p {
+  font-size: 17px;
+  color: var(--ink-dim);
+  max-width: 74ch;
+  margin: 8px 0 0 18px;
+  line-height: 1.5;
+}
+.opcon > summary:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 3px;
+}
+
+@media (max-width: 900px) {
+  .tut {
+    grid-template-columns: 1fr;
+  }
+  .tutnav {
+    border-right: 0;
+    border-bottom: 3px solid var(--line);
+  }
+  .tutnav ol {
+    display: flex;
+    overflow-x: auto;
+  }
+  .tutnav button {
+    border-bottom: 0;
+    border-left: 0;
+    border-top: 5px solid transparent;
+    white-space: nowrap;
+  }
+  .tutnav button.on {
+    border-top-color: var(--accent);
+  }
+  .pickbtn,
+  .pickmenu {
+    min-width: 0;
+    width: 100%;
+  }
+  .bnd {
+    grid-template-columns: 1fr 84px;
+  }
+  .bnd i,
+  .bnd em {
+    display: none;
   }
 }
