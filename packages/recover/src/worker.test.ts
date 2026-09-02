@@ -308,9 +308,30 @@ describe("what Terminus refuses", () => {
 
     const report = await h.worker.drain();
     expect(report.acted).toBe(2);
-    expect(report.refusalsByAxis["contact-cap"]).toBe(3);
+    expect(report.declined).toBe(3);
+    // Declined, not refused. The worker reads the allowance before it decides, so the kernel is
+    // never asked for something it would have to turn down — a refusal is a correct outcome and a
+    // wasted pass. The cap still binds at the kernel for anyone who does not check first; that is
+    // asserted where the kernel is, not here.
+    expect(report.declinesByReason["contact cap"]).toBe(3);
+    expect(report.refusalsByAxis["contact-cap"]).toBeUndefined();
   });
 
+  it("defers a capped casualty to when the allowance comes back, not to a guess", async () => {
+    const h = harness({ mandateOverrides: { contactCap: { limit: 1, windowMs: 7 * DAY } } });
+    const customer = customerRef("cus_000000000042");
+    for (let i = 0; i < 2; i++) {
+      await h.store.save(casualty(i, { customer, id: casualtyId(`cas_${i}`) }), AT);
+    }
+
+    await h.worker.drain();
+
+    // Nothing is due again until the rolling window has actually rolled. Rescheduling on a fixed
+    // backoff instead would wake this casualty every few minutes for a week to be told no.
+    expect((await h.worker.drain()).considered).toBe(0);
+    h.clock.advance(7 * DAY);
+    expect((await h.worker.drain()).considered).toBe(1);
+  });
   it("stops when the budget runs out, and says so", async () => {
     const h = harness({ mandateOverrides: { budgetPaise: paise(120) } });
     for (let i = 0; i < 12; i++) await h.store.save(casualty(i), AT);
@@ -390,20 +411,18 @@ describe("reconciliation", () => {
   });
 
   it("writes every decision to the ledger, allowed or not", async () => {
-    const h = harness({ mandateOverrides: { contactCap: { limit: 1, windowMs: 7 * DAY } } });
-    const customer = customerRef("cus_000000000042");
-    for (let i = 0; i < 3; i++) {
-      await h.store.save(casualty(i, { customer, id: casualtyId(`cas_${i}`) }), AT);
-    }
+    // The budget, not the contact cap: the worker reads the cap before it asks, so the kernel never
+    // sees a doomed contact. Nothing can pre-check a budget — what a fleet has already committed is
+    // only knowable by asking — so that is the axis which still produces refusals to record.
+    const h = harness({ mandateOverrides: { budgetPaise: paise(120) } });
+    for (let i = 0; i < 5; i++) await h.store.save(casualty(i), AT);
     await h.worker.drain();
 
     expect(h.ledger.verify().valid).toBe(true);
-    expect(h.ledger.countByBinding()["contact-cap"]).toBe(2);
+    expect(h.ledger.countByBinding()["budget"]).toBeGreaterThan(0);
     // The allowed decision is recorded too, so the ledger answers "what did it do" as well as
     // "why did it not".
-    expect(h.ledger.where((r) => r.allowed && r.action === "contact-email").length).toBeGreaterThan(
-      0,
-    );
+    expect(h.ledger.where((r) => r.allowed).length).toBeGreaterThan(0);
   });
 });
 

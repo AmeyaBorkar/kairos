@@ -18,6 +18,7 @@ import type { JsonValue } from "@kairos/ledger";
 import type { Store } from "throttlekit";
 import { type ContactLedger, contactLedger } from "./caps.js";
 import { actionKey } from "./identity.js";
+import { onKernelClock } from "./pinned.js";
 import {
   type AuditSink,
   type Clock,
@@ -29,6 +30,14 @@ import { clampReservation, type Sizer, worstCaseSizer } from "./reservation.js";
 import { verifyMandate } from "./signature.js";
 import { DEFAULT_STOP_CONFIG, describeStop, type StopConfig, stopReasonFor } from "./stops.js";
 import { BudgetLedger, type BudgetSnapshot } from "./store.js";
+
+/** What one customer's contact cap has left, and when it next gives more. */
+export interface ContactAllowance {
+  /** Contacts this customer may still receive inside the rolling window. */
+  readonly remaining: number;
+  /** Epoch milliseconds at which the allowance is fully replenished. */
+  readonly resetAt: number;
+}
 
 /** One request for authority. */
 export interface AdmissionRequest {
@@ -169,8 +178,14 @@ export class Terminus {
     const prefix = options.keyPrefix ?? "kairos";
     const scope = `${prefix}:${options.mandate.merchantId}:${options.mandate.campaignId}`;
 
+    // Every bound below expires on state held in this store, so the store has to agree with this
+    // kernel about what time it is. Pinned once, here, rather than per ledger: an in-memory store
+    // keeps one expiry wheel for every key, so a single call made on the wrong clock evicts state
+    // belonging to a bound it has nothing to do with.
+    const store = onKernelClock(options.store, this.#clock);
+
     this.#budget = new BudgetLedger({
-      store: options.store,
+      store,
       key: `${scope}:budget`,
       budgetPaise: options.mandate.budgetPaise,
       // Long enough to outlive the campaign plus any settlement still in flight when it closes.
@@ -186,7 +201,7 @@ export class Terminus {
       options.contacts ??
       contactLedger({
         cap: options.mandate.contactCap,
-        store: options.store,
+        store,
         clock: this.#clock,
         prefix: `${scope}:contact`,
       });
@@ -507,12 +522,34 @@ export class Terminus {
    * atomically inside {@link Terminus.admit}.
    */
   async remainingContacts(customer: CustomerRef): Promise<number> {
+    return (await this.contactAllowance(customer)).remaining;
+  }
+
+  /**
+   * The same reading, with the instant the allowance next returns.
+   *
+   * `remaining` alone tells a caller it cannot send; it does not tell it when to look again, and a
+   * caller that does not know reschedules by guessing — either too soon, burning a pass every few
+   * minutes for days, or too late, holding a message past the moment it was allowed. The window is
+   * rolling, so the answer is a property of when this person was last written to and nothing the
+   * caller can derive.
+   *
+   * Advisory, like `remaining`: both can be stale by the time they are used, and the cap that
+   * actually binds is still taken atomically inside {@link Terminus.admit}.
+   */
+  async contactAllowance(customer: CustomerRef): Promise<ContactAllowance> {
     try {
-      return (await this.#contacts.peek(customer)).remaining;
+      const decision = await this.#contacts.peek(customer);
+      return { remaining: decision.remaining, resetAt: decision.resetAt };
     } catch {
       // Unreadable means assume none left: a policy that cannot tell how much it has already
-      // spoken to somebody should assume it has spoken to them enough (P2).
-      return 0;
+      // spoken to somebody should assume it has spoken to them enough (P2). The reset is pushed a
+      // whole window out for the same reason — guessing early would turn an outage into a retry
+      // storm against the store that is already failing.
+      return {
+        remaining: 0,
+        resetAt: this.#clock.now() + this.#mandate.contactCap.windowMs,
+      };
     }
   }
 

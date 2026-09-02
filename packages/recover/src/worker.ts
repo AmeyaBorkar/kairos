@@ -2,6 +2,7 @@ import {
   applyOutcome,
   type Casualty,
   type CustomerRef,
+  isContact,
   type Language,
   markOptedOut,
   paise,
@@ -168,8 +169,8 @@ export class RecoverWorker {
     // Read the contact allowance without consuming it, so the decision can see how much this
     // customer has already had — across every casualty of theirs, not just this one, because
     // annoyance is a property of the person. Terminus consumes it for real at admission.
-    const remaining = await terminus.remainingContacts(casualty.customer);
-    const contactsRecent = Math.max(0, terminus.mandate.contactCap.limit - remaining);
+    const allowance = await terminus.contactAllowance(casualty.customer);
+    const contactsRecent = Math.max(0, terminus.mandate.contactCap.limit - allowance.remaining);
 
     // Re-check the schedule before acting, even though the store only handed this over because it
     // said it was due. The two disagree exactly when somebody else set the due time — an intake
@@ -197,6 +198,24 @@ export class RecoverWorker {
       contactsRecent,
       this.#config,
     );
+
+    // Ask nothing the answer to which is already known. The cap is read above and the kernel would
+    // refuse this at admission — the same shape as the quiet-hours check further up, and for the
+    // same reason: a refusal is a correct outcome and a wasted pass, while a deferral is the same
+    // outcome without the waste and with a due time somebody can act on.
+    //
+    // Deliberately narrow. It converts a refusal into a deferral and changes nothing that would
+    // otherwise have happened — it does not fall back to a retry, because whether a capped
+    // customer's payment should be charged again instead of messaged is a question about expected
+    // value that belongs in `decide`, and answering it here would be an unmeasured policy change
+    // smuggled in as an optimisation.
+    if (decision.act && isContact(decision.action.kind) && allowance.remaining <= 0) {
+      await store.save(
+        casualty,
+        Math.max(allowance.resetAt, now + this.#scheduleConfig.minBackoffMs),
+      );
+      return { claimed: 1, declined: 1, declinesByReason: { "contact cap": 1 } };
+    }
 
     if (!decision.act) {
       // A decision not to act now is not a decision never to act. A casualty declined because its

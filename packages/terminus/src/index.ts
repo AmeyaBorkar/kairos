@@ -20,6 +20,7 @@ export { type ActionIdentity, actionKey } from "./identity.js";
 export {
   type Admission,
   type AdmissionRequest,
+  type ContactAllowance,
   type Grant,
   SettlementUnrecordedError,
   type SettleReceipt,

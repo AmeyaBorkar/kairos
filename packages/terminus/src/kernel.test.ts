@@ -365,6 +365,37 @@ describe("admission — the consuming axes", () => {
     expect(admission.reason).toContain("3 contacts in the last 7 days");
   });
 
+  it("holds even when the store keeps a different clock from the kernel", async () => {
+    // Not hypothetical, and not only a test concern. `Store.applySync` takes `now` as an optional
+    // argument; the consuming path supplies the kernel's, the non-consuming read does not, and a
+    // store built without a clock quietly answers on its own. When the two disagree, the cap's
+    // state looks expired to the reader that never wrote it, the read drops it, and every customer
+    // starts again on a full allowance — a bound that does not hold and does not complain. A
+    // deployment hits this by handing the kernel a store it built earlier, which is exactly what
+    // `sentry` does.
+    //
+    // The divergence is forced here rather than left to the calendar. Left implicit, this test
+    // passes until the wall clock drifts past the cap's TTL horizon and then starts failing on a
+    // day nobody changed anything.
+    const h = harness({
+      store: new MemoryStore({
+        clock: { now: () => NOON + 400 * DAY },
+        sweepIntervalMs: 0,
+      }),
+    });
+
+    for (let i = 1; i <= 3; i++) expect(await spend(h, i, rupees(1))).toBe(true);
+
+    const admission = await h.terminus.admit({
+      action: action(),
+      status: CLEAN_STATUS,
+      attemptNo: 4,
+    });
+    expect(admission.allowed).toBe(false);
+    if (admission.allowed) return;
+    expect(admission.axis).toBe("contact-cap");
+  });
+
   it("takes no budget at all for a customer already at the cap", async () => {
     // The cap is read before any budget is taken. A doomed request that briefly held a reservation
     // would occupy an in-flight slot and refuse a live request on the concurrency axis — a spurious
