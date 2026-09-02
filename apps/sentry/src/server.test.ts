@@ -1,4 +1,4 @@
-import { mandateId, type PaymentMethod, paise } from "@kairos/domain";
+import { mandateId, type PaymentMethod, paise, parseSliceKey } from "@kairos/domain";
 import { DEFAULT_STEERING_CONFIG, isHeldOut } from "@kairos/policy";
 import { ManualClock, sealMandate } from "@kairos/terminus";
 import { afterEach, describe, expect, it } from "vitest";
@@ -204,7 +204,7 @@ describe("GET /plan — the hot path", () => {
 
     expect(response.statusCode).toBe(200);
     expect(body.steered).toBe(false);
-    expect(body.config.display.sequence).toEqual(SEQUENCE);
+    expect(body.checkout.display.sequence).toEqual(SEQUENCE);
   });
 
   it("falls back rather than failing on a reference it cannot parse", async () => {
@@ -214,7 +214,7 @@ describe("GET /plan — the hot path", () => {
     const response = await s.app.inject({ method: "GET", url: "/plan/short" });
 
     expect(response.statusCode).toBe(200);
-    expect(response.json().config.display.sequence).toEqual(SEQUENCE);
+    expect(response.json().checkout.display.sequence).toEqual(SEQUENCE);
     expect(response.json().reason).toMatch(/unrecognised/);
   });
 
@@ -249,7 +249,7 @@ describe("GET /plan — the hot path", () => {
 
     expect(treatedBody.steered).toBe(true);
     expect(controlBody.steered).toBe(false);
-    expect(controlBody.config.display.sequence).toEqual(SEQUENCE);
+    expect(controlBody.checkout.display.sequence).toEqual(SEQUENCE);
   });
 
   it("gives a control customer exactly what no Kairos at all would give them", async () => {
@@ -262,8 +262,8 @@ describe("GET /plan — the hot path", () => {
     const body = (await s.app.inject({ method: "GET", url: `/plan/${control}` })).json();
     const cold = (await sentry().app.inject({ method: "GET", url: `/plan/${control}` })).json();
 
-    expect(body.config.display.sequence).toEqual(cold.config.display.sequence);
-    expect(body.config.display.hide).toBeUndefined();
+    expect(body.checkout.display.sequence).toEqual(cold.checkout.display.sequence);
+    expect(body.checkout.display.hide).toBeUndefined();
   });
 });
 
@@ -309,6 +309,141 @@ describe("bounds", () => {
     await s.app.close();
     open.splice(open.indexOf(s), 1);
     expect(s.directives()).toEqual([]);
+  });
+});
+
+describe("POST /plan — a checkout in any language", () => {
+  const plan = (s: Sentry, payload: unknown) =>
+    s.app.inject({ method: "POST", url: "/plan", payload: payload as never });
+
+  it("answers with the merchant's own sequence when nothing is in force", async () => {
+    const s = sentry();
+    const response = await plan(s, { customer: customer(1) });
+    const body = response.json();
+
+    expect(response.statusCode).toBe(200);
+    expect(body.steered).toBe(false);
+    expect(body.sequence).toEqual(SEQUENCE);
+    expect(body.suppress).toEqual([]);
+    expect(body.demote).toEqual([]);
+    expect(body.checkout.display.sequence).toEqual(SEQUENCE);
+  });
+
+  it("plans against the method set this page offers, not the one the service was started with", async () => {
+    // The reason this endpoint takes a body at all. A merchant has more than one checkout, and the
+    // method list is a property of the page rather than of the deployment.
+    const s = sentry();
+    const body = (await plan(s, { customer: customer(1), sequence: ["card", "upi"] })).json();
+
+    expect(body.sequence).toEqual(["card", "upi"]);
+    expect(body.checkout.display.sequence).toEqual(["card", "upi"]);
+  });
+
+  it("gives the same decision as the path form for the same customer", async () => {
+    const s = sentry();
+    await drive(s, { method: "netbanking", issuer: "hdfc" });
+    const incident = s.directives()[0]?.incident;
+    if (incident === undefined) throw new Error("expected a steer");
+    const treated = findCustomer((c) => !isHeldOut(c as never, incident, config.holdoutFraction));
+
+    const posted = (await plan(s, { customer: treated })).json();
+    const got = (await s.app.inject({ method: "GET", url: `/plan/${treated}` })).json();
+
+    expect(posted.steered).toBe(true);
+    expect(posted).toEqual(got);
+  });
+
+  it("states the arm, so a caller can echo it back without knowing what a holdout is", async () => {
+    const s = sentry();
+    await drive(s, { method: "netbanking", issuer: "hdfc" });
+    const incident = s.directives()[0]?.incident;
+    if (incident === undefined) throw new Error("expected a steer");
+
+    const treated = findCustomer((c) => !isHeldOut(c as never, incident, config.holdoutFraction));
+    const control = findCustomer((c) => isHeldOut(c as never, incident, config.holdoutFraction));
+
+    const treatedBody = (await plan(s, { customer: treated })).json();
+    const controlBody = (await plan(s, { customer: control })).json();
+
+    expect(treatedBody.arm).toBe("treated");
+    expect(controlBody.arm).toBe("control");
+    expect(controlBody.heldOutOf).toContain(incident);
+    // The arm the response names is exactly the one `POST /outcomes` accepts, so the round trip is
+    // a copy rather than a translation.
+    const echo = await s.app.inject({
+      method: "POST",
+      url: "/outcomes",
+      payload: {
+        attempts: [
+          {
+            id: "pay_echo",
+            orderId: "order_echo",
+            customer: control,
+            amountPaise: 100,
+            method: "upi",
+            status: "captured",
+            at: START,
+            arm: controlBody.arm,
+          },
+        ],
+      },
+    });
+    expect(echo.json().accepted).toBe(1);
+  });
+
+  it("reports a suppression in vocabulary no gateway owns, agreeing with the one that does", async () => {
+    const s = sentry();
+    await drive(s, { method: "netbanking", issuer: "hdfc" });
+    const incident = s.directives()[0]?.incident;
+    if (incident === undefined) throw new Error("expected a steer");
+    const treated = findCustomer((c) => !isHeldOut(c as never, incident, config.holdoutFraction));
+
+    const body = (await plan(s, { customer: treated })).json();
+    const suppressed = body.suppress as {
+      key: string;
+      method: string;
+      issuer: string | null;
+      instrument: string | null;
+    }[];
+
+    expect(suppressed.length + body.demote.length).toBeGreaterThan(0);
+    for (const s_ of suppressed) {
+      // Round-trips: the key is the slice and the fields are the slice, and neither is derived by
+      // the caller from the other.
+      expect(parseSliceKey(s_.key)).toEqual({
+        method: s_.method,
+        issuer: s_.issuer,
+        instrument: s_.instrument,
+      });
+    }
+    // Whatever was suppressed is hidden in the Razorpay config too, unless it could not be
+    // expressed there at all — in which case it is named in the diagnostics rather than lost.
+    const hidden = (body.checkout.display.hide ?? []).length;
+    expect(hidden + body.diagnostics.length).toBe(suppressed.length);
+  });
+
+  it("answers a body it cannot parse with a page rather than an error", async () => {
+    // The hot path is total. An integration bug must be visible in `reason` and invisible to the
+    // customer, because the failure mode of a payment-health tool must never be "no payments".
+    const s = sentry();
+    for (const payload of [
+      {},
+      { customer: "short" },
+      { customer: customer(1), sequence: ["cash"] },
+    ]) {
+      const response = await plan(s, payload);
+      expect(response.statusCode).toBe(200);
+      const body = response.json();
+      expect(body.steered).toBe(false);
+      expect(body.sequence).toEqual(SEQUENCE);
+      expect(body.checkout.display.sequence).toEqual(SEQUENCE);
+      expect(body.reason).toMatch(/invalid request|unrecognised/);
+    }
+  });
+
+  it("tells the caller how long the answer keeps", async () => {
+    const s = sentry({ tickMs: 4000 });
+    expect((await plan(s, { customer: customer(1) })).json().maxAgeMs).toBe(4000);
   });
 });
 

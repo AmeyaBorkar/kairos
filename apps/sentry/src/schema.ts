@@ -41,3 +41,27 @@ export const ATTEMPT_BATCH = z.object({
 });
 
 export type AttemptInput = z.infer<typeof ATTEMPT>;
+
+/**
+ * A plan request.
+ *
+ * `POST` rather than only `GET /plan/:customer` because the interesting fields are not path
+ * segments. A merchant's checkout is not one page — a subscription upgrade offers different
+ * methods than a one-rupee verification — and the method set is the merchant's to state on every
+ * request rather than Kairos's to remember. Everything is optional except the customer, so the
+ * smallest useful body is `{"customer": "..."}` and the endpoint stays callable from a language
+ * with no client library.
+ */
+export const PLAN_REQUEST = z.object({
+  customer: z.string().min(16).max(128),
+  /**
+   * The methods this checkout can render, most preferred first.
+   *
+   * Kairos perturbs this order; it never invents a method the merchant did not offer. Omitted
+   * means "the sequence this service was configured with", which is the right default for a
+   * merchant with one checkout and the wrong one for a merchant with several — hence the field.
+   */
+  sequence: z.array(z.enum(PAYMENT_METHODS)).min(1).max(PAYMENT_METHODS.length).nullish(),
+});
+
+export type PlanRequestInput = z.infer<typeof PLAN_REQUEST>;

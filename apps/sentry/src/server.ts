@@ -20,12 +20,12 @@ import {
   type SteeringConfig,
   SteeringController,
 } from "@kairos/policy";
-import { defaultCheckout, renderCheckout } from "@kairos/razorpay";
+import { type CheckoutConfig, defaultCheckout, renderCheckout } from "@kairos/razorpay";
 import { type Clock, systemClock, Terminus } from "@kairos/terminus";
 import Fastify, { type FastifyInstance } from "fastify";
 import { MemoryStore } from "throttlekit";
 import { z } from "zod";
-import { ATTEMPT_BATCH } from "./schema.js";
+import { ATTEMPT_BATCH, PLAN_REQUEST } from "./schema.js";
 
 export interface SentryOptions {
   readonly mandate: Mandate;
@@ -53,6 +53,59 @@ export interface SentryOptions {
 }
 
 const DEFAULT_SEQUENCE: readonly PaymentMethod[] = [...PAYMENT_METHODS];
+
+/** One suppressed instrument, in Kairos vocabulary rather than any gateway's. */
+export interface SuppressedInstrument {
+  /** The slice key, round-trippable through `parseSliceKey`. */
+  readonly key: string;
+  readonly method: PaymentMethod;
+  readonly issuer: string | null;
+  readonly instrument: string | null;
+}
+
+/**
+ * What a checkout is told.
+ *
+ * Two readings of one decision. `sequence`, `suppress` and `demote` are the decision itself,
+ * in no gateway's vocabulary; `checkout` is the same thing already shaped as the `config` object
+ * Razorpay Checkout is handed. A merchant renders whichever they can act on, and neither is
+ * derived by the caller — deriving one from the other is where a translation bug would live.
+ *
+ * Every field is populated on every response, including the fallbacks, so a caller never has to
+ * branch on presence. The honest signal is `steered`: false means this response changes nothing
+ * about the page, whether because nothing is wrong, because this customer is a control, or because
+ * something in Kairos failed and it declined to guess.
+ */
+export interface PlanResponse {
+  /** The method order to render, most preferred first. Exhaustive over what was offered. */
+  readonly sequence: readonly PaymentMethod[];
+  readonly suppress: readonly SuppressedInstrument[];
+  readonly demote: readonly PaymentMethod[];
+  readonly steered: boolean;
+  /**
+   * The arm to report back on this customer's outcome.
+   *
+   * Echoed verbatim into `POST /outcomes`. Answering it here rather than asking the merchant to
+   * work it out is what keeps the holdout honest at integrations that have never heard of one.
+   */
+  readonly arm: "treated" | "control";
+  readonly applied: readonly string[];
+  readonly heldOutOf: readonly string[];
+  /** The Razorpay Checkout `config` object, ready to pass through unchanged. */
+  readonly checkout: CheckoutConfig;
+  /** Steers that could not be expressed as a checkout instrument, and why. */
+  readonly diagnostics: readonly { readonly slice: string; readonly reason: string }[];
+  /**
+   * How long this response may be cached.
+   *
+   * Steering is re-decided at most once a tick, so anything fresher is a request the service did
+   * not need to answer. It is a hint and not a contract: a caller that ignores it is merely
+   * spending latency, never correctness.
+   */
+  readonly maxAgeMs: number;
+  /** Why this response says what it says, in words. Always present. */
+  readonly reason: string;
+}
 
 export interface Sentry {
   readonly app: FastifyInstance;
@@ -135,47 +188,126 @@ export function createSentry(options: SentryOptions): Sentry {
   });
 
   /**
-   * The hot path.
+   * Turn one customer reference into a plan, or into the merchant's own configuration.
    *
-   * Never fails, never blocks, never returns anything a checkout cannot render. A customer
-   * reference that does not parse, a plan that throws, a budget overrun — all of them resolve to
-   * the merchant's own configuration, which is exactly what the checkout would have used had Kairos
-   * never been deployed.
+   * The hot path, and the only code in Kairos with a hard latency budget. Never fails, never
+   * blocks, never returns anything a checkout cannot render: a reference that does not parse, a
+   * plan that throws, a budget overrun — all of them resolve to the merchant's own ordering, which
+   * is exactly what the checkout would have used had Kairos never been deployed.
+   *
+   * Shared by both plan routes so the two cannot drift. A fallback that differed between them
+   * would be the worst kind of bug here, because it would only ever appear when something else had
+   * already gone wrong.
    */
-  app.get("/plan/:customer", async (request, reply) => {
+  function planFor(rawCustomer: string, offered: readonly PaymentMethod[]): PlanResponse {
     const started = clock.now();
-    const fallback = { config: defaultCheckout(sequence), steered: false, reason: "default" };
+    const fallback = (reason: string): PlanResponse => ({
+      sequence: [...offered],
+      suppress: [],
+      demote: [],
+      steered: false,
+      arm: "treated",
+      applied: [],
+      heldOutOf: [],
+      checkout: defaultCheckout(offered),
+      diagnostics: [],
+      maxAgeMs: tickMs,
+      reason,
+    });
 
     let ref: CustomerRef;
     try {
-      ref = customerRef((request.params as { customer: string }).customer);
+      ref = customerRef(rawCustomer);
     } catch {
-      return reply.send({ ...fallback, reason: "unrecognised customer reference" });
+      return fallback("unrecognised customer reference");
     }
 
     try {
-      const plan = controller.planFor(ref, health);
-      const elapsed = clock.now() - started;
-      if (elapsed > planBudgetMs) {
-        return reply.send({ ...fallback, reason: `plan exceeded ${planBudgetMs}ms budget` });
+      const plan = controller.planFor(ref, health, offered);
+      if (clock.now() - started > planBudgetMs) {
+        return fallback(`plan exceeded ${planBudgetMs}ms budget`);
       }
 
-      const rendered = renderCheckout(plan, sequence);
-      return reply.send({
-        config: rendered.config,
+      const rendered = renderCheckout(plan, offered);
+      return {
+        // The plan carries only methods policy has seen; the merchant's remaining methods are
+        // appended in the order they were offered, because a reorder that silently drops a method
+        // is the failure `renderCheckout` already guards against and this must agree with it.
+        sequence: rendered.config.display.sequence as readonly PaymentMethod[],
+        suppress: plan.suppress.map((s) => ({
+          key: sliceKey(s),
+          method: s.method,
+          issuer: s.issuer,
+          instrument: s.instrument,
+        })),
+        demote: [...plan.demote],
         steered: !isNeutral(plan),
-        applied: plan.applied,
-        heldOutOf: plan.heldOutOf,
+        // What to echo back on this customer's outcome. A checkout that returns this verbatim gets
+        // the holdout analysis right without its author having to know what a holdout is — and
+        // getting it wrong is not a small error: a control counted as treated moves the measured
+        // lift toward zero with nothing anywhere reporting a fault.
+        arm: plan.heldOutOf.length > 0 ? "control" : "treated",
+        applied: [...plan.applied],
+        heldOutOf: [...plan.heldOutOf],
+        checkout: rendered.config,
         diagnostics: rendered.diagnostics.map((d) => ({
           slice: sliceKey(d.slice),
           reason: d.reason,
         })),
+        maxAgeMs: tickMs,
         reason: isNeutral(plan) ? "nothing in force" : "steering",
-      });
+      };
     } catch {
       // Deliberately swallowed. Whatever went wrong, the checkout gets a page it can render.
-      return reply.send({ ...fallback, reason: "plan unavailable" });
+      return fallback("plan unavailable");
     }
+  }
+
+  /**
+   * The hot path, for a checkout in any language.
+   *
+   * A body rather than a path, because the method set is a property of the page being rendered and
+   * only the merchant knows it. The response is Razorpay-shaped *and* plain: `checkout` is the
+   * `config` object Razorpay Checkout is handed, and `sequence`/`suppress`/`demote` are the same
+   * decision with no gateway vocabulary in it, so a merchant on another gateway — or rendering
+   * their own method list server-side — can act on it without a translation layer.
+   *
+   * Always 200. Nothing a merchant can put in this body is worth failing a checkout over, so a
+   * body that does not parse is answered with the merchant's own configuration and a `reason`
+   * naming the offending field — visible on the first call an integrator makes, and harmless to
+   * the customer waiting on the page.
+   */
+  app.post("/plan", async (request, reply) => {
+    const parsed = PLAN_REQUEST.safeParse(request.body);
+    if (parsed.success) {
+      return reply.send(planFor(parsed.data.customer, parsed.data.sequence ?? sequence));
+    }
+
+    // A malformed body is answered, not refused. `POST /outcomes` rejects what it cannot parse
+    // because a bad outcome would corrupt the detector's evidence; here there is nothing to
+    // corrupt and a customer waiting on a page, so the safest renderable answer wins and the fault
+    // is named in `reason` where an integrator will see it on the very first call.
+    const raw: unknown = request.body;
+    const bare =
+      typeof raw === "object" && raw !== null && "customer" in raw
+        ? (raw as { customer: unknown }).customer
+        : undefined;
+    const fields = [...new Set(parsed.error.issues.map((i) => i.path.join(".") || "body"))].join(
+      ", ",
+    );
+    const plan = planFor(typeof bare === "string" ? bare : "", sequence);
+    return reply.send({ ...plan, reason: `invalid request (${fields}); ${plan.reason}` });
+  });
+
+  /**
+   * The same decision, addressed by path.
+   *
+   * Kept because it is cacheable by anything that speaks HTTP and needs no body — a CDN, a service
+   * mesh, a `curl` in a runbook. It cannot carry a method set, so it answers for the sequence this
+   * service was configured with.
+   */
+  app.get("/plan/:customer", async (request, reply) => {
+    return reply.send(planFor((request.params as { customer: string }).customer, sequence));
   });
 
   app.get("/health", async (_request, reply) => {
