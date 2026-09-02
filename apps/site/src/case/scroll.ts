@@ -68,11 +68,20 @@ export function heroProgress(): number {
   return clamp(window.scrollY / Math.max(1, vh), 0, 1);
 }
 
-/** How far a standalone element has come into view. For scenes with no steps to read against. */
+/**
+ * How far a standalone element has come into view. For scenes with no steps to read against.
+ *
+ * Keyed to the element's *centre*, not its top edge. Keying it to the top meant a tall frame
+ * finished its animation while only its first rows had appeared — the semaphore reached CLEAR
+ * with the artwork still at the bottom of the viewport, so by the time a reader looked at it
+ * there was nothing left to watch. The window now ends with the element's centre at 40% of the
+ * viewport, which is where it is actually being looked at.
+ */
 export function entryProgress(node: Element): number {
   const vh = window.innerHeight || 800;
   const rect = node.getBoundingClientRect();
-  return clamp((vh * 0.85 - rect.top) / (vh * 0.6), 0, 1);
+  const centre = rect.top + rect.height / 2;
+  return clamp((vh * 0.92 - centre) / (vh * 0.52), 0, 1);
 }
 
 /** Whether an element is close enough to the viewport to be worth drawing. */

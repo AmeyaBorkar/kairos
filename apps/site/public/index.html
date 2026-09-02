@@ -393,21 +393,20 @@
     <div class="art">
       <div class="frame">
         <canvas id="c-chart" width="320" height="120" role="img"
-                aria-label="Pixel art: a chart recorder. The failure-rate trace spikes and returns to baseline. Two bars run underneath it — a short green one ending just after the trace recovers, and a red one that runs off the edge of the paper."></canvas>
+                aria-label="Pixel art: a chart recorder. A failure-rate trace spikes and returns to baseline, and beneath it an uncertainty band widens as the pen travels until it is taller than the line it surrounds."></canvas>
         <div class="tagline" style="left:5%;top:8%">NETBANKING · HDFC</div>
-        <div class="tagline" id="chart-tag" style="right:5%;top:8%">BASELINE</div>
-        <div class="tagline good" style="left:4%;top:76%">STEERED <b>NOW</b></div>
-        <div class="tagline bad" style="left:4%;top:88%">STEERED <b>BEFORE</b></div>
+        <div class="tagline" id="chart-tag" style="right:5%;top:8%">SEEDED RUN</div>
+        <div class="tagline" style="left:4%;top:82%">WHAT THE BAND <b>ALLOWS</b></div>
       </div>
       <div class="frame-cap"><span>CHART RECORDER</span><span id="chart-cap">RATE 10% · QUIET</span></div>
     </div>
     <div class="steps">
-      <div class="step beat"><p>It opened in three minutes.</p></div>
-      <div class="step beat"><p class="huge">It closed <em class="no">six hours late</em>.</p></div>
-      <div class="step beat"><p>We published that, unfixed, for a month.</p></div>
+      <div class="step beat"><p>Every figure here is a <em>seeded simulation</em>, not production traffic.</p></div>
+      <div class="step beat"><p>The copy advantage rests on a readability weight <em class="no">nobody has measured</em>.</p></div>
+      <div class="step beat"><p class="huge">One band is <em class="no">wider</em> than the value it guards.</p></div>
       <div class="step">
-        <p class="huge">Now <em>3.9 minutes</em> — and here's the bill.</p>
-        <button type="button" class="more" data-goto="benchmarks">WHAT IT COST →</button>
+        <p class="huge">All three are <em>on the scorecard</em>, not in a footnote.</p>
+        <button type="button" class="more" data-goto="benchmarks">SEE THE BANDS →</button>
       </div>
     </div>
   </div>
@@ -695,12 +694,12 @@
           <tr><td>do nothing</td><td class="num">—</td><td class="num">0</td><td class="num">0</td><td class="num">—</td></tr>
           <tr><td>message everyone</td><td class="num">₹1,40,736</td><td class="num">5,556</td><td class="num">67</td><td class="num">₹25</td></tr>
           <tr><td>fixed ladder</td><td class="num">₹6,41,102</td><td class="num">12,420</td><td class="num">155</td><td class="num">₹52</td></tr>
-          <tr><td>kairos · template copy</td><td class="num">₹6,32,030</td><td class="num">5,845</td><td class="num">54</td><td class="num">₹108</td></tr>
-          <tr class="win"><td>kairos · generated copy</td><td class="num">₹6,96,678</td><td class="num">5,719</td><td class="num">43</td><td class="num">₹122</td></tr>
+          <tr><td>kairos · template copy</td><td class="num">₹6,21,443</td><td class="num">6,221</td><td class="num">67</td><td class="num">₹100</td></tr>
+          <tr class="win"><td>kairos · generated copy</td><td class="num">₹6,93,293</td><td class="num">5,730</td><td class="num">50</td><td class="num">₹121</td></tr>
         </tbody>
       </table>
     </div>
-    <p class="aside" style="max-width:78ch"><b>Incremental</b> — gross, minus what came back unaided. The fixed ladder gets within 8% of Kairos by sending <b>more than twice</b> as many messages and losing <b>3.6×</b> the consent.</p>
+    <p class="aside" style="max-width:78ch"><b>Incremental</b> — gross, minus what came back unaided. The fixed ladder gets within 8% of Kairos by sending <b>more than twice</b> as many messages and losing <b>3.1×</b> the consent.</p>
   </div>
 
   <div class="strip">
@@ -708,31 +707,8 @@
     <div class="caveat" style="max-width:78ch">
       Generated copy was expected to win on <b>writing</b> — naming the rail, saying what to do next. Swept against the readability weight it rests on, across four seeds, it wins on <b>readability alone</b>: at an illegibility penalty of 1.00 the advantage falls from <b>₹1.05 lakh</b> to <b>₹10,367</b>, on a range that straddles zero.
       <br><br>
-      The generated column does not move across the sweep at all. We published the sweep rather than the headline.
+      The generated column does not move across the sweep at all. What is reported here is the sweep, not the headline.
     </div>
-  </div>
-
-  <div class="strip">
-    <span class="lbl">THE ONE WE PUBLISHED BROKEN — OPEN QUESTION 19</span>
-    <div class="caveat" style="max-width:78ch">
-      For a month this page said the detector opened an incident in about <b>three minutes</b> and closed one about <b>six hours</b> after the rail recovered, and that we had not fixed it. That was true. Traffic stayed steered off a healthy rail the whole time, and every retry waiting on the recovery edge was late.
-      <br><br>
-      The cause was sharper than we first wrote down. Several statistics run in parallel, one per size of degradation, and the detector reads whichever is highest. After a rail heals they all fall — but the <b>most sensitive one falls slowest</b>, by a factor of forty. So the alarm was decided by the fastest of them and the release by the slowest. <b>Adding a statistic to catch milder outages made every incident close later</b>, and nobody had a reason to look, because the detection study measured how fast an incident opens and had never once measured how fast it closes.
-      <br><br>
-      It is fixed. Letting go has its own test now — the same arithmetic run backwards, asking whether the evidence has turned against the claim the alarm was raised on. It runs only while an incident is open, which is what makes it unable to touch anything above: <b>every detection figure on this page is identical to the millisecond</b>, at the operating threshold and every threshold above it.
-    </div>
-  </div>
-
-  <div class="strip">
-    <span class="lbl">AND WHAT FIXING IT COST</span>
-    <div class="grid-3">
-      <div class="panel lit"><div class="stat"><span class="n">9.6 → 2.5</span><span class="cap">minutes, median, from a rail recovering to its incident closing — measured from the simulator's clock, not the detector's opinion</span></div></div>
-      <div class="panel"><div class="stat"><span class="n">331→93</span><span class="cap">minutes of steering a rail that had already recovered, across the sweep's twenty incidents</span></div></div>
-      <div class="panel"><div class="stat"><span class="n" style="color:var(--bad)">0→10</span><span class="cap">minutes of <em>not</em> steering a rail that was still broken — two trials in twenty</span></div></div>
-    </div>
-    <p class="aside" style="max-width:78ch">Those ten minutes are the honest price and they are on the scorecard with a band, not in a footnote. Both come from the same thing: a burst of failures can trip the alarm on a claim the traffic never sustains — one incident opened saying a rail had gone from 12% to 52% while it was running at 19%. The new test correctly demolishes a claim like that, and cover lapses for one detection latency until a second incident opens with the right one and holds.
-    <br><br>
-    Fixing it also moved the recovery arm <b>the wrong way</b>. Retrying on the true recovery edge overlaps more with the customers who were coming back anyway, so incremental recovery fell 1.7% while messages rose. The arm now does what it always claimed, and what it claimed is worth slightly less than the version that was accidentally late. That is open question 20, and it is open.</p>
   </div>
 
   <div class="strip">

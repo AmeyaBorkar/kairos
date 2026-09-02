@@ -48,7 +48,6 @@ export class Stage {
   readonly #posters: ReadonlyArray<readonly [Surface | null, (a: SceneArgs) => unknown]>;
 
   readonly #acts: Readonly<Record<string, HTMLElement | null>>;
-  readonly #close: HTMLElement | null;
   readonly #logo: HTMLCanvasElement | null;
   readonly #seams: readonly HTMLCanvasElement[];
 
@@ -81,7 +80,6 @@ export class Stage {
       q3: document.querySelector('.act[data-act="q3"]'),
       q4: document.querySelector('.act[data-act="q4"]'),
     };
-    this.#close = document.querySelector(".close");
 
     const logo = document.getElementById("c-logo");
     this.#logo = logo instanceof HTMLCanvasElement ? logo : null;
@@ -244,30 +242,31 @@ export class Stage {
     const state = actState(act);
     if (!state.onscreen) return;
 
-    const { rate, closed } = drawChart(this.#args(this.#chart, state.t));
+    const { rate, wide } = drawChart(this.#args(this.#chart, state.t));
     blit(this.#chart);
 
-    /* Two bars under one trace: where the incident ends now, and where it used to. The second runs
-       off the edge of the paper, which is the honest length of it. Question four is no longer the
-       defect — it is that the defect was published, measured, and then cost something to fix. */
+    /* One trace and the envelope around it. Question four is not what went wrong — it is what
+       the measurement is unable to say, and the widening band is that made visible. */
     html(
       "chart-tag",
       rate > 0.5
-        ? '<b style="color:var(--bad)">INCIDENT OPEN</b>'
-        : closed
-          ? '<b style="color:var(--good)">CLOSED · +3.9 MIN</b>'
-          : "BASELINE",
+        ? '<b style="color:var(--bad)">RAIL DEGRADED</b>'
+        : wide
+          ? '<b style="color:var(--warn)">BAND &gt; VALUE</b>'
+          : "SEEDED RUN",
     );
     text(
       "chart-cap",
-      rate > 0.5 ? "RATE 72% · ALARMED" : closed ? "RATE 10% · RELEASED" : "RATE 10% · QUIET",
+      rate > 0.5 ? "RATE 72% · MEASURED" : wide ? "cv 37.6% · REPORTED" : "RATE 10% · QUIET",
     );
   }
 
   #closing(): void {
-    if (this.#close === null || this.#signal === null || !nearViewport(this.#close)) return;
+    if (this.#signal === null || !nearViewport(this.#signal.el)) return;
 
-    const { clear } = drawSignal(this.#args(this.#signal, entryProgress(this.#close)));
+    /* Driven by the canvas, not the section around it. The section's top sits 146px above the
+       artwork, which was enough to push the whole arm-drop off the bottom of the screen. */
+    const { clear } = drawSignal(this.#args(this.#signal, entryProgress(this.#signal.el)));
     blit(this.#signal);
 
     html(
