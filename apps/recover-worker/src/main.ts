@@ -1,7 +1,9 @@
 import { type Mandate, mandateId, paise } from "@kairos/domain";
 import { MemoryLedger } from "@kairos/ledger";
+import { migrate, PostgresCasualtyStore } from "@kairos/postgres";
 import type { Gateway, Messenger } from "@kairos/razorpay";
 import {
+  type CasualtyStore,
   DEFAULT_RECOVERY_CONFIG,
   MemoryCasualtyStore,
   RecoverWorker,
@@ -9,7 +11,9 @@ import {
   worstActionCostPaise,
 } from "@kairos/recover";
 import { sealMandate, systemClock, Terminus } from "@kairos/terminus";
-import { MemoryStore } from "throttlekit";
+import { Pool } from "pg";
+import { MemoryStore, type Store } from "throttlekit";
+import { PostgresStore } from "throttlekit/postgres";
 import { dryRunGateway, dryRunMessenger } from "./dry-run.js";
 import { RecoveryExecutor } from "./executor.js";
 
@@ -27,11 +31,19 @@ import { RecoveryExecutor } from "./executor.js";
  * nothing, because a Razorpay account able to charge saved tokens and a DLT-registered sender are
  * things a deployment has and a repository does not.
  *
- * It also holds its queue in memory, which makes it a single instance. The fleet story — a shared
- * queue with an atomic lease — is what `CasualtyStore` is an interface for, and the Postgres
- * implementation of it is not built. Two of these running today would each drain their own queue
- * rather than sharing one; they would still not double-spend, because the budget is in the shared
- * store, but they would not co-operate either.
+ * How many of these may run at once is decided by one environment variable. With
+ * `KAIROS_DATABASE_URL` set, the queue and the spend authority both live in Postgres and the
+ * workers are a fleet: they share one budget, and an atomic lease on each casualty stops two of
+ * them acting on the same one. Without it, both live in memory and this is a single instance —
+ * which is a fine way to run it, and much better than a second copy quietly sharing nothing.
+ *
+ * ## What is still single-instance
+ *
+ * The audit ledger. `MemoryLedger` is a hash chain in this process, so a fleet produces one chain
+ * per worker: each is internally verifiable and none of them is the whole story. Nothing is lost —
+ * every record is still written and still tamper-evident — but somebody asking "show me everything
+ * done under this mandate" has to be handed N chains and told how to interleave them. A shared
+ * appender is the remaining piece, and it is not built.
  */
 
 const DAY = 86_400_000;
@@ -121,16 +133,75 @@ function adapters(): { gateway: Gateway; messenger: Messenger } {
   );
 }
 
+/**
+ * Where shared state lives, and therefore how many of these may run at once.
+ *
+ * The two things a second worker must share are not the same thing and do not live in the same
+ * place. **Authority** — the budget, the in-flight cap, the contact caps — lives in ThrottleKit's
+ * `Store`, and is what stops two workers double-*spending*. **The queue** lives in
+ * `CasualtyStore`, and is what stops them double-*sending*: idempotent authority hands both
+ * workers the same grant for the same casualty, so only an atomic claim keeps one customer's phone
+ * from ringing twice.
+ *
+ * Both are Postgres, in the same database, through the same pool. `KAIROS_DATABASE_URL` is the
+ * entire difference between one instance and a fleet.
+ *
+ * Without it the worker runs on memory and is a single instance by construction — which is a
+ * legitimate way to run it, and much better than a second instance quietly sharing nothing.
+ */
+interface Backing {
+  readonly name: string;
+  readonly store: Store;
+  readonly casualties: CasualtyStore;
+  close(): Promise<void>;
+}
+
+async function backing(): Promise<Backing> {
+  const url = process.env["KAIROS_DATABASE_URL"];
+
+  if (url === undefined) {
+    return {
+      name: "memory",
+      store: new MemoryStore(),
+      casualties: new MemoryCasualtyStore(),
+      close: () => Promise.resolve(),
+    };
+  }
+
+  const pool = new Pool({
+    connectionString: url,
+    max: optionalInt("KAIROS_DB_POOL_MAX", 10),
+  });
+
+  // Idempotent, and cheap enough to pay on every boot. A deployment that would rather own its
+  // schema can run `kairos-casualty-schema | psql` and set KAIROS_DB_MIGRATE=off.
+  if (process.env["KAIROS_DB_MIGRATE"] !== "off") await migrate(pool);
+
+  const store = new PostgresStore({ pool, table: "kairos_throttle" });
+  return {
+    name: "postgres",
+    store,
+    casualties: new PostgresCasualtyStore({ sql: pool }),
+    close: async () => {
+      // ThrottleKit does not end a pool it does not own, so the order matters: stop its sweep
+      // first, then close the pool underneath it.
+      await store.close();
+      await pool.end();
+    },
+  };
+}
+
 async function main(): Promise<void> {
   const secret = required("KAIROS_MANDATE_SECRET", 32);
   const mandate = buildMandate(secret);
   const { gateway, messenger } = adapters();
 
+  const persistence = await backing();
   const ledger = new MemoryLedger();
   const terminus = new Terminus({
     mandate,
     secret,
-    store: new MemoryStore(),
+    store: persistence.store,
     audit: ledger,
     actor: `recover-worker/${process.env["HOSTNAME"] ?? "local"}`,
     clock: systemClock,
@@ -138,7 +209,7 @@ async function main(): Promise<void> {
 
   const worker = new RecoverWorker({
     terminus,
-    store: new MemoryCasualtyStore(),
+    store: persistence.casualties,
     // No directory is wired, so every message is addressed impersonally and no payment can be
     // charged again. That is the correct behaviour for a process with no access to customer data,
     // rather than a gap that fails at the moment it matters.
@@ -166,7 +237,13 @@ async function main(): Promise<void> {
   process.on("SIGTERM", stop);
 
   process.stdout.write(
-    `${JSON.stringify({ started: true, delivery: gateway.name, campaign: mandate.campaignId })}\n`,
+    `${JSON.stringify({
+      started: true,
+      delivery: gateway.name,
+      campaign: mandate.campaignId,
+      backing: persistence.name,
+      fleet: persistence.name === "postgres",
+    })}\n`,
   );
 
   while (running) {
@@ -177,9 +254,10 @@ async function main(): Promise<void> {
     await new Promise((resolve) => setTimeout(resolve, intervalMs));
   }
 
-  process.stdout.write(
-    `${JSON.stringify({ shutdown: true, ledger: ledger.head, ...(await terminus.snapshot()) })}\n`,
-  );
+  // Read the snapshot before closing: it goes through the store the close is about to release.
+  const snapshot = await terminus.snapshot();
+  await persistence.close();
+  process.stdout.write(`${JSON.stringify({ shutdown: true, ledger: ledger.head, ...snapshot })}\n`);
 }
 
 main().catch((error: unknown) => {

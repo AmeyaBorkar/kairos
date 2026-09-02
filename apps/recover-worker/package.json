@@ -13,13 +13,16 @@
   "dependencies": {
     "@kairos/domain": "workspace:*",
     "@kairos/ledger": "workspace:*",
+    "@kairos/postgres": "workspace:*",
     "@kairos/razorpay": "workspace:*",
     "@kairos/reason": "workspace:*",
     "@kairos/recover": "workspace:*",
     "@kairos/terminus": "workspace:*",
+    "pg": "^8.23.0",
     "throttlekit": "^1.7.0"
   },
   "devDependencies": {
-    "@types/node": "^22.10.0"
+    "@types/node": "^22.10.0",
+    "@types/pg": "^8.23.1"
   }
 }
