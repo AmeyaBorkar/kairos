@@ -317,6 +317,26 @@ h1 em {
   letter-spacing: 0.1em;
   font-weight: 800;
 }
+/* The hero ends in two things to do. A visitor who is sold does not want to scroll for the
+   command, and one who is not has the whole page underneath. */
+.hero-go {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 34px;
+}
+.hero-go .more {
+  margin-top: 0;
+}
+.more.go {
+  color: var(--on-accent);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.more.go:hover {
+  filter: brightness(1.12);
+}
 .more:hover {
   color: var(--on-accent);
   background: var(--accent);

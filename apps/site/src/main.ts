@@ -36,12 +36,13 @@ function wireDemoLink(): void {
 
   if (DEMO_URL !== "") {
     link.href = DEMO_URL;
+    link.textContent = "DEMO";
     return;
   }
-  link.textContent = "DEMO · SOON";
-  link.setAttribute("aria-disabled", "true");
-  link.style.opacity = ".5";
-  link.addEventListener("click", (ev) => ev.preventDefault());
+  // Until the film is hosted this slot is the repository, which is a real destination rather than
+  // a greyed-out promise. Setting DEMO_URL turns it back into the film without touching the markup.
+  link.textContent = "SOURCE";
+  link.href = "https://github.com/AmeyaBorkar/kairos";
 }
 
 function main(): void {
