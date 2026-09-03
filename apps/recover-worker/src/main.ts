@@ -134,7 +134,15 @@ function adapters(): { gateway: Gateway; messenger: Messenger } {
   };
 
   if (mode === "dry-run") {
-    return { gateway: dryRunGateway({ sink }), messenger: dryRunMessenger({ sink }) };
+    return {
+      gateway: dryRunGateway({ sink }),
+      // The same segment price the executor uses, so the figure this mode settles at is the figure
+      // the executor would have fallen back to rather than a second opinion about the same message.
+      messenger: dryRunMessenger({
+        sink,
+        smsSegmentPaise: optionalInt("KAIROS_SMS_SEGMENT_PAISE", 20),
+      }),
+    };
   }
 
   throw new Error(
