@@ -6,6 +6,13 @@
  * pieces.css, reused rather than restated.
  */
 
+/* This heading has no standfirst under it — the film explains itself, and a paragraph telling you
+   what you are about to watch is a paragraph read instead of watching. So the head does not need
+   the room a paragraph would have filled. */
+#view-film .view-head {
+  padding-bottom: 8px;
+}
+
 .film-frame {
   position: relative;
   border: 1px solid var(--line);
