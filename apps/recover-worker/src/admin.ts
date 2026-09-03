@@ -129,6 +129,30 @@ export function serveAdmin(options: AdminOptions): Server {
     send(response, 404, "text/plain; charset=utf-8", "not found\n");
   });
 
+  /**
+   * A surface that cannot kill the thing it observes.
+   *
+   * Without this listener an `EADDRINUSE` — a second worker on one host, a port something else
+   * already took — is an `error` event with nobody listening, which Node raises as a throw. The
+   * process dies, and it dies because its *health endpoint* could not bind. That is exactly
+   * backwards: draining the queue is the job, describing it is a courtesy, and losing the courtesy
+   * is not a reason to lose the job.
+   *
+   * Reported loudly rather than swallowed, because a worker running unobserved is a real problem —
+   * just not a fatal one.
+   */
+  server.on("error", (error: NodeJS.ErrnoException) => {
+    process.stderr.write(
+      `${JSON.stringify({
+        admin: "unavailable",
+        port: options.port,
+        code: error.code ?? null,
+        detail: error.message,
+        note: "the worker is still draining; nothing can report on it",
+      })}\n`,
+    );
+  });
+
   // Bound to every interface, unlike the mandate form: this holds no secret, answers only reads, and
   // an orchestrator's probe arrives from outside the container.
   server.listen(options.port, "0.0.0.0");
