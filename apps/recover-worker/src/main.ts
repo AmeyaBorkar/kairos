@@ -22,10 +22,12 @@ import {
 import { Pool } from "pg";
 import { MemoryStore, type Store } from "throttlekit";
 import { PostgresStore } from "throttlekit/postgres";
+import { serveAdmin } from "./admin.js";
 import { clockSpeedFrom } from "./clock.js";
 import { simulatedDirectory } from "./directory.js";
 import { dryRunGateway, dryRunMessenger } from "./dry-run.js";
 import { RecoveryExecutor } from "./executor.js";
+import { accumulate, emptyTotals, type MetricsInput } from "./metrics.js";
 
 /**
  * The daemon.
@@ -278,7 +280,64 @@ async function main(): Promise<void> {
   });
 
   const intervalMs = optionalInt("KAIROS_DRAIN_INTERVAL_MS", 15_000);
+  /**
+   * Two clocks, and every question belongs to exactly one of them.
+   *
+   * Decisions are made against `clock`, which a demonstration may have accelerated: backoff rungs,
+   * quiet hours, reservation TTLs and the drain report's own timestamp all live in that frame,
+   * because they are all about the campaign.
+   *
+   * Liveness is not about the campaign. A probe's timeout, an operator's patience and the number an
+   * uptime graph plots are real seconds, and reading them off an accelerated clock reports a
+   * two-minute-old process as having run for two hours — and then calls it stalled, because the
+   * gap between two passes measured on a 60x clock is sixty times the interval that produced it.
+   */
+  const startedAt = Date.now();
+  let totals = emptyTotals();
   let running = true;
+
+  /**
+   * Everything a scrape needs, read fresh.
+   *
+   * The store reads are allowed to fail and are reported as a failure rather than thrown. A metrics
+   * endpoint that returns 500 when the database is slow removes the one signal that would have told
+   * you the database is slow.
+   */
+  const snapshot = async (): Promise<MetricsInput> => {
+    const budget = await terminus.snapshot().catch(() => null);
+    const stopEngaged =
+      persistence.name === "postgres"
+        ? await persistence.killSwitch.engaged(mandate).catch(() => null)
+        : null;
+    return {
+      totals,
+      budget,
+      stopEngaged,
+      startedAt,
+      now: Date.now(),
+      fleet: persistence.name === "postgres",
+      delivery: gateway.name,
+      campaignId: mandate.campaignId,
+      merchantId: mandate.merchantId,
+    };
+  };
+
+  const admin = serveAdmin({
+    port: optionalInt("KAIROS_ADMIN_PORT", 9464),
+    snapshot,
+    identity: {
+      delivery: gateway.name,
+      campaign: mandate.campaignId,
+      backing: persistence.name,
+      fleet: persistence.name === "postgres",
+    },
+    totals: () => totals,
+    now: () => Date.now(),
+    // Four intervals. One slow pass is not a stuck loop, and a probe that cannot tell the
+    // difference restarts a worker that was about to succeed and loses the lease it was holding.
+    stallAfterMs: intervalMs * 4,
+    startedAt,
+  });
 
   // A drain pass is bounded and idempotent, so a shutdown that interrupts one loses nothing: the
   // lease expires, the reservation expires, and the next pass picks the casualty up unchanged.
@@ -304,6 +363,8 @@ async function main(): Promise<void> {
 
   while (running) {
     const report = await worker.drain();
+    // Wall clock, because the only reader of this timestamp is the liveness probe.
+    totals = accumulate(totals, report, Date.now());
     if (report.acted > 0 || report.refused > 0 || report.declined > 0) {
       // The clock the decisions were made against, not the wall clock. Under an accelerated
       // clock those differ, and a report stamped in a frame none of its contents belong to is
@@ -313,10 +374,11 @@ async function main(): Promise<void> {
     await new Promise((resolve) => setTimeout(resolve, intervalMs));
   }
 
-  // Read the snapshot before closing: it goes through the store the close is about to release.
-  const snapshot = await terminus.snapshot();
+  // Read the books before closing: they go through the store the close is about to release.
+  const books = await terminus.snapshot();
+  admin.close();
   await persistence.close();
-  process.stdout.write(`${JSON.stringify({ shutdown: true, ledger: ledger.head, ...snapshot })}\n`);
+  process.stdout.write(`${JSON.stringify({ shutdown: true, ledger: ledger.head, ...books })}\n`);
 }
 
 main().catch((error: unknown) => {
