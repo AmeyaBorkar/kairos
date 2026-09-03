@@ -57,6 +57,24 @@
   padding: 10px 13px 8px;
   cursor: pointer;
   letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+/* Six views and a link off the site is one item more than the roomy padding affords on a laptop,
+   and a navigation bar that wraps onto a second line reads as an accident. Tightened rather than
+   truncated: the labels are the site's table of contents and abbreviating them costs more than the
+   gap does. */
+@media (max-width: 1680px) {
+  .nav-link {
+    padding: 10px 9px 8px;
+    letter-spacing: 0.2px;
+  }
+}
+@media (max-width: 1180px) {
+  .nav-link {
+    font-size: 13px;
+    padding: 9px 7px 7px;
+  }
 }
 .nav-link:hover {
   color: var(--ink);

@@ -1,13 +1,14 @@
 /**
  * The site's entry point.
  *
- * Assembles four things and gets out of the way: the settings the reader owns, the router, the case
- * view's animation loop, and the console player. Each of those is independently testable and none of
- * them knows about the others — `main` is the only file that does.
+ * Assembles five things and gets out of the way: the settings the reader owns, the router, the case
+ * view's animation loop, the console player, and the film's transport. Each of those is independently
+ * testable and none of them knows about the others — `main` is the only file that does.
  */
 
 import { Stage } from "./case/stage.js";
 import { type Mounted, mountConsole } from "./console/player.js";
+import { type MountedFilm, mountFilm } from "./film.js";
 import { readPalette } from "./palette.js";
 import { Router, type View } from "./router.js";
 import { mountSettings } from "./settings.js";
@@ -22,38 +23,21 @@ import { Aperture, type Speed } from "./transition.js";
  */
 const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-/**
- * The demo video lives in its own tab rather than inline.
- *
- * Empty until there is a recording to point at, and the link says so rather than pretending. A
- * navigation item that goes nowhere is worse than one that admits it.
- */
-const DEMO_URL = "";
-
-function wireDemoLink(): void {
-  const link = document.getElementById("demo-link");
-  if (!(link instanceof HTMLAnchorElement)) return;
-
-  if (DEMO_URL !== "") {
-    link.href = DEMO_URL;
-    link.textContent = "DEMO";
-    return;
-  }
-  // Until the film is hosted this slot is the repository, which is a real destination rather than
-  // a greyed-out promise. Setting DEMO_URL turns it back into the film without touching the markup.
-  link.textContent = "SOURCE";
-  link.href = "https://github.com/AmeyaBorkar/kairos";
-}
-
 function main(): void {
   readPalette();
 
   const stage = new Stage(still);
   let console_: Mounted | null = null;
 
+  // The film is markup that is already in the document, so it mounts synchronously and can be held
+  // in a const — unlike the console, which waits on a fetch.
+  const film: MountedFilm | null = mountFilm();
+
   const router = new Router((view: View) => {
     stage.repaintStatic();
     if (view === "console") console_?.player.onShown();
+    // Navigating away from a playing film should stop it. Nothing else on the page makes noise.
+    if (view !== "film") film?.pause();
   });
 
   /* The tab transition. Off entirely under reduced motion — not shortened, not faded: a reader who
@@ -83,7 +67,6 @@ function main(): void {
     },
   );
 
-  wireDemoLink();
   router.start();
 
   // One loop for the whole page. The stage skips itself when another view is showing, and the player

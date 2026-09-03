@@ -1,12 +1,12 @@
 /**
- * Five views in one document, addressed by hash.
+ * Six views in one document, addressed by hash.
  *
  * A hash router rather than a real one because the site is static and has to work when opened from
  * a file, dropped on any static host, or served from a subdirectory. There is no server to teach
  * about routes and no build step that would need to know the deploy path.
  */
 
-export const VIEWS = ["case", "console", "install", "how", "benchmarks"] as const;
+export const VIEWS = ["case", "film", "console", "install", "how", "benchmarks"] as const;
 export type View = (typeof VIEWS)[number];
 
 export const DEFAULT_VIEW: View = "case";

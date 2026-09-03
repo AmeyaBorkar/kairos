@@ -1,0 +1,95 @@
+/**
+ * The film view.
+ *
+ * Two elements matter here: a video that fills the width it is given, and a chapter list that is a
+ * transport control rather than a caption. Everything else is the page furniture already defined in
+ * pieces.css, reused rather than restated.
+ */
+
+.film-frame {
+  position: relative;
+  border: 1px solid var(--line);
+  background: #000;
+  /* The master is 16:9. Declared rather than inferred so the page does not reflow when the poster
+     loads, and so the chapter list below it never jumps under the reader's cursor. */
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+}
+
+.film-frame video {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* One row per act, and each row is a button. Timestamps are right-aligned into a fixed column so
+   the eye can run down them; titles are left-aligned so the eye can run down those too. */
+.chapters {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line);
+  background: var(--panel);
+}
+
+.chapter {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  width: 100%;
+  padding: 9px 14px;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink-dim);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background 120ms linear,
+    color 120ms linear;
+}
+
+.chapter:last-child {
+  border-bottom: 0;
+}
+
+.chapter:hover,
+.chapter:focus-visible {
+  background: var(--panel-2);
+  color: var(--ink);
+}
+
+/* The act currently on screen. Set from timeupdate, so it tracks a scrub as well as a click. */
+.chapter[aria-current="true"] {
+  background: var(--panel-2);
+  color: var(--ink);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.chapter .at {
+  flex: none;
+  width: 3.6em;
+  color: var(--accent);
+  font-family: "Silkscreen", monospace;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}
+
+.chapter .what {
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+/* Below 900px the chapter list stops being a sidebar and becomes a list under the film. */
+.film-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 18px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .film-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

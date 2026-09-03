@@ -32,6 +32,7 @@
 <link rel="stylesheet" href="assets/styles/pieces.css">
 <link rel="stylesheet" href="assets/styles/console.css">
 <link rel="stylesheet" href="assets/styles/reference.css">
+<link rel="stylesheet" href="assets/styles/film.css">
 
 <script type="module" src="app/main.js"></script>
 </head>
@@ -47,11 +48,12 @@
     </span>
     <div class="nav-links" id="nav-links">
       <button type="button" class="nav-link" data-view="case" aria-current="page">THE CASE</button>
+      <button type="button" class="nav-link" data-view="film">FILM</button>
       <button type="button" class="nav-link" data-view="console">CONSOLE</button>
       <button type="button" class="nav-link" data-view="install">INSTALL</button>
       <button type="button" class="nav-link" data-view="how">HOW IT WORKS</button>
       <button type="button" class="nav-link" data-view="benchmarks">BENCHMARKS</button>
-      <a class="nav-link out" id="demo-link" href="https://github.com/AmeyaBorkar/kairos" target="_blank" rel="noopener">SOURCE</a>
+      <a class="nav-link out" href="https://github.com/AmeyaBorkar/kairos" target="_blank" rel="noopener">SOURCE</a>
     </div>
     <button type="button" class="cog" id="cog" aria-expanded="false" aria-controls="sheet">⚙ SETTINGS</button>
   </div>
@@ -445,6 +447,45 @@
 <!-- ══════════════════════════════════════════════════════════════════════
      VIEW · CONSOLE
      ══════════════════════════════════════════════════════════════════════ -->
+<!-- ══════════════════ VIEW · FILM ══════════════════ -->
+<main class="view wrap" id="view-film" hidden>
+  <div class="view-head">
+    <h2><span>01</span> &nbsp;THE FILM</h2>
+    <p>Two minutes fifty-six. Every number on screen is read from this repository&rsquo;s benchmark
+       output, and every frame is a deterministic scene function rendered at 4K60 &mdash; there is no
+       editor project and there was no second take. Pick an act to jump to it.</p>
+  </div>
+
+  <div class="strip">
+    <span class="lbl">THE CASE, IN THREE MINUTES</span>
+    <div class="film-layout">
+      <div class="film-frame">
+        <video id="film-video" controls preload="none" playsinline
+               poster="film/poster.jpg" width="1920" height="1080">
+          <source src="film/kairos.mp4" type="video/mp4">
+          <!-- Off by default: every line is already burned into the picture, so captions over it
+               would be the same words twice. Present because a transcript should exist. -->
+          <track kind="captions" src="film/kairos.vtt" srclang="en" label="On-screen text">
+          <p>This browser will not play the file. <a href="film/kairos.mp4" download>Download it</a>
+             instead &mdash; 1080p60, H.264, 32&nbsp;MB.</p>
+        </video>
+      </div>
+      <div class="chapters">
+        <button type="button" class="chapter" data-at="0"><span class="at">0:00</span><span class="what">Every way to pay is a separate machine</span></button>
+        <button type="button" class="chapter" data-at="18.11"><span class="at">0:18</span><span class="what">What a silent failure actually costs</span></button>
+        <button type="button" class="chapter" data-at="50.62"><span class="at">0:50</span><span class="what">Beside the checkout, never in front of it</span></button>
+        <button type="button" class="chapter" data-at="66.87"><span class="at">1:06</span><span class="what">What it recovers, and what it spent to do it</span></button>
+        <button type="button" class="chapter" data-at="107.50"><span class="at">1:47</span><span class="what">An agent you have to watch is a dashboard</span></button>
+        <button type="button" class="chapter" data-at="127.00"><span class="at">2:07</span><span class="what">Where the intelligence actually sits</span></button>
+        <button type="button" class="chapter" data-at="159.51"><span class="at">2:39</span><span class="what">Kairos — the moment, not the clock</span></button>
+      </div>
+    </div>
+    <p class="aside">1080p60 &middot; H.264 &middot; 32&nbsp;MB &middot;
+       <a href="film/kairos.mp4" download>download this cut</a>. Mastered at 3840&times;2160;
+       the 4K file is too large to serve from here.</p>
+  </div>
+</main>
+
 <main class="view wrap" id="view-console" hidden>
   <div class="view-head">
     <h2><span>02</span> &nbsp;SEE IT WORK</h2>
@@ -561,7 +602,7 @@
      ══════════════════════════════════════════════════════════════════════ -->
 <main class="view wrap" id="view-how" hidden>
   <div class="view-head">
-    <h2><span>02</span> &nbsp;HOW IT WORKS</h2>
+    <h2><span>04</span> &nbsp;HOW IT WORKS</h2>
     <p>One incident, from the minute a payment method starts failing to the minute the ledger closes on it. Everything
        below happens without anybody approving anything — which is why the bounds matter more than the
        capabilities.</p>
@@ -963,7 +1004,7 @@ SIGNATURE
      ══════════════════════════════════════════════════════════════════════ -->
 <main class="view wrap" id="view-benchmarks" hidden>
   <div class="view-head">
-    <h2><span>04</span> &nbsp;MEASURED, NOT ASSERTED</h2>
+    <h2><span>05</span> &nbsp;MEASURED, NOT ASSERTED</h2>
     <p>Every figure here was produced by a seeded benchmark anybody can re-run, and carries a regression band derived from an eight-seed variance study. Nothing on this page is an estimate.</p>
   </div>
 
