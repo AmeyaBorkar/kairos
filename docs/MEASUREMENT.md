@@ -580,12 +580,12 @@ on an eighth of them. See
 | Arm | Recovered | Incremental | Postage | Lost | True cost | Messages | Retries | Wasted |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 | do nothing | ₹11,39,929 | — | ₹0 | 0 | ₹0 | 0 | 0 | 0 |
-| chronos ladder (+1h, +24h, +72h) | ₹17,81,031 | ₹6,41,102 | ₹2,436 | 155 | ₹33,436 | 12,420 | 0 | 753 |
-| message everyone, immediately | ₹12,80,665 | ₹1,40,736 | ₹1,088 | 67 | ₹14,488 | 5,556 | 0 | 758 |
-| kairos + template copy | ₹17,61,372 | ₹6,21,443 | ₹973 | 67 | ₹14,373 | 6,221 | 251 | 770 |
-| **kairos + generated copy** | **₹18,33,222** | **₹6,93,293** | **₹627** | **50** | **₹10,627** | 5,730 | 251 | 757 |
+| chronos ladder (+1h, +24h, +72h) | ₹17,23,935 | ₹5,84,006 | ₹2,095 | 132 | ₹28,495 | 10,681 | 0 | 731 |
+| message everyone, immediately | ₹12,80,665 | ₹1,40,736 | ₹1,085 | 67 | ₹14,485 | 5,544 | 0 | 756 |
+| kairos + template copy | ₹17,53,772 | ₹6,13,843 | ₹852 | 58 | ₹12,452 | 5,817 | 251 | 746 |
+| **kairos + generated copy** | **₹18,21,998** | **₹6,82,069** | **₹851** | **54** | **₹11,651** | 5,749 | 251 | 746 |
 
-Regenerated at `f163eb1`. The copy this table carried until now was a mix of two eras — its Kairos
+Regenerated at `5cfa489`. The copy this table carried before Phase 5.75 was a mix of two eras — its Kairos
 row had been refreshed when the fifth arm arrived in Phase 5.75 and its baseline rows had not, so it
 reported a ladder that no configuration in the repository produces. That is [open question
 16](ARCHITECTURE.md#18-open-questions) again: nothing re-runs the full profile, so it drifts, and it
@@ -629,6 +629,10 @@ paid for by people already reaching for another card — so waiting trades recov
 | 15 min | ₹5,89,826 | 6,081 | 931 | 64 | ₹13,634 |
 | **45 min** (default) | **₹6,21,443** | 6,221 | 770 | 67 | ₹14,373 |
 | 120 min | ₹6,12,956 | **5,514** | **537** | 55 | ₹11,851 |
+
+**Measured at `f163eb1` and not re-run since.** Its default row therefore no longer matches the
+comparison above, which was regenerated at `5cfa489`. The rows are still comparable *with each
+other*, which is the only comparison this table is for; re-sweeping is open question 13.
 
 **There is no trade.** Wasted actions fall monotonically with the window and incremental recovery
 does not fall with them, because the two mechanisms point the same way: a customer who returns
@@ -759,15 +763,17 @@ The reasoning is in
 | Overspend, adaptive sizers, bounded | ₹7 |
 | Loss rate avoided, suppressible incident | **49.8%** |
 | Loss rate avoided, demotable incident | 11.0% |
-| Recovered above what came back unaided | **₹6,21,443** |
-| True cost of recovering it | ₹14,373 |
-| Calibration error | **1.33%** |
-| Brier skill over the base rate | 0.255 |
+| Recovered above what came back unaided | **₹6,13,843** |
+| True cost of recovering it | ₹12,452 |
+| Calibration error | **1.84%** |
+| Brier skill over the base rate | 0.252 |
 
 The previous published copy of this table was generated at revision `28ffd73` and had been overtaken
 by three phases of work before anything noticed — which is [open question
 16](ARCHITECTURE.md#18-open-questions) happening rather than being hypothesised about. Nothing
-re-runs the full profile, so it drifted. The figures above were regenerated at `f163eb1`.
+re-runs the full profile, so it drifted — and it drifted a second time between `f163eb1` and
+`5cfa489`, which is the same gap happening again on a shorter timescale. The figures above were
+regenerated at `5cfa489`, at which they reproduce exactly.
 
 Four rows moved for a reason worth stating plainly, and it is not the detector's accuracy: closing
 [open question 19](ARCHITECTURE.md#18-open-questions) made incidents end when the rail is actually
@@ -875,7 +881,7 @@ character budget, and it is reported rather than smoothed over.
 
 ### What it cost
 
-**190 calls, ₹8.15 at list rate**, for a library that serves 5,730 messages in a four-hour window
+**190 calls, ₹8.15 at list rate**, for a library that serves 5,749 messages in a four-hour window
 and every window after it until somebody changes the prompt. Per-message generation would have been
 about forty times the calls, and would have to be paid again every window.
 
@@ -1023,18 +1029,18 @@ both places would have billed it twice and flattered every multilingual result b
 | arm | incremental | messages | opt-outs | true cost | legible |
 |---|---:|---:|---:|---:|---:|
 | do nothing | — | 0 | 0 | ₹0.00 | — |
-| chronos ladder | ₹6,41,102.00 | 12,420 | 155 | ₹33,435.80 | 53.6% |
-| message everyone | ₹1,40,736.00 | 5,556 | 67 | ₹14,487.80 | 54.5% |
-| kairos + template copy | ₹6,21,443.00 | 6,221 | 67 | ₹14,372.63 | 53.7% |
-| **kairos + generated copy** | **₹6,93,293.00** | **5,730** | **50** | **₹10,626.95** | **100%** |
+| chronos ladder | ₹5,84,006.00 | 10,681 | 132 | ₹28,495.00 | 53.6% |
+| message everyone | ₹1,40,736.00 | 5,544 | 67 | ₹14,485.40 | 54.5% |
+| kairos + template copy | ₹6,13,843.00 | 5,817 | 58 | ₹12,451.97 | 53.6% |
+| **kairos + generated copy** | **₹6,82,069.00** | **5,749** | **54** | **₹11,650.99** | **100%** |
 
-Generated copy recovered **₹71,850 more** than the same system running templates, on 491 fewer
-messages and 17 fewer opt-outs. Fewer messages is not a separate saving — a customer who acts on the
+Generated copy recovered **₹68,226 more** than the same system running templates, on 68 fewer
+messages and 4 fewer opt-outs. Fewer messages is not a separate saving — a customer who acts on the
 first message never receives the second.
 
 It also moves the headline the recovery report has carried since Phase 4. Kairos previously recovered
 about 6% *less* incremental revenue than the fixed ladder and won on cost; with generated copy it
-recovers **8% more, on 54% fewer messages and with 105 fewer customers lost to opt-out**.
+recovers **17% more, on 46% fewer messages and with 78 fewer customers lost to opt-out**.
 
 **Both Kairos rows moved when open question 19 was closed**, and the baselines did not — the ladder
 and the blast arm do not consult the detector, so they are untouched, which is a useful check that
@@ -1054,6 +1060,9 @@ it, the harness sweeps the readability penalty across its whole range, four seed
 | 0.00 | ₹5,12,356.00 | ₹7,19,345.50 | ₹2,06,989.50 | ₹1,74,151.00 | ₹2,47,377.00 |
 | 0.50 | ₹6,14,368.50 | ₹7,19,345.50 | ₹1,04,977.00 | ₹71,850.00 | ₹1,69,829.00 |
 | 1.00 | ₹7,08,978.25 | ₹7,19,345.50 | **₹10,367.25** | −₹3,021.00 | ₹33,220.00 |
+
+Four seeds at `f163eb1`, and not re-run since — so these do not line up with the single-seed
+headline above, which was regenerated at `5cfa489`. The shape is what this table is for.
 
 **The generated column does not move.** Every message that arm sends is legible, so the penalty has
 nothing to bite on; all the movement is in the baseline. That is the whole finding: what the library

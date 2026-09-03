@@ -2,9 +2,9 @@ Kairos scorecard
 ────────────────────────────────────────────────────────────────────────────────────────────
 profile        full
 config         1715c07b4cfff993
-revision       f163eb1-dirty
+revision       5cfa489
 node           v24.13.1
-elapsed        84.1s
+elapsed        76.4s
 
 Claims that must hold exactly
 ────────────────────────────────────────────────────────────────────────────────────────────
@@ -20,10 +20,10 @@ Claims that must hold exactly
   prevent.detectionHeld                           true   the detector kept each incident open for the whole degradation it was steering against
   prevent.controlAttempts                          326   customers were held out of steering, so the comparison has a control
   prevent.upi-hdfc-moderate.steersIssued             0   steering declined on upi-hdfc-moderate, where the rail is degraded but not enough to be worth moving
-  recover.beatsDoNothing                   6,21,44,300   the recovery arm collected more than the customers would have returned with unaided
+  recover.beatsDoNothing                   6,13,84,300   the recovery arm collected more than the customers would have returned with unaided
   recover.unclassified                               0   no failure in our own traffic model fell through to `unknown` — a classifier that cannot name them would be measuring its fallback
-  recover.holdoutCasualties                      2,172   casualties were held out of treatment entirely, which is the only reason any recovery figure has a denominator
-  recover.calibrationPredictions                 6,472   the probability model made predictions there were outcomes for
+  recover.holdoutCasualties                      2,331   casualties were held out of treatment entirely, which is the only reason any recovery figure has a denominator
+  recover.calibrationPredictions                 6,068   the probability model made predictions there were outcomes for
   recover.ledgerVerified                          true   the recovery arm's audit chain hashes end to end
   recover.refusals                                   0   nothing was proposed that the kernel then had to decline; the worker checks the schedule before it asks
   recover.generatedCopyServed                     true   the generated-copy arm was actually served by the library rather than falling back to templates on every message
@@ -66,21 +66,21 @@ Numbers that carry a band
                                                             times the lever or target changed mid-steer on upi-hdfc-severe
   prevent.upi-hdfc-severe.collateralDelta          -2.72%
                                                             what happened to customers on upi-hdfc-severe whose own rail was fine and who were moved anyway — negative is the cost of the lever, not a bug
-  recover.incrementalPaise                   ₹6,21,443.00
+  recover.incrementalPaise                   ₹6,13,843.00
                                                             recovered because of the arm, over and above what came back unaided
-  recover.trueCostPaise                        ₹14,372.63
+  recover.trueCostPaise                        ₹12,451.97
                                                             postage plus the priced value of every customer lost to an opt-out
-  recover.messages                                  6,221
+  recover.messages                                  5,817
                                                             messages sent — the term the contact cap and the opt-out cost are both about
-  recover.copyLegibleRate                          53.72%
+  recover.copyLegibleRate                          53.64%
                                                             share of the baseline's messages that reached somebody in a script they read — the size of the problem the copy library exists to solve, measured on the arm that does not solve it
-  recover.generatedGainPaise                   ₹71,850.00
+  recover.generatedGainPaise                   ₹68,226.00
                                                             what generated copy recovered over the same system running templates, at the default readability penalty — a figure that goes to zero if that penalty is wrong
-  recover.wastedActions                               770
+  recover.wastedActions                               746
                                                             actions that landed on somebody who was coming back anyway
-  recover.calibrationError                          1.33%
+  recover.calibrationError                          1.84%
                                                             expected calibration error — whether a stated 30% means thirty per cent, which is what the gate multiplies by a rupee amount
-  recover.calibrationSkill                          0.255
+  recover.calibrationSkill                          0.252
                                                             Brier skill over the base rate — a model that repeats the base rate for ever is perfectly calibrated and worth nothing
   recover.autonomousShare                          12.01%
                                                             share of casualties chargeable again without the customer present; a property of the merchant's mix rather than of Kairos

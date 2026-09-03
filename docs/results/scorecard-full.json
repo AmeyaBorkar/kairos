@@ -3,7 +3,7 @@
     "provenance": {
       "profile": "full",
       "configHash": "1715c07b4cfff993",
-      "codeRevision": "f163eb1-dirty",
+      "codeRevision": "5cfa489",
       "node": "v24.13.1",
       "config": {
         "profile": "full",
@@ -272,56 +272,56 @@
       },
       {
         "id": "recover.incrementalPaise",
-        "value": 62144300,
+        "value": 61384300,
         "direction": "higher-is-better",
         "unit": "paise",
         "label": "recovered because of the arm, over and above what came back unaided"
       },
       {
         "id": "recover.trueCostPaise",
-        "value": 1437263,
+        "value": 1245197,
         "direction": "lower-is-better",
         "unit": "paise",
         "label": "postage plus the priced value of every customer lost to an opt-out"
       },
       {
         "id": "recover.messages",
-        "value": 6221,
+        "value": 5817,
         "direction": "lower-is-better",
         "unit": "count",
         "label": "messages sent — the term the contact cap and the opt-out cost are both about"
       },
       {
         "id": "recover.copyLegibleRate",
-        "value": 0.5372126667738306,
+        "value": 0.5363589479112945,
         "direction": "higher-is-better",
         "unit": "ratio",
         "label": "share of the baseline's messages that reached somebody in a script they read — the size of the problem the copy library exists to solve, measured on the arm that does not solve it"
       },
       {
         "id": "recover.generatedGainPaise",
-        "value": 7185000,
+        "value": 6822600,
         "direction": "higher-is-better",
         "unit": "paise",
         "label": "what generated copy recovered over the same system running templates, at the default readability penalty — a figure that goes to zero if that penalty is wrong"
       },
       {
         "id": "recover.wastedActions",
-        "value": 770,
+        "value": 746,
         "direction": "lower-is-better",
         "unit": "count",
         "label": "actions that landed on somebody who was coming back anyway"
       },
       {
         "id": "recover.calibrationError",
-        "value": 0.01325941984754358,
+        "value": 0.018419598407058348,
         "direction": "lower-is-better",
         "unit": "ratio",
         "label": "expected calibration error — whether a stated 30% means thirty per cent, which is what the gate multiplies by a rupee amount"
       },
       {
         "id": "recover.calibrationSkill",
-        "value": 0.2546803079623857,
+        "value": 0.2524875299491035,
         "direction": "higher-is-better",
         "unit": "rate",
         "label": "Brier skill over the base rate — a model that repeats the base rate for ever is perfectly calibrated and worth nothing"
@@ -422,7 +422,7 @@
       {
         "id": "recover.beatsDoNothing",
         "kind": "positive",
-        "value": 62144300,
+        "value": 61384300,
         "expected": null,
         "label": "the recovery arm collected more than the customers would have returned with unaided"
       },
@@ -436,14 +436,14 @@
       {
         "id": "recover.holdoutCasualties",
         "kind": "positive",
-        "value": 2172,
+        "value": 2331,
         "expected": null,
         "label": "casualties were held out of treatment entirely, which is the only reason any recovery figure has a denominator"
       },
       {
         "id": "recover.calibrationPredictions",
         "kind": "positive",
-        "value": 6472,
+        "value": 6068,
         "expected": null,
         "label": "the probability model made predictions there were outcomes for"
       },
@@ -469,7 +469,7 @@
         "label": "the generated-copy arm was actually served by the library rather than falling back to templates on every message"
       }
     ],
-    "elapsedMs": 84066.2779
+    "elapsedMs": 76411.2233
   },
   "detail": {
     "detect": {
@@ -1699,23 +1699,25 @@
           "name": "chronos ladder (+1h, +24h, +72h)",
           "casualties": 5556,
           "lostPaise": 480450400,
-          "recovered": 2014,
-          "recoveredPaise": 178103100,
-          "incrementalPaise": 64110200,
-          "spentPaise": 243580,
-          "messages": 12420,
+          "recovered": 1942,
+          "recoveredPaise": 172393500,
+          "incrementalPaise": 58400600,
+          "spentPaise": 209500,
+          "messages": 10681,
           "retries": 0,
-          "optOuts": 155,
-          "wastedActions": 753,
-          "wastedPaise": 15060,
-          "refusals": {},
+          "optOuts": 132,
+          "wastedActions": 731,
+          "wastedPaise": 14620,
+          "refusals": {
+            "contact-cap": 1788
+          },
           "ledgerVerified": true,
-          "auditRecords": 24840,
+          "auditRecords": 23150,
           "copy": {
             "source": "hand-written templates (English)",
-            "sent": 12420,
+            "sent": 10681,
             "fromLibrary": 0,
-            "legible": 6655
+            "legible": 5721
           }
         },
         {
@@ -1725,66 +1727,68 @@
           "recovered": 1441,
           "recoveredPaise": 128066500,
           "incrementalPaise": 14073600,
-          "spentPaise": 108780,
-          "messages": 5556,
+          "spentPaise": 108540,
+          "messages": 5544,
           "retries": 0,
           "optOuts": 67,
-          "wastedActions": 758,
-          "wastedPaise": 15160,
-          "refusals": {},
+          "wastedActions": 756,
+          "wastedPaise": 15120,
+          "refusals": {
+            "contact-cap": 12
+          },
           "ledgerVerified": true,
-          "auditRecords": 11112,
+          "auditRecords": 11100,
           "copy": {
             "source": "hand-written templates (English)",
-            "sent": 5556,
+            "sent": 5544,
             "fromLibrary": 0,
-            "legible": 3029
+            "legible": 3021
           }
         },
         {
           "name": "kairos + template copy",
           "casualties": 5556,
           "lostPaise": 480450400,
-          "recovered": 1993,
-          "recoveredPaise": 176137200,
-          "incrementalPaise": 62144300,
-          "spentPaise": 97263,
-          "messages": 6221,
+          "recovered": 1983,
+          "recoveredPaise": 175377200,
+          "incrementalPaise": 61384300,
+          "spentPaise": 85197,
+          "messages": 5817,
           "retries": 251,
-          "optOuts": 67,
-          "wastedActions": 770,
-          "wastedPaise": 12688,
+          "optOuts": 58,
+          "wastedActions": 746,
+          "wastedPaise": 12182,
           "refusals": {},
           "ledgerVerified": true,
-          "auditRecords": 12944,
+          "auditRecords": 12136,
           "copy": {
             "source": "hand-written templates (English)",
-            "sent": 6221,
+            "sent": 5817,
             "fromLibrary": 0,
-            "legible": 3342
+            "legible": 3120
           }
         },
         {
           "name": "kairos + generated copy",
           "casualties": 5556,
           "lostPaise": 480450400,
-          "recovered": 2099,
-          "recoveredPaise": 183322200,
-          "incrementalPaise": 69329300,
-          "spentPaise": 62695,
-          "messages": 5730,
+          "recovered": 2067,
+          "recoveredPaise": 182199800,
+          "incrementalPaise": 68206900,
+          "spentPaise": 85099,
+          "messages": 5749,
           "retries": 251,
-          "optOuts": 50,
-          "wastedActions": 757,
-          "wastedPaise": 8392,
+          "optOuts": 54,
+          "wastedActions": 746,
+          "wastedPaise": 12144,
           "refusals": {},
           "ledgerVerified": true,
-          "auditRecords": 11962,
+          "auditRecords": 12000,
           "copy": {
             "source": "library(gemini-3.1-flash-lite) → hand-written templates (English)",
-            "sent": 5730,
-            "fromLibrary": 5730,
-            "legible": 5730
+            "sent": 5749,
+            "fromLibrary": 5749,
+            "legible": 5749
           }
         }
       ],
@@ -1797,59 +1801,59 @@
         "ta": 0.09215262778977681
       },
       "holdout": {
-        "casualties": 2172,
-        "recoveredPaise": 55674700
+        "casualties": 2331,
+        "recoveredPaise": 57587400
       },
       "calibration": {
         "bins": [
           {
             "lower": 0,
             "upper": 0.1,
-            "count": 2458,
-            "predicted": 0.05750361156868418,
-            "observed": 0.051668022782750206
+            "count": 1862,
+            "predicted": 0.05435186170831806,
+            "observed": 0.04457572502685284
           },
           {
             "lower": 0.1,
             "upper": 0.2,
-            "count": 1167,
-            "predicted": 0.12759730704484348,
-            "observed": 0.10882604970008569
+            "count": 1351,
+            "predicted": 0.13547213028072572,
+            "observed": 0.11028867505551443
           },
           {
             "lower": 0.2,
             "upper": 0.3,
-            "count": 758,
-            "predicted": 0.24257828214476462,
-            "observed": 0.22163588390501318
+            "count": 701,
+            "predicted": 0.2410212953699458,
+            "observed": 0.20970042796005706
           },
           {
             "lower": 0.3,
             "upper": 0.4,
-            "count": 1155,
-            "predicted": 0.38328846415496015,
-            "observed": 0.37575757575757573
+            "count": 1296,
+            "predicted": 0.38106585417622824,
+            "observed": 0.37808641975308643
           },
           {
             "lower": 0.4,
             "upper": 0.5,
-            "count": 678,
-            "predicted": 0.4097475955371462,
-            "observed": 0.3952802359882006
+            "count": 602,
+            "predicted": 0.40805690998721755,
+            "observed": 0.3770764119601329
           },
           {
             "lower": 0.5,
             "upper": 0.6,
-            "count": 16,
-            "predicted": 0.5791950135334878,
-            "observed": 0.8125
+            "count": 12,
+            "predicted": 0.5783184118155896,
+            "observed": 0.75
           },
           {
             "lower": 0.6,
             "upper": 0.7,
-            "count": 11,
-            "predicted": 0.646177347053261,
-            "observed": 0.7272727272727273
+            "count": 15,
+            "predicted": 0.6361412123597971,
+            "observed": 0.8
           },
           {
             "lower": 0.7,
@@ -1869,14 +1873,14 @@
             "lower": 0.9,
             "upper": 1,
             "count": 222,
-            "predicted": 0.949061651030308,
+            "predicted": 0.949062574991269,
             "observed": 0.990990990990991
           }
         ],
-        "expectedError": 0.01325941984754358,
-        "brier": 0.12443952851558109,
-        "skill": 0.2546803079623857,
-        "predictions": 6472
+        "expectedError": 0.018419598407058348,
+        "brier": 0.1288264748959774,
+        "skill": 0.2524875299491035,
+        "predictions": 6068
       },
       "autonomousShare": 0.12005039596832254,
       "classMix": {

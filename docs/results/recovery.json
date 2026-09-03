@@ -27,23 +27,25 @@
       "name": "chronos ladder (+1h, +24h, +72h)",
       "casualties": 5556,
       "lostPaise": 480450400,
-      "recovered": 2014,
-      "recoveredPaise": 178103100,
-      "incrementalPaise": 64110200,
-      "spentPaise": 243580,
-      "messages": 12420,
+      "recovered": 1942,
+      "recoveredPaise": 172393500,
+      "incrementalPaise": 58400600,
+      "spentPaise": 209500,
+      "messages": 10681,
       "retries": 0,
-      "optOuts": 155,
-      "wastedActions": 753,
-      "wastedPaise": 15060,
-      "refusals": {},
+      "optOuts": 132,
+      "wastedActions": 731,
+      "wastedPaise": 14620,
+      "refusals": {
+        "contact-cap": 1788
+      },
       "ledgerVerified": true,
-      "auditRecords": 24840,
+      "auditRecords": 23150,
       "copy": {
         "source": "hand-written templates (English)",
-        "sent": 12420,
+        "sent": 10681,
         "fromLibrary": 0,
-        "legible": 6655
+        "legible": 5721
       }
     },
     {
@@ -53,143 +55,145 @@
       "recovered": 1441,
       "recoveredPaise": 128066500,
       "incrementalPaise": 14073600,
-      "spentPaise": 108780,
-      "messages": 5556,
+      "spentPaise": 108540,
+      "messages": 5544,
       "retries": 0,
       "optOuts": 67,
-      "wastedActions": 758,
-      "wastedPaise": 15160,
-      "refusals": {},
+      "wastedActions": 756,
+      "wastedPaise": 15120,
+      "refusals": {
+        "contact-cap": 12
+      },
       "ledgerVerified": true,
-      "auditRecords": 11112,
+      "auditRecords": 11100,
       "copy": {
         "source": "hand-written templates (English)",
-        "sent": 5556,
+        "sent": 5544,
         "fromLibrary": 0,
-        "legible": 3029
+        "legible": 3021
       }
     },
     {
       "name": "kairos + template copy",
       "casualties": 5556,
       "lostPaise": 480450400,
-      "recovered": 1993,
-      "recoveredPaise": 176137200,
-      "incrementalPaise": 62144300,
-      "spentPaise": 97263,
-      "messages": 6221,
+      "recovered": 1983,
+      "recoveredPaise": 175377200,
+      "incrementalPaise": 61384300,
+      "spentPaise": 85197,
+      "messages": 5817,
       "retries": 251,
-      "optOuts": 67,
-      "wastedActions": 770,
-      "wastedPaise": 12688,
+      "optOuts": 58,
+      "wastedActions": 746,
+      "wastedPaise": 12182,
       "refusals": {},
       "ledgerVerified": true,
-      "auditRecords": 12944,
+      "auditRecords": 12136,
       "copy": {
         "source": "hand-written templates (English)",
-        "sent": 6221,
+        "sent": 5817,
         "fromLibrary": 0,
-        "legible": 3342
+        "legible": 3120
       }
     },
     {
       "name": "kairos + generated copy",
       "casualties": 5556,
       "lostPaise": 480450400,
-      "recovered": 2099,
-      "recoveredPaise": 183322200,
-      "incrementalPaise": 69329300,
-      "spentPaise": 62695,
-      "messages": 5730,
+      "recovered": 2067,
+      "recoveredPaise": 182199800,
+      "incrementalPaise": 68206900,
+      "spentPaise": 85099,
+      "messages": 5749,
       "retries": 251,
-      "optOuts": 50,
-      "wastedActions": 757,
-      "wastedPaise": 8392,
+      "optOuts": 54,
+      "wastedActions": 746,
+      "wastedPaise": 12144,
       "refusals": {},
       "ledgerVerified": true,
-      "auditRecords": 11962,
+      "auditRecords": 12000,
       "copy": {
         "source": "library(gemini-3.1-flash-lite) → hand-written templates (English)",
-        "sent": 5730,
-        "fromLibrary": 5730,
-        "legible": 5730
+        "sent": 5749,
+        "fromLibrary": 5749,
+        "legible": 5749
       }
     }
   ],
   "windowSweep": [
     {
       "windowMs": 0,
-      "incrementalPaise": 51639300,
-      "messages": 6583,
+      "incrementalPaise": 55902900,
+      "messages": 6371,
       "retries": 251,
-      "optOuts": 42,
-      "spentPaise": 69381,
-      "wastedActions": 1093
+      "optOuts": 54,
+      "spentPaise": 76593,
+      "wastedActions": 1078
     },
     {
       "windowMs": 300000,
-      "incrementalPaise": 57879300,
-      "messages": 6136,
+      "incrementalPaise": 59833900,
+      "messages": 6123,
       "retries": 251,
-      "optOuts": 65,
-      "spentPaise": 95939,
-      "wastedActions": 1024
+      "optOuts": 70,
+      "spentPaise": 93393,
+      "wastedActions": 1005
     },
     {
       "windowMs": 900000,
-      "incrementalPaise": 58982600,
-      "messages": 6081,
+      "incrementalPaise": 59355500,
+      "messages": 6034,
       "retries": 251,
       "optOuts": 64,
-      "spentPaise": 83429,
-      "wastedActions": 931
+      "spentPaise": 80673,
+      "wastedActions": 911
     },
     {
       "windowMs": 2700000,
-      "incrementalPaise": 62144300,
-      "messages": 6221,
+      "incrementalPaise": 61384300,
+      "messages": 5817,
       "retries": 251,
-      "optOuts": 67,
-      "spentPaise": 97263,
-      "wastedActions": 770
+      "optOuts": 58,
+      "spentPaise": 85197,
+      "wastedActions": 746
     },
     {
       "windowMs": 7200000,
-      "incrementalPaise": 61295600,
-      "messages": 5514,
+      "incrementalPaise": 62146900,
+      "messages": 5531,
       "retries": 251,
-      "optOuts": 55,
-      "spentPaise": 85129,
-      "wastedActions": 537
+      "optOuts": 63,
+      "spentPaise": 90021,
+      "wastedActions": 535
     }
   ],
   "legibilitySweep": [
     {
       "penalty": 0,
       "seeds": 4,
-      "templatePaise": 51235600,
-      "generatedPaise": 71934550,
-      "gainPaise": 20698950,
-      "gainLowPaise": 17415100,
-      "gainHighPaise": 24737700
+      "templatePaise": 52804300,
+      "generatedPaise": 72954450,
+      "gainPaise": 20150150,
+      "gainLowPaise": 16944000,
+      "gainHighPaise": 25596700
     },
     {
       "penalty": 0.5,
       "seeds": 4,
-      "templatePaise": 61436850,
-      "generatedPaise": 71934550,
-      "gainPaise": 10497700,
-      "gainLowPaise": 7185000,
-      "gainHighPaise": 16982900
+      "templatePaise": 63427225,
+      "generatedPaise": 72954450,
+      "gainPaise": 9527225,
+      "gainLowPaise": 6822600,
+      "gainHighPaise": 11689400
     },
     {
       "penalty": 1,
       "seeds": 4,
-      "templatePaise": 70897825,
-      "generatedPaise": 71934550,
-      "gainPaise": 1036725,
-      "gainLowPaise": -302100,
-      "gainHighPaise": 3322000
+      "templatePaise": 71772100,
+      "generatedPaise": 72954450,
+      "gainPaise": 1182350,
+      "gainLowPaise": 72800,
+      "gainHighPaise": 2743900
     }
   ],
   "languageMix": {
@@ -199,59 +203,59 @@
     "ta": 0.09215262778977681
   },
   "holdout": {
-    "casualties": 2172,
-    "recoveredPaise": 55674700
+    "casualties": 2331,
+    "recoveredPaise": 57587400
   },
   "calibration": {
     "bins": [
       {
         "lower": 0,
         "upper": 0.1,
-        "count": 2458,
-        "predicted": 0.05750361156868418,
-        "observed": 0.051668022782750206
+        "count": 1862,
+        "predicted": 0.05435186170831806,
+        "observed": 0.04457572502685284
       },
       {
         "lower": 0.1,
         "upper": 0.2,
-        "count": 1167,
-        "predicted": 0.12759730704484348,
-        "observed": 0.10882604970008569
+        "count": 1351,
+        "predicted": 0.13547213028072572,
+        "observed": 0.11028867505551443
       },
       {
         "lower": 0.2,
         "upper": 0.3,
-        "count": 758,
-        "predicted": 0.24257828214476462,
-        "observed": 0.22163588390501318
+        "count": 701,
+        "predicted": 0.2410212953699458,
+        "observed": 0.20970042796005706
       },
       {
         "lower": 0.3,
         "upper": 0.4,
-        "count": 1155,
-        "predicted": 0.38328846415496015,
-        "observed": 0.37575757575757573
+        "count": 1296,
+        "predicted": 0.38106585417622824,
+        "observed": 0.37808641975308643
       },
       {
         "lower": 0.4,
         "upper": 0.5,
-        "count": 678,
-        "predicted": 0.4097475955371462,
-        "observed": 0.3952802359882006
+        "count": 602,
+        "predicted": 0.40805690998721755,
+        "observed": 0.3770764119601329
       },
       {
         "lower": 0.5,
         "upper": 0.6,
-        "count": 16,
-        "predicted": 0.5791950135334878,
-        "observed": 0.8125
+        "count": 12,
+        "predicted": 0.5783184118155896,
+        "observed": 0.75
       },
       {
         "lower": 0.6,
         "upper": 0.7,
-        "count": 11,
-        "predicted": 0.646177347053261,
-        "observed": 0.7272727272727273
+        "count": 15,
+        "predicted": 0.6361412123597971,
+        "observed": 0.8
       },
       {
         "lower": 0.7,
@@ -271,14 +275,14 @@
         "lower": 0.9,
         "upper": 1,
         "count": 222,
-        "predicted": 0.949061651030308,
+        "predicted": 0.949062574991269,
         "observed": 0.990990990990991
       }
     ],
-    "expectedError": 0.01325941984754358,
-    "brier": 0.12443952851558109,
-    "skill": 0.2546803079623857,
-    "predictions": 6472
+    "expectedError": 0.018419598407058348,
+    "brier": 0.1288264748959774,
+    "skill": 0.2524875299491035,
+    "predictions": 6068
   },
   "autonomousShare": 0.12005039596832254,
   "classMix": {

@@ -73,10 +73,10 @@ reported, not netted away. A moderate UPI outage produces **no steer at all** �
 better to send anyone, and a system that steered anyway would cause the loss it exists to prevent.
 
 **Recovery** — against a fixed +1h/+24h/+72h ladder given the same budget, contact cap and quiet
-hours, Kairos recovers **8% more money** and does it with **half the messages** and **50 customers
-lost to opt-outs rather than 155**. Priced at what consent is worth, that is a **68% lower true
+hours, Kairos recovers **17% more money** and does it with **half the messages** and **54 customers
+lost to opt-outs rather than 132**. Priced at what consent is worth, that is a **59% lower true
 cost**. Brute force finds money; it finds it by spending goodwill nobody put on the invoice. The
-recovery probability is calibrated to **1.3% expected error**, which is the property an
+recovery probability is calibrated to **1.8% expected error**, which is the property an
 expected-value gate actually needs — not accuracy, but that 30% means thirty per cent.
 
 A tenth of casualties are held out of treatment entirely, so every recovery figure above is
@@ -94,7 +94,7 @@ claim that cannot break and one that merely cannot be measured this cheaply
 ([ADR 0005](docs/decisions/0005-a-benchmark-that-reproduces-exactly-still-needs-a-band.md)).
 
 **Language** — a model writes the recovery copy, once per *situation* rather than once per message:
-180 calls instead of 5,730, into a file that is reviewed in a pull request and committed. No
+180 calls instead of 5,749, into a file that is reviewed in a pull request and committed. No
 inference happens on the path where money moves, the benchmark stays seeded while using real model
 output, and CI never makes a call. The prompt cannot contain a customer's name because a customer's
 name is never assembled — the model writes a sentence with holes and a pure function fills them. An
@@ -103,7 +103,7 @@ call, reconciled against the tokens the provider reports, and priced at list rat
 tier ([ADR 0006](docs/decisions/0006-copy-is-written-once-reviewed-and-committed.md)).
 
 The library is now read at send time, and a fifth benchmark arm measures what it is worth against the
-same system running hand-written templates: **₹71,850 more recovered, on 491 fewer messages and 17
+same system running hand-written templates: **₹68,226 more recovered, on 68 fewer messages and 4
 fewer opt-outs.** The result is narrower than it sounds, and the sweep beside it is the honest part —
 the entire gain is *readability*, not better writing. Set the readability penalty to 1, where a
 message in the wrong script works as well as one in the right script, and generated copy is worth
