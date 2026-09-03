@@ -711,8 +711,9 @@
       <div class="panel">
         <h4>A GATEWAY</h4>
         <p>The Razorpay adapter ships. <code>Gateway</code> and <code>Messenger</code> are
-          <em class="hot">ports</em> — about eighty lines each — so another gateway is an adapter
-          rather than a fork. Nothing in the core imports a network client.</p>
+          <em class="hot">ports</em> — one method each, <code>charge</code> and <code>send</code> — so
+          another gateway is an adapter rather than a fork. Nothing in the core imports a network
+          client.</p>
       </div>
       <div class="panel">
         <h4>POSTGRES — OPTIONAL</h4>
