@@ -34,6 +34,9 @@ const TICK_MS = optionalInt("KAIROS_TRAFFIC_TICK_MS", 2000);
 /** `POST /outcomes` caps a batch at 1000, and a pass at 60x can exceed that on a busy minute. */
 const MAX_BATCH = 1000;
 
+/** Earlier than any clock any process here could report. See `file`. */
+const DUE_NOW = 0;
+
 function log(line: Record<string, unknown>): void {
   process.stdout.write(`${JSON.stringify(line)}\n`);
 }
@@ -139,14 +142,24 @@ async function store(): Promise<{ store: CasualtyStore; name: string; close(): P
 /**
  * File the failures.
  *
- * Due immediately: the schedule inside the worker decides when each one is actually worth acting
- * on, and pre-empting it here would be a second scheduler disagreeing with the first.
+ * Due immediately, and immediately means zero rather than "when it happened".
+ *
+ * The intake is not a scheduler. `schedule()` inside the worker decides when a casualty is worth
+ * acting on — the rail coming back, the hour a customer is likely to have money, the next rung of a
+ * backoff — and a due date invented here would be a second scheduler disagreeing with the first.
+ *
+ * It also has to be a date the worker can read. This process stamps attempts in its own accelerated
+ * frame, whose origin is the moment *it* booted; the worker's frame has its own origin. They agree
+ * closely enough while both are running, and not at all once either restarts: a worker that comes
+ * back sixty seconds later starts an hour behind in simulated time, and every casualty already in
+ * the queue is dated in its future. It would then consider nothing, for ever, while looking
+ * perfectly healthy. Zero is the one value no clock disagrees about.
  */
 async function file(target: CasualtyStore, casualties: readonly Casualty[]): Promise<number> {
   let filed = 0;
   for (const casualty of casualties) {
     try {
-      await target.save(casualty, casualty.occurredAt);
+      await target.save(casualty, DUE_NOW);
       filed++;
     } catch (error) {
       log({ error: "could not file", detail: error instanceof Error ? error.message : "unknown" });
