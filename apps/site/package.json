@@ -9,6 +9,7 @@
     "build": "node scripts/make-icons.mjs && tsc -p tsconfig.build.json",
     "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.test.json",
     "icons": "node scripts/make-icons.mjs",
+    "poster": "node scripts/make-poster.mjs",
     "capture": "node scripts/capture-run.mjs",
     "dev": "node scripts/serve.mjs",
     "start": "node scripts/serve.mjs",
