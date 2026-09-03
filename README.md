@@ -8,7 +8,7 @@ tap Pay, get an error, and leave. At almost every merchant nothing happens for f
 notices soft numbers, asks in a group chat, investigates, maybe disables something. Those sales are
 gone, and they never appear in any report *as* a loss.
 
-Kairos notices in about three minutes, steers customers off the failing rail before they ever see an
+Kairos notices in about ninety seconds, steers customers off the failing rail before they ever see an
 error, and then chases the ones already lost — knowing *why* each of them failed, so it retries the
 moment the rail heals instead of guessing at a fixed schedule.
 
@@ -154,7 +154,7 @@ quietly:
   bringing them back, which is not a model of anything — legibility now prices the response rate,
   once, where it acts (Phase 5.75);
 - the detector was measured on how fast it opens an incident and never on how fast it closes one. It
-  detected in about three minutes and resolved about **six hours** after the rail recovered, because
+  detected in about ninety seconds and resolved about **six hours** after the rail recovered, because
   a bank of CUSUMs reports its maximum and after a recovery that maximum is always the most sensitive
   statistic — the one whose job is to be slow. The alarm was decided by the fastest riser and the
   clear by the slowest faller, so *adding* a hypothesis to catch milder degradations made every
