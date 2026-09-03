@@ -311,7 +311,8 @@ payment-health tool must never be "no payments" — a malformed request gets the
 ordering back with the fault named in `reason`. `arm` is the field worth wiring: echo it back on the
 outcome and the holdout analysis is correct without anyone having to know what a holdout is.
 
-**2 · The outcome stream comes back.** The same events a merchant already has a webhook for.
+**2 · The outcome stream comes back.** The same events a merchant already has a webhook for,
+either reported in batches or delivered by the gateway itself.
 
 ```sh
 curl -X POST localhost:8080/outcomes -H 'content-type: application/json' \
@@ -319,6 +320,27 @@ curl -X POST localhost:8080/outcomes -H 'content-type: application/json' \
        "amountPaise":120000,"method":"upi","issuer":"hdfc","status":"failed","at":1756900000000,
        "arm":"treated"}]}'
 ```
+
+Set `RAZORPAY_WEBHOOK_SECRET` and `LEDGER_PII_HASH_KEY` and `POST /webhooks/razorpay` accepts
+Razorpay's own deliveries, so a merchant points the dashboard at Kairos and reports nothing at all.
+Three things must be true before one changes any state: the signature verifies against the **raw**
+bytes, the event is recent, and it is not one already handled. A delivery failing any of them is
+answered `200` with the reason in the body — Razorpay retries a non-2xx for hours, and a bad
+signature does not become good on the fourth attempt.
+
+What the gateway reports about the failure is passed through untranslated. `source`, `step` and
+`reason` are the triple the classifier reads, and re-coding them into a private enum would put a
+lossy mapping between the gateway's account of what went wrong and the decision made about it:
+
+```json
+{"event":"payment.failed","method":"card","status":"failed",
+ "failure":{"code":"BAD_REQUEST_ERROR","source":"business",
+            "step":"payment_initiation","reason":"international_transaction_not_allowed"}}
+```
+
+Personal data stops at that boundary. A payment entity carries `email` and `contact`; the translation
+takes a pseudonymiser as a **required** argument, so everything past it holds a keyed hash and a
+phone number cannot reach the detector, the ledger or a model prompt by omission.
 
 **3 · A worker drains the casualties.** Dry-run by default: it decides everything and sends nothing.
 
@@ -334,6 +356,42 @@ acting on one casualty. The schema is printable for a deployment that owns its o
 ```sh
 pnpm --filter @kairos/postgres run schema | psql "$DATABASE_URL"
 ```
+
+## Against a real gateway
+
+```sh
+pnpm razorpay:probe          # create an order, read it back, exercise the error path
+pnpm razorpay:probe --link   # also create a payment link
+```
+
+The client's request shapes, authentication, retry policy and error handling are written against
+Razorpay's published API and exercised in tests against a stubbed transport. A stub can be
+confidently wrong about all of them, so the probe wires the same `fetch` the client names as its
+production transport and makes real calls in test mode. It creates an order — a request for money
+nobody has paid, reaching no one and costing nothing — reads back an error for a payment id that
+cannot exist, and records what happened in `docs/razorpay-probe.json`:
+
+```
+POST /v1/orders                          200   165 ms   order_TXhjDUA94yteWS
+GET  /v1/payments/pay_KairosProbeNoSuch  400   620 ms   BAD_REQUEST_ERROR, retryable: false
+POST /v1/payment_links                   200   951 ms
+```
+
+It refuses a live key rather than warning about one. Every credential in this project is test mode
+by policy, and the failure mode of getting that wrong is a real charge to a real person.
+
+**What that verifies, and what it does not.** Authentication, request shaping, entity parsing and the
+mapping of a 4xx to a non-retryable error are exercised against the live API, along with the inbound
+webhook path end to end: signed by Razorpay, verified here, translated, and observed by the detector.
+The **retry policy is not**, and no probe can verify it — 429 and 5xx are what drive it, and a healthy
+gateway will not produce either on request. The recovery arm's live half, charging a saved token and
+sending a message, needs a gateway able to charge with nobody present and a DLT-registered sender:
+things a deployment has and a repository does not.
+
+One thing to know about running both at once. The demonstration accelerates its clock and a real
+webhook is stamped by the outside world; one detector has one clock, so set `KAIROS_CLOCK_SPEED=1`
+and stop the traffic generator when pointing a real gateway at it. That is what a deployment looks
+like anyway.
 
 ## Authoring a mandate
 

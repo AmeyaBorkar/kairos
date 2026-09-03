@@ -753,7 +753,8 @@
       </div>
       <div class="panel">
         <h4>A GATEWAY</h4>
-        <p>The Razorpay adapter ships. <code>Gateway</code> and <code>Messenger</code> are
+        <p>The Razorpay adapter ships, and its client and inbound webhook have both been run
+          against the live API in test mode. <code>Gateway</code> and <code>Messenger</code> are
           <em class="hot">ports</em> — one method each, <code>charge</code> and <code>send</code> — so
           another gateway is an adapter rather than a fork. Nothing in the core imports a network
           client.</p>
@@ -865,6 +866,46 @@
           structural guard rather than a formality — a keyed hash always clears it and a bare phone
           number never does, so a raw identifier cannot reach the detector, the ledger or a model
           prompt by accident.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="strip">
+    <span class="lbl">2 &middot; OR POINT RAZORPAY STRAIGHT AT IT</span>
+    <div class="grid-2">
+      <div>
+        <pre class="sh"><span class="c"># Dashboard &rarr; Settings &rarr; Webhooks</span>
+<span class="p">$</span> RAZORPAY_WEBHOOK_SECRET=&hellip; \
+  LEDGER_PII_HASH_KEY=&hellip; \
+  pnpm --filter @kairos/sentry start
+
+<span class="c">POST /webhooks/razorpay</span>
+
+<span class="c">&rarr; {"event":"payment.failed",</span>
+<span class="c">&nbsp;&nbsp;&nbsp;"method":"card","status":"failed",</span>
+<span class="c">&nbsp;&nbsp;&nbsp;"failure":{</span>
+<span class="c">&nbsp;&nbsp;&nbsp;&nbsp;"code":"BAD_REQUEST_ERROR",</span>
+<span class="c">&nbsp;&nbsp;&nbsp;&nbsp;"source":"business",</span>
+<span class="c">&nbsp;&nbsp;&nbsp;&nbsp;"step":"payment_initiation",</span>
+<span class="c">&nbsp;&nbsp;&nbsp;&nbsp;"reason":"international_</span>
+<span class="c">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;transaction_not_allowed"}}</span></pre>
+      </div>
+      <div>
+        <p class="aside" style="margin-top:0">Report nothing at all: point the dashboard at Kairos
+          and the gateway delivers. Three things must be true before a delivery changes any state —
+          the signature verifies against the <b>raw bytes</b>, the event is recent, and it is not one
+          already handled. Anything failing one of them is answered <code>200</code> with the reason
+          in the body, because a gateway retries a non-2xx for hours and a bad signature does not
+          become good on the fourth attempt.</p>
+        <p class="aside">What the gateway says about the failure is passed through
+          <em class="hot">untranslated</em>. <code>source</code>, <code>step</code> and
+          <code>reason</code> are the triple the classifier reads, and re-coding them into a private
+          enum would put a lossy mapping between the gateway's account of what went wrong and the
+          decision made about it.</p>
+        <p class="aside">A payment carries <code>email</code> and <code>contact</code>. The
+          translation takes a pseudonymiser as a <b>required</b> argument, so a phone number cannot
+          reach the detector by omission — the reference above is a keyed hash and there is nowhere
+          else the raw value goes.</p>
       </div>
     </div>
   </div>
