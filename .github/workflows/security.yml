@@ -75,7 +75,36 @@ jobs:
       - name: Audit production dependencies
         # Production only. A dev-only advisory should not block a release, but it should be
         # visible, so the non-blocking pass runs after.
-        run: pnpm audit --prod --audit-level moderate
+        #
+        # `pnpm audit` exits non-zero for two unrelated reasons: it found an advisory, or it could
+        # not reach npm's advisory endpoint. That endpoint returns 503s and times out often enough
+        # to have failed this job twice in one hour on dependencies nobody had touched, and pnpm
+        # gives it three attempts that .npmrc cannot raise. A red gate that means either "you have
+        # a vulnerability" or "npm was slow" is a gate people learn to skim past, so this retries
+        # the network case and says plainly which of the two happened.
+        #
+        # It does not go green when the check could not run. Not knowing is not the same as being
+        # clean, and only one of those is worth reporting as a pass.
+        run: |
+          set -uo pipefail
+          unreachable='aborted due to timeout|TimeoutError|error \((23|5[0-9][0-9])\)|ECONNRESET|ENOTFOUND|EAI_AGAIN|ETIMEDOUT|socket hang up'
+          for attempt in 1 2 3 4 5; do
+            if out=$(pnpm audit --prod --audit-level moderate 2>&1); then
+              printf '%s\n' "$out"
+              exit 0
+            fi
+            printf '%s\n' "$out"
+            # Anything this does not recognise as a transport failure is treated as a finding.
+            # An unfamiliar error should stop a release, not buy itself four more attempts.
+            if ! printf '%s' "$out" | grep -Eqi "$unreachable"; then
+              echo "::error::pnpm audit reported an advisory at moderate or above."
+              exit 1
+            fi
+            echo "::warning::Attempt ${attempt}: npm's advisory endpoint did not answer. Retrying."
+            sleep $((attempt * 20))
+          done
+          echo "::error::Could not reach npm's advisory database in 5 attempts. This is NOT a vulnerability finding - the dependencies were never checked."
+          exit 1
 
       - name: Audit all dependencies (advisory)
         continue-on-error: true
