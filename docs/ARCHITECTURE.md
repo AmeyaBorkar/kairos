@@ -198,8 +198,13 @@ interface Clock         { now(): number }
 
 ### Adapters
 
-`razorpay` · `simulator` · `reasoner-gemini` · `postgres` · `store-redis` · `messenger-sms`
-· `messenger-whatsapp` · `ledger-postgres`
+**Built** — `razorpay` · `simulator` · `reasoner-gemini` · `postgres`
+
+**Named, not built** — `store-redis` · `messenger-sms` · `messenger-whatsapp` · `ledger-postgres`.
+The Redis store is ThrottleKit's own and needs wiring rather than writing. The two messengers are
+what live delivery would need, which is why `recover-worker` refuses to start with
+`KAIROS_DELIVERY` set to anything but dry-run. The Postgres ledger is the shared audit chain a
+fleet still does not have — honest gap 15.
 
 Each adapter is independently swappable and independently tested against a shared conformance suite
 per port. The simulator and the live Razorpay adapter satisfy the same `Gateway` interface, which is
