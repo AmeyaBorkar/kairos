@@ -82,9 +82,9 @@ export function dryRunMessenger(options: DryRunOptions): Messenger {
         }),
       );
       // Reported as delivered, and priced, so the cost is booked and the contact cap consumed
-      // exactly as they would be in production. This used to return zero, which made the one
-      // number somebody runs a dry run to find out — what the campaign would cost — always
-      // nothing, and meant the budget ceiling could never be seen to bind.
+      // exactly as they would be in production. Reporting zero would make the one number somebody
+      // runs a dry run to find out — what this campaign would cost — always nothing, and would put
+      // the budget ceiling permanently out of reach of the thing it bounds.
       //
       // SMS is priced by segment because that is how it is billed and because a message the model
       // writes in Devanagari hits three segments at seventy characters. Everything else is a flat

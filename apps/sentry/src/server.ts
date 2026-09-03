@@ -226,10 +226,8 @@ export function createSentry(options: SentryOptions): Sentry {
        * clock.
        *
        * Freshness of an inbound delivery is a question about the outside world. Razorpay stamps
-       * `created_at` in real time and the tolerance is a real five minutes, so verifying against a
-       * clock running at sixty times real speed rejects every genuine webhook as stale within
-       * seconds of boot — which is exactly what happened to the first real delivery this route
-       * ever received.
+       * `created_at` in real time and the tolerance is a real five minutes, so a clock running at
+       * sixty times real speed would reject every genuine webhook as stale within seconds of boot.
        *
        * The rule this is an instance of: the kernel's clock governs the campaign, the wall clock
        * governs everything the campaign touches that is not inside this process.

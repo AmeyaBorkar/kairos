@@ -5,12 +5,11 @@ import type { KillSwitch } from "./ports.js";
 /**
  * The out-of-band stop, in the store the fleet already shares.
  *
- * Until now {@link KillSwitch} had exactly one implementation — {@link openKillSwitch}, which is
- * never engaged — so the second of the two stops the architecture promises did not exist. The
- * signed one does: setting `killSwitch` on a mandate and re-sealing it stops everything. But it
- * requires the signing key and a redeploy, which is the wrong shape for the situation it is for.
- * The moment you most need to stop a campaign is the moment you least want to be re-signing
- * authority and rolling processes.
+ * The second of the two stops. The signed one is a field on the mandate: set `killSwitch`, re-seal,
+ * and everything halts the moment each worker verifies the new mandate. It cannot be cleared by
+ * anybody who cannot sign, which is right for a decision somebody should have to be authorised to
+ * reverse — and wrong for the situation a stop is actually for. The moment you most need to halt a
+ * campaign is the moment you least want to be re-signing authority and rolling processes.
  *
  * This one is a flag in the same store the budget and the contact caps live in, so it is flipped by
  * one command, is visible to every worker and every sentry, and takes effect on the next admission

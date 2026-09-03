@@ -95,9 +95,9 @@ const post = (s: Sentry, d: { body: string; signature: string }) =>
 
 describe("freshness is measured against the real world", () => {
   it("accepts a delivery stamped now, even with the kernel clock years away", async () => {
-    // The regression. Verifying against the campaign's accelerated clock rejected every genuine
-    // webhook as stale within seconds of boot, which is what happened to the first real delivery
-    // this route ever received. Razorpay stamps created_at in real time; so must the check.
+    // Razorpay stamps created_at in real time and the tolerance is a real five minutes, so the
+    // check has to be in real time too. Against the campaign's accelerated clock every genuine
+    // webhook is stale within seconds of boot.
     const response = await post(sentry(), delivery());
     expect(response.statusCode).toBe(200);
     expect(response.json()).toMatchObject({ ok: true, observed: true });

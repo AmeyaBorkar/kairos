@@ -45,10 +45,9 @@ export interface InboundOptions {
   /**
    * Told why a payment was dropped, when one is.
    *
-   * Optional, and worth wiring. The first real payment this function ever saw was dropped, and the
-   * only thing the caller could say about it was "not readable" — which is a sentence that ends an
-   * investigation rather than starting one. The reason was a domain invariant, and it took a
-   * bisect of five constructors to find.
+   * Optional, and worth wiring. "Not readable" is a sentence that ends an investigation rather than
+   * starting one: a gateway's entity has a dozen fields any of which can refuse, and a caller that
+   * cannot say which is left bisecting domain constructors against a silent null.
    */
   readonly onDrop?: (reason: string) => void;
 }
@@ -84,9 +83,10 @@ function methodOf(entity: RazorpayPayment): PaymentMethod | null {
  * ## An instrument without an issuer is not a slice
  *
  * The domain refuses it, and is right to: the key is a hierarchy, and "Visa, bank unknown" cannot
- * sit under a bank. Razorpay reports exactly that for a card whose issuer it could not identify —
- * `network: "Visa"`, `issuer: null` — which is the shape of the very first real payment this saw.
- * So the refinement is dropped rather than the observation: `card||` is a true thing to say about a
+ * sit under a bank. Razorpay reports exactly that shape — `network: "Visa"` with `issuer: null` —
+ * for any card whose issuer it cannot identify, which is common.
+ *
+ * So the refinement is dropped rather than the observation. `card||` is a true thing to say about a
  * payment whose bank we do not know, and inventing an issuer to keep the network would be a
  * fabricated slice in the one component whose job is noticing when a slice's numbers move.
  */

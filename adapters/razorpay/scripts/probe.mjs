@@ -4,10 +4,10 @@
  * The first time this client touches Razorpay.
  *
  * Everything in `client.ts` — authentication, the retry policy, the deadline, the error mapping —
- * was written against Razorpay's published API and tested against a stubbed transport, and until
- * this script its own docstring had to say so: not run against the live gateway, because CI holds
- * no credentials. This is the run that changed that sentence, and `docs/razorpay-probe.json` is
- * the evidence for the half of it that changed.
+ * is written against Razorpay's published API and tested against a stubbed transport. CI holds no
+ * credentials and never will, so the stub is all CI can offer, and a stub can be confidently wrong
+ * about every one of those. This closes that gap on demand, and writes `docs/razorpay-probe.json`
+ * as the evidence.
  *
  * It cannot exercise the retry policy, and no probe can: 429 and 5xx are what drive it, and a
  * healthy gateway will not produce either on request. What this proves is the part a stub can
