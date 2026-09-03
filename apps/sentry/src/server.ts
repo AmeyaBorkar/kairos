@@ -21,9 +21,15 @@ import {
   SteeringController,
 } from "@kairos/policy";
 import { type CheckoutConfig, defaultCheckout, renderCheckout } from "@kairos/razorpay";
-import { type Clock, systemClock, Terminus } from "@kairos/terminus";
+import {
+  type Clock,
+  type KillSwitch,
+  openKillSwitch,
+  systemClock,
+  Terminus,
+} from "@kairos/terminus";
 import Fastify, { type FastifyInstance } from "fastify";
-import { MemoryStore } from "throttlekit";
+import { MemoryStore, type Store } from "throttlekit";
 import { z } from "zod";
 import { ATTEMPT_BATCH, PLAN_REQUEST } from "./schema.js";
 
@@ -34,6 +40,23 @@ export interface SentryOptions {
   readonly defaultSequence?: readonly PaymentMethod[];
   readonly steering?: SteeringConfig;
   readonly clock?: Clock;
+  /**
+   * Where the bounds this service enforces actually live.
+   *
+   * Defaults to memory, which makes a single instance correct and a second instance a liar: the
+   * blast-radius cap is `maxInFlight` inside Terminus, and two sentries with a store each hold
+   * three steers *each*. Supply a shared store and the cap is one cap, taken by the same atomic
+   * step, however many instances are running.
+   */
+  readonly store?: Store;
+  /**
+   * The out-of-band stop, if there is one to consult.
+   *
+   * Defaults to the open switch. A sentry's only power is to reorder a checkout, so this matters
+   * less here than in the worker — but an operator stopping a campaign means all of it, and a
+   * steering directive that survived the stop would be the one piece of Kairos still acting.
+   */
+  readonly killSwitch?: KillSwitch;
   /**
    * How often steering is re-decided, at most.
    *
@@ -136,10 +159,11 @@ export function createSentry(options: SentryOptions): Sentry {
   const terminus = new Terminus({
     mandate: options.mandate,
     secret: options.secret,
-    store: new MemoryStore({ sweepIntervalMs: 0 }),
+    store: options.store ?? new MemoryStore({ sweepIntervalMs: 0 }),
     audit: ledger,
     actor: "sentry",
     clock,
+    killSwitch: options.killSwitch ?? openKillSwitch,
   });
   const controller = new SteeringController({ terminus, config, clock, defaultSequence: sequence });
 

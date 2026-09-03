@@ -1,6 +1,7 @@
 import { mandateId, paise } from "@kairos/domain";
 import { DEFAULT_STEERING_CONFIG } from "@kairos/policy";
 import { scaledClock, sealMandate } from "@kairos/terminus";
+import { backing } from "./backing.js";
 import { createSentry } from "./server.js";
 
 const DAY = 86_400_000;
@@ -67,20 +68,35 @@ function clockSpeed(): number {
 }
 
 const speed = clockSpeed();
+const persistence = await backing();
 const { app } = createSentry({
   mandate,
   secret,
   logger: true,
   clock: scaledClock(speed),
+  store: persistence.store,
+  killSwitch: persistence.killSwitch,
 });
 const port = Number(process.env["PORT"] ?? 8080);
 
 await app.listen({ port, host: "0.0.0.0" });
+app.log.info(
+  {
+    bounds: persistence.name,
+    fleet: persistence.name === "postgres",
+    stopSwitch: persistence.name === "postgres",
+    ...(speed === 1 ? {} : { clock: `${speed}x` }),
+  },
+  "sentry",
+);
 
 // A steer is a held reservation, so a clean shutdown hands every one of them back rather than
 // leaving checkouts steered until the TTL catches up.
 for (const signal of ["SIGINT", "SIGTERM"] as const) {
   process.on(signal, () => {
-    void app.close().then(() => process.exit(0));
+    void app
+      .close()
+      .then(() => persistence.close())
+      .then(() => process.exit(0));
   });
 }
