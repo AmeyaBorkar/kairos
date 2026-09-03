@@ -16,6 +16,7 @@
     "demo": "node scripts/demo.mjs",
     "demo:down": "node scripts/demo.mjs down -v",
     "demo:logs": "node scripts/demo.mjs logs -f traffic worker",
+    "razorpay:probe": "pnpm --filter @kairos/razorpay run build && pnpm --filter @kairos/razorpay run probe",
     "typecheck": "pnpm -r --if-present typecheck",
     "test": "vitest run",
     "test:watch": "vitest",
