@@ -13,9 +13,6 @@
       "default": "./dist/index.js"
     }
   },
-  "bin": {
-    "kairos-casualty-schema": "./dist/schema-main.js"
-  },
   "files": [
     "dist"
   ],

@@ -174,7 +174,7 @@ async function backing(): Promise<Backing> {
   });
 
   // Idempotent, and cheap enough to pay on every boot. A deployment that would rather own its
-  // schema can run `kairos-casualty-schema | psql` and set KAIROS_DB_MIGRATE=off.
+  // schema can run `pnpm --filter @kairos/postgres run schema | psql` and set KAIROS_DB_MIGRATE=off.
   if (process.env["KAIROS_DB_MIGRATE"] !== "off") await migrate(pool);
 
   const store = new PostgresStore({ pool, table: "kairos_throttle" });
