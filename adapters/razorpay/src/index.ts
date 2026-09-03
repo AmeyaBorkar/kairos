@@ -38,6 +38,12 @@ export {
 } from "./codes.js";
 export { type ComposedMessage, compose, rupeesAscii, templateCopy } from "./copy.js";
 export {
+  attemptFrom,
+  type InboundOptions,
+  paymentFrom,
+  type RazorpayPayment,
+} from "./inbound.js";
+export {
   memorySeenEvents,
   type SeenEvents,
   verifyWebhook,
