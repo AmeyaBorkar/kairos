@@ -158,7 +158,25 @@ export function createSentry(options: SentryOptions): Sentry {
     if (now < nextTick) return;
     nextTick = now + tickMs;
     health = window.snapshot(now);
-    await controller.affirm(engine.openIncidents().map(incidentFrom), health);
+    const outcomes = await controller.affirm(engine.openIncidents().map(incidentFrom), health);
+
+    // Said out loud rather than discarded. Every one of these is an answer to "there is clearly an
+    // incident, so why is the checkout unchanged?" — and until now the only way to find out was to
+    // read the policy source. A decision not to act is a decision, and the operator who has to
+    // defend it is the one who most needs to have seen it.
+    for (const outcome of outcomes) {
+      app.log.info(
+        {
+          incident: outcome.incident,
+          status: outcome.status,
+          detail: outcome.detail,
+          ...(outcome.evaluation === null
+            ? {}
+            : { lever: outcome.evaluation.lever, slice: sliceKey(outcome.evaluation.slice) }),
+        },
+        "steering",
+      );
+    }
   }
 
   app.post("/outcomes", async (request, reply) => {
