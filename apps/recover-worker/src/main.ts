@@ -4,16 +4,19 @@ import { migrate, PostgresCasualtyStore } from "@kairos/postgres";
 import type { Gateway, Messenger } from "@kairos/razorpay";
 import {
   type CasualtyStore,
+  type CustomerDirectory,
   DEFAULT_RECOVERY_CONFIG,
   MemoryCasualtyStore,
   RecoverWorker,
   RecoveryModel,
   worstActionCostPaise,
 } from "@kairos/recover";
-import { sealMandate, systemClock, Terminus } from "@kairos/terminus";
+import { scaledClock, sealMandate, Terminus } from "@kairos/terminus";
 import { Pool } from "pg";
 import { MemoryStore, type Store } from "throttlekit";
 import { PostgresStore } from "throttlekit/postgres";
+import { clockSpeedFrom } from "./clock.js";
+import { simulatedDirectory } from "./directory.js";
 import { dryRunGateway, dryRunMessenger } from "./dry-run.js";
 import { RecoveryExecutor } from "./executor.js";
 
@@ -134,6 +137,32 @@ function adapters(): { gateway: Gateway; messenger: Messenger } {
 }
 
 /**
+ * Who the customers are, as far as this process is allowed to know.
+ *
+ * Nobody, by default. The lookup returns `null` for everyone, so no payment can be charged again
+ * and every message is addressed impersonally — the correct behaviour for a process that has not
+ * been handed access to customer records, and structural rather than promised: a component without
+ * this port cannot obtain personal data however much it decides it needs.
+ *
+ * The cost of that default is that a dry run shows almost nothing. The executor refuses a retry
+ * with no token and a message with no recipient before it composes anything, so the two things a
+ * merchant runs dry-run delivery to see — the words that would have been sent, and what sending
+ * them would have cost — never appear. `KAIROS_DIRECTORY=simulated` stands people in for that, and
+ * says so in the startup line, because a demonstration that looked like a deployment would be
+ * worse than no demonstration.
+ */
+function customerDirectory(): CustomerDirectory {
+  if (process.env["KAIROS_DIRECTORY"] !== "simulated") {
+    return { lookup: () => Promise.resolve(null) };
+  }
+  return simulatedDirectory({
+    // The simulator's own default. A merchant with no recurring business has no autonomous retries
+    // at all and a recovery arm made entirely of messages, and this is the number that decides it.
+    mandatedShare: Number(process.env["KAIROS_MANDATED_SHARE"] ?? 0.42),
+  });
+}
+
+/**
  * Where shared state lives, and therefore how many of these may run at once.
  *
  * The two things a second worker must share are not the same thing and do not live in the same
@@ -193,8 +222,16 @@ async function backing(): Promise<Backing> {
 
 async function main(): Promise<void> {
   const secret = required("KAIROS_MANDATE_SECRET", 32);
+
+  // Read before anything is constructed. A refusal about how this process handles time belongs
+  // before the first pool is opened, not after a mandate has been sealed against a clock we are
+  // then going to reject.
+  const speed = clockSpeedFrom(process.env, process.env["KAIROS_DELIVERY"] ?? "dry-run");
+  const clock = scaledClock(speed);
+
   const mandate = buildMandate(secret);
   const { gateway, messenger } = adapters();
+  const directory = customerDirectory();
 
   const persistence = await backing();
   const ledger = new MemoryLedger();
@@ -204,16 +241,13 @@ async function main(): Promise<void> {
     store: persistence.store,
     audit: ledger,
     actor: `recover-worker/${process.env["HOSTNAME"] ?? "local"}`,
-    clock: systemClock,
+    clock,
   });
 
   const worker = new RecoverWorker({
     terminus,
     store: persistence.casualties,
-    // No directory is wired, so every message is addressed impersonally and no payment can be
-    // charged again. That is the correct behaviour for a process with no access to customer data,
-    // rather than a gap that fails at the moment it matters.
-    directory: { lookup: () => Promise.resolve(null) },
+    directory,
     gauge: { isDegraded: () => false, recoveredAt: () => null },
     model: new RecoveryModel(),
     executor: new RecoveryExecutor({
@@ -222,7 +256,7 @@ async function main(): Promise<void> {
       linkFor: (request) => `${required("KAIROS_LINK_BASE")}/${request.casualty.id}`,
       smsSegmentPaise: optionalInt("KAIROS_SMS_SEGMENT_PAISE", 20),
     }),
-    clock: systemClock,
+    clock,
   });
 
   const intervalMs = optionalInt("KAIROS_DRAIN_INTERVAL_MS", 15_000);
@@ -243,13 +277,18 @@ async function main(): Promise<void> {
       campaign: mandate.campaignId,
       backing: persistence.name,
       fleet: persistence.name === "postgres",
+      directory: process.env["KAIROS_DIRECTORY"] === "simulated" ? "simulated people" : "none",
+      ...(speed === 1 ? {} : { clock: `${speed}x — a demonstration, not a deployment` }),
     })}\n`,
   );
 
   while (running) {
     const report = await worker.drain();
     if (report.acted > 0 || report.refused > 0 || report.declined > 0) {
-      process.stdout.write(`${JSON.stringify({ at: Date.now(), ...report })}\n`);
+      // The clock the decisions were made against, not the wall clock. Under an accelerated
+      // clock those differ, and a report stamped in a frame none of its contents belong to is
+      // worse than one with no timestamp at all.
+      process.stdout.write(`${JSON.stringify({ at: clock.now(), ...report })}\n`);
     }
     await new Promise((resolve) => setTimeout(resolve, intervalMs));
   }
