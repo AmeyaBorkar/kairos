@@ -224,6 +224,9 @@ importers:
       '@kairos/recover':
         specifier: workspace:*
         version: link:../../packages/recover
+      '@kairos/simulator':
+        specifier: workspace:*
+        version: link:../../adapters/simulator
       '@kairos/terminus':
         specifier: workspace:*
         version: link:../../packages/terminus
@@ -321,6 +324,31 @@ importers:
       '@types/node':
         specifier: ^22.10.0
         version: 22.20.1
+
+  apps/traffic:
+    dependencies:
+      '@kairos/domain':
+        specifier: workspace:*
+        version: link:../../packages/domain
+      '@kairos/postgres':
+        specifier: workspace:*
+        version: link:../../adapters/postgres
+      '@kairos/recover':
+        specifier: workspace:*
+        version: link:../../packages/recover
+      '@kairos/simulator':
+        specifier: workspace:*
+        version: link:../../adapters/simulator
+      pg:
+        specifier: ^8.23.0
+        version: 8.23.0
+    devDependencies:
+      '@types/node':
+        specifier: ^22.10.0
+        version: 22.20.1
+      '@types/pg':
+        specifier: ^8.23.1
+        version: 8.23.1
 
   packages/detect:
     dependencies:
