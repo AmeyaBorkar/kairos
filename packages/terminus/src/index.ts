@@ -33,6 +33,7 @@ export {
   type KillSwitch,
   ManualClock,
   openKillSwitch,
+  scaledClock,
   systemClock,
 } from "./ports.js";
 export {
