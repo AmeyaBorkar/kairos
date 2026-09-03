@@ -115,8 +115,12 @@ without one.
 
 **P6 · Ports and adapters.**
 The core knows nothing about Razorpay, Redis, Postgres, or any model vendor. Every outside system
-enters through an interface defined in `@kairos/ports`. This is what makes the simulator and the live
-gateway interchangeable, and it is why the whole system is testable without a network.
+enters through an interface declared beside the code that consumes it — `Gateway` and `Messenger` in
+`razorpay`, `CasualtyStore` and `CustomerDirectory` in `recover`, `Clock`, `KillSwitch` and
+`AuditSink` in `terminus`. A single ports package would centralise interfaces whose only common
+property is being interfaces, and put the definition a long way from the file that has to honour it.
+This is what makes the simulator and the live gateway interchangeable, and it is why the whole system
+is testable without a network.
 
 **P7 · Money is integers.**
 All amounts are integer **paise**, everywhere, in every type. No float ever touches a monetary value.
@@ -191,6 +195,9 @@ interface ResidualClassifier { classify(input, deadlineMs): Promise<string>   //
 interface Store         { apply(key, ttl, transform): Promise<ApplyOutcome>  // throttlekit's Store
 interface LedgerSink    { append(r: AuditRecord): Promise<void> }
 interface Clock         { now(): number }
+interface KillSwitch    { engaged(m: Mandate): Promise<boolean>  // a read that FAILS counts as engaged
+interface CasualtyStore { due · claim · save · get   // the atomic lease is what makes a fleet safe
+interface CustomerDirectory { lookup(c: CustomerRef): Promise<CustomerProfile | null>
 ```
 
 `Messenger.send` returning the *actual* cost rather than accepting a quoted one is deliberate — see
@@ -214,10 +221,12 @@ what lets the entire system run offline in CI.
 
 | App | What it is |
 |---|---|
-| `sentry` | Ingests outcomes, runs detection, publishes the current steering plan. Stateless, horizontally scalable. |
-| `recover-worker` | Drains the casualty queue. **Deliberately multi-instance** — this is where a naive budget check would race, and where Terminus earns its place. `KAIROS_DATABASE_URL` is the whole difference between one instance and a fleet: with it the queue and the spend authority both live in Postgres, without it both live in memory and it is a single instance by construction. Ships in dry-run delivery: every decision real, no message sent. |
+| `sentry` | Ingests outcomes, runs detection, publishes the current steering plan, and serves the operator view. Outcomes arrive either reported in batches or delivered by the gateway: `POST /webhooks/razorpay` verifies a Razorpay signature over the raw bytes, rejects a stale or replayed event, and translates the payment into an `Attempt` before the detector sees it. Also `GET /health`, `/ledger` and `/metrics`. Stateless in the sense that matters — with `KAIROS_DATABASE_URL` the blast-radius cap lives in the shared store and the service is a fleet; without one it is a single instance by construction, and says so at startup. |
+| `recover-worker` | Drains the casualty queue, and serves `GET /health`, `/ready` and `/metrics` on a separate port — a worker deadlocked on a pool it never gets a connection from looks exactly like a healthy one from outside. **Deliberately multi-instance** — this is where a naive budget check would race, and where Terminus earns its place. `KAIROS_DATABASE_URL` is the whole difference between one instance and a fleet: with it the queue and the spend authority both live in Postgres, without it both live in memory and it is a single instance by construction. Ships in dry-run delivery: every decision real, no message sent. |
+| `traffic` | A merchant that is not there. Generates payment attempts from the simulator, asks `sentry` for a plan the way a checkout would, reports the outcomes, and files the casualties the worker drains. Paced against a wall clock at a stated multiple rather than replayed at CPU speed, because a day of traffic delivered in four seconds shows a detector firing on data it could not have observed. Recurring incidents, alternating rails. |
+| `site` | The public case, the film, the recorded console run, the integration reference and the benchmarks. Static, and compiles `domain`, `detect`, `terminus` and `console` into the browser bundle — so the numbers it shows come from this tree rather than from a copy of it. |
 | `checkout` | **Not built.** A demo storefront on Razorpay Checkout whose method configuration is driven by `sentry`. It needs a Razorpay test key and is the one place the steering claim would meet a rendered page rather than a documented API — see open question 6. |
-| `console` | Operator view: rail health, incidents, which bound is binding, the audit trail. A JSON API with no view layer, driving the real detector, controller, kernel and ledger over simulated traffic — every response carries `provenance: {kind: "simulated", scenario, seed}`, because a dashboard of red rails and rupee figures is what ends up in a slide. Six named scenarios, including one where nothing happens and two that end in a refusal. Also hosts `pnpm explain`. **The UI is not built.** |
+| `console` | Operator view: rail health, incidents, which bound is binding, the audit trail. A JSON API with no view layer, driving the real detector, controller, kernel and ledger over simulated traffic — every response carries `provenance: {kind: "simulated", scenario, seed}`, because a dashboard of red rails and rupee figures is what ends up in a slide. Six named scenarios, including one where nothing happens and two that end in a refusal. Also hosts `pnpm explain`. **This app's own UI is not built**; the live operator view is served by `sentry`. |
 | `scribe` | Writes the copy library. Asks a model once per *situation* — 180 of them, not 5,719 messages — validates every answer, and commits the result. Runs under a signed mandate whose only permitted action is `reason`, so it could not send a message if its code asked it to. Resumable, because a free tier's daily quota is a real bound. |
 | `mandate` | Authors, signs, verifies and explains a mandate. Two programs on purpose: a loopback form that collects a *spec* in rupees and days, and a command that seals one from a key the form never sees. `explain` states the two bounds a mandate does not contain but implies — the most that can be in flight at once, and how many actions the budget buys — because nobody can be asked to sign a limit they have to compute in their head. See [ADR 0009](decisions/0009-the-form-authors-a-mandate-and-a-separate-command-signs-it.md). |
 | `bench` | The measurement harness. Four experiments on pinned seeds, a consolidated scorecard, the seed study its regression bands are derived from, and the gate CI runs on every change. |
@@ -727,9 +736,18 @@ that publishing a scorecard cannot publish a mandate signing secret. See §12.
 
 ### APIs used
 
-Orders · Payments (including `error_source` / `error_step` / `error_reason`) · Payment Links ·
-Subscriptions · Invoices · Settlements · **Payment Downtime API** and `payment.downtime.*` webhooks ·
-`payment.failed` / `payment.captured` / `payment.authorized` webhooks · Checkout method configuration.
+**Called against the live API, in test mode** — Orders · Payment Links · Payments (fetch), and the
+inbound `payment.failed` / `payment.captured` / `payment.authorized` webhooks, verified end to end.
+`pnpm razorpay:probe` makes those calls on demand and writes `docs/razorpay-probe.json`; CI holds no
+credentials and never will, so it is a command rather than a test.
+
+**Modelled, not called** — Subscriptions · Invoices · Settlements · the **Payment Downtime API** and
+`payment.downtime.*` webhooks · Checkout method configuration, which `renderCheckout` emits as
+Razorpay's own `config` object without anything sending it.
+
+Payments carry `error_source` / `error_step` / `error_reason`, and the recovery classifier reads that
+triple untranslated. Re-coding it into a private enum would put a lossy mapping between the gateway's
+account of what went wrong and the decision made about it.
 
 Note that capture requires the captured amount to equal the authorised amount — Razorpay does not
 support partial capture. So reservation lives in Terminus, and the gateway's `authorize → capture`
@@ -743,10 +761,17 @@ demonstrated on five payments.
 - **The outcome stream is simulated.** Built from Razorpay's documented error taxonomy and a
   realistic Indian method mix, with injectable degradation events whose onset times are ground truth.
   This is what gives the detector statistical power and gives the harness a measurable answer.
-- **The actions are real.** Every retry, payment link, order, and capture is a real Razorpay test-mode
-  API call with a real request id recorded in the ledger.
-- **The demo checkout is real.** A live Razorpay Checkout whose method configuration comes from
-  `sentry`, so a human can watch the steering happen.
+- **The client is real, and so is the inbound path.** Orders, payment links and payment fetches are
+  real test-mode calls through the same `fetch` the client names as its production transport, and a
+  real signed webhook has been verified, translated and observed by the detector. What that does
+  *not* cover is the retry policy — 429 and 5xx are what drive it and a healthy gateway will not
+  produce either on request.
+- **The outbound actions are not real.** `recover-worker` runs in dry-run delivery, which decides
+  everything and sends nothing, and refuses to start in any other mode. A live arm needs a gateway
+  able to charge a saved token with nobody present and a DLT-registered sender — things a deployment
+  has and a repository does not. Nothing in the ledger is a live charge.
+- **There is no demo checkout.** `renderCheckout` produces the configuration a checkout would take;
+  the storefront that would render it is listed above as not built.
 
 Both paths run through identical decision code — the simulator and the live gateway satisfy the same
 `Gateway` port. Stating this boundary plainly is worth more than a claim of live traffic that would
@@ -768,6 +793,8 @@ not survive one question.
 | Clock skew across workers | — | Redis/PG server clock rolls windows from one shared key | Yes |
 | Ledger write failure | Write error | **Halt outbound actions** | Yes, by stopping |
 | `sentry` entirely down | Checkout timeout | Default method order | Yes |
+| Worker loop wedged | `GET /health` stops answering 200 | Orchestrator restarts it; the lease and the reservation both expire | Yes |
+| Webhook secret rotated | Refusals rise on `kairos_webhooks_total` | Deliveries refused, nothing observed | Yes, by refusing |
 
 The chaos demonstrations we ship: kill the store mid-incident, inject a 429 storm, and time out the
 model — showing in each case that the audit trail stays intact and no cap was exceeded, including
@@ -800,7 +827,17 @@ configuration; `sentry` cannot dispatch messages.
 **Supply chain.** Pinned dependencies, `npm audit` gate on production deps, Dependabot, CodeQL.
 
 **Kill switch.** One flag in the shared store, consulted on every admission, halting all outbound
-money actions fleet-wide within a single check.
+money actions fleet-wide within a single check — `StopSwitch` in `terminus`, driven by
+`kairos-mandate stop`. It needs the database and *not* the signing key, because stopping a campaign
+must not require the ability to mint one: the person on call is not necessarily the person who holds
+the key. A read that fails counts as engaged, which is the one place in Kairos where losing the store
+halts spending rather than falling back to a local decision.
+
+**Personal data has one door.** `CustomerDirectory` is the only place a name, a token or a contact is
+resolved, and the inbound webhook translation takes a pseudonymiser as a required argument rather
+than an option with a default — so a phone number cannot reach the detector, the ledger or a model
+prompt by omission. A component not handed that port cannot obtain personal data however much it
+decides it needs.
 
 ---
 
@@ -851,16 +888,42 @@ config is one less thing to keep aligned.
 
 ```
 kairos/
-├── packages/          domain · detect · policy · recover · terminus · ledger · ports
+├── packages/          domain · detect · policy · recover · terminus
+│                      ledger · reason · explain · proof
 ├── adapters/          razorpay · simulator · reasoner-gemini · postgres
-│                      store-redis · messenger-sms · messenger-whatsapp · ledger-postgres
-├── apps/              sentry · recover-worker · mandate · console · bench · scribe · site
-├── docs/              ARCHITECTURE.md · MEASUREMENT.md · SECURITY.md · decisions/ (ADRs)
-└── .github/workflows/ ci · security · bench
+├── apps/              sentry · recover-worker · traffic · console
+│                      mandate · scribe · bench · site
+├── docs/              ARCHITECTURE.md · MEASUREMENT.md · decisions/ (ADRs)
+│                      results/ (blessed benchmark output) · razorpay-probe.json
+└── .github/workflows/ ci · security · bench · pages
 ```
+
+The adapters named in §4 as not built have no directory here. A tree diagram is the one piece of
+documentation a reader checks against `ls`, so it lists what exists and nothing else.
 
 Significant choices get an ADR in `docs/decisions/` — the record of *why*, which is the part that
 survives when the code changes.
+
+`pnpm demo` brings the whole system up under Docker Compose: Postgres, `sentry`, a fleet-capable
+worker, the console, and the traffic. One image for every Node service, because they share a
+workspace and a lockfile and building them separately would mean four installs of the same graph.
+The signing key is generated on first run into a gitignored file — a mandate sealed with a
+publicly-known secret is a mandate anyone can forge.
+
+Two things in that stack are demonstration scaffolding and say so in their startup lines. The clock
+runs at sixty times real speed, because backoff rungs measured in half-hours and quiet hours that
+hold a message until morning are decisions the system is right to make and nobody will sit and watch;
+every bound Terminus enforces reads through that one clock, so they scale together, and an
+accelerated clock is refused outright in any delivery mode that can reach a person. And the customer
+directory is stood in for, because the default returns `null` for everyone and the executor then
+refuses every retry for want of a token before composing anything.
+
+An accelerated stack cannot also be a live integration: a webhook is stamped by the outside world and
+the rolling window decays what it holds against the detector's clock, so set `KAIROS_CLOCK_SPEED=1`
+and stop the traffic when pointing a real gateway at it. One detector has one clock, and there is no
+correct merge of two timelines. The rule that follows from all of this — the kernel's clock governs
+the campaign, the wall clock governs everything the campaign touches that is not inside the process —
+is [ADR 0010](decisions/0010-the-kernel-clock-governs-the-campaign-the-wall-clock-governs-the-world.md).
 
 ---
 
@@ -898,7 +961,7 @@ shown.
 | **5 · Proof** | ✅ Consolidated scorecard, seed study, provenance, `bench.yml` regression gate — bands derived from measured spread rather than guessed |
 | **5.5 · Language** | ✅ `reasoner-gemini`, the validation gauntlet, `scribe`, and a committed copy library in four languages — generated at build time under a signed mandate, reviewed as a diff, replayed offline by every test |
 | **5.75 · Consumption** | ✅ The copy library wired into the recovery path, a multilingual customer population, and the fifth benchmark arm that measures what generated copy is worth — with the readability penalty swept rather than assumed |
-| **6 · Demonstration** | Console API and chaos scenarios ✅, `explain` CLI ✅ — console UI, `checkout`, and pitch materials outstanding |
+| **6 · Demonstration** | Console API and chaos scenarios ✅, `explain` CLI ✅, the public site and the film ✅, `pnpm demo` bringing the whole stack up under Compose ✅, the operator view on `sentry` ✅ — console UI, `checkout`, and pitch materials outstanding |
 
 ---
 
