@@ -43,6 +43,7 @@
     <div class="nav-links" id="nav-links">
       <button type="button" class="nav-link" data-view="case" aria-current="page">THE CASE</button>
       <button type="button" class="nav-link" data-view="console">CONSOLE</button>
+      <button type="button" class="nav-link" data-view="install">INSTALL</button>
       <button type="button" class="nav-link" data-view="how">HOW IT WORKS</button>
       <button type="button" class="nav-link" data-view="benchmarks">BENCHMARKS</button>
       <a class="nav-link out" id="demo-link" href="https://github.com/AmeyaBorkar/kairos#demo" target="_blank" rel="noopener">DEMO</a>
@@ -647,67 +648,6 @@
   </div>
 
   <div class="strip">
-    <span class="lbl">PLUGGING IT IN — THREE TOUCHPOINTS</span>
-    <p class="aside" style="max-width:82ch;margin-bottom:18px">A merchant already on Razorpay adds one call to the page they have, returns the outcomes they already get, and runs a worker. Nothing sits in the payment path, and nothing here is acquirer routing — that is Razorpay Optimizer's job, one level down.</p>
-    <div class="grid-2">
-      <div>
-        <pre class="sh"><span class="c"># 1 · the checkout asks what to render</span>
-<span class="p">$</span> curl -X POST localhost:8080/plan \
-    -H 'content-type: application/json' \
-    -d '{"customer":"cus_9f3b2a71c4e8d012",
-         "sequence":["upi","card","netbanking"]}'
-
-{ "sequence": ["upi","card","netbanking"],
-  "suppress": [], "demote": [],
-  "steered": false, "arm": "treated",
-  "checkout": { "display": { … } },
-  "maxAgeMs": 15000,
-  "reason": "nothing in force" }</pre>
-        <p class="aside">Answered in Kairos vocabulary <b>and</b> as the <code>config</code> object Razorpay Checkout takes, so a merchant on another gateway needs no translation layer. It always answers <em class="hot">200</em> — a malformed request gets the merchant's own ordering back with the fault named in <code>reason</code>, because the failure mode of a payment-health tool must never be "no payments".</p>
-      </div>
-      <div>
-        <pre class="sh"><span class="c"># 2 · the outcomes come back — the same</span>
-<span class="c">#     events a webhook already delivers</span>
-<span class="p">$</span> curl -X POST localhost:8080/outcomes \
-    -d '{"attempts":[{ … ,"arm":"treated"}]}'
-
-<span class="c"># 3 · a worker drains the casualties.</span>
-<span class="c">#     dry-run by default: it decides</span>
-<span class="c">#     everything and sends nothing.</span>
-<span class="p">$</span> pnpm --filter @kairos/recover-worker start
-
-<span class="c"># point it at a database and the same</span>
-<span class="c"># command is a fleet, not an instance</span>
-<span class="p">$</span> export KAIROS_DATABASE_URL=postgres://…</pre>
-        <p class="aside">The plan names the <code>arm</code> to echo back on the outcome, so the holdout stays honest at an integration that has never heard of one. A control counted as treated would move the measured lift toward zero with <b>nothing anywhere reporting a fault</b>.</p>
-      </div>
-    </div>
-  </div>
-
-  <div class="strip">
-    <span class="lbl">NOTHING SPENDS WITHOUT A MANDATE — SO THERE IS A FORM FOR WRITING ONE</span>
-    <p class="aside" style="max-width:82ch;margin-bottom:18px">A signed mandate is unreadable by design — paise and epoch milliseconds, and the two numbers that matter most are <b>not in it</b>, but are products of numbers that are. Somebody authorising spend cannot be asked to do that arithmetic in their head, so the tool does it and prints it before it signs.</p>
-    <pre class="sh"><span class="c"># author one in a browser, on loopback — or without one</span>
-<span class="p">$</span> pnpm --filter @kairos/mandate start form
-<span class="p">$</span> kairos-mandate seal spec.json &gt; mandate.json   <span class="c"># reading to stderr, mandate to stdout</span>
-
-MONEY
-  Ceiling for the whole campaign         ₹5,000.00
-  Most one action may cost                   ₹0.60
-  Most that can be committed at once         ₹9.60   (16 actions in flight)
-  Actions the budget buys, worst case        8,333
-
-PEOPLE
-  At most 3 messages to one person per 7 days.
-  Nothing sent between 21:00 and 08:00 at UTC+05:30.
-
-SIGNATURE
-  bb498b0eeb882107c7a193f177469705aa8af57581a70f6d7a0f063820eec3c6
-  Verified. Every field above is covered by this signature and none of them has been altered.</pre>
-    <p class="aside" style="max-width:82ch">The page collects a <em class="hot">spec</em> — rupees, days, clock times — and posts it back for conversion, so there is exactly one implementation of "₹5,000 for 30 days" and the form calls it rather than re-deriving it. It never holds the signing key: the process serving it seals, or says it cannot and refuses. Loopback only, and not configurable. <code>seal</code> prints the reading to stderr and the mandate to stdout, so redirecting the mandate to a file still shows you what you just authorised.</p>
-  </div>
-
-  <div class="strip">
     <span class="lbl">RUN IT YOURSELF — NO API KEY REQUIRED</span>
     <div class="grid-2">
       <div>
@@ -739,6 +679,272 @@ SIGNATURE
       <div class="panel"><h4 style="color:var(--accent);font-size:11px;margin-bottom:10px">CLEAN AND BISECTABLE</h4><p style="font-size:19px;color:var(--ink-dim)">Every commit builds, lints, typechecks and tests standalone — verified in a clean worktree, not just at HEAD.</p></div>
       <div class="panel"><h4 style="color:var(--accent);font-size:11px;margin-bottom:10px">THE GATE IS THE SPEC</h4><p style="font-size:19px;color:var(--ink-dim)">Regression bands come from an eight-seed study. A change that moves a figure outside its band does not merge.</p></div>
     </div>
+  </div>
+</main>
+
+<!-- ══════════════════════════════════════════════════════════════════════
+     VIEW · INSTALL
+     The product surface. Everything on this tab is a command somebody can run
+     or a field they will actually see, and every default is the one in the code.
+     ══════════════════════════════════════════════════════════════════════ -->
+<main class="view wrap" id="view-install" hidden>
+  <div class="view-head">
+    <h2><span>03</span> &nbsp;PUT IT IN FRONT OF YOUR CHECKOUT</h2>
+    <p>Kairos is a service you run beside the gateway you already have. It never sits in the payment
+       path: it answers one question before the page renders, reads the outcomes you already receive,
+       and works the casualties afterwards. Everything below runs offline, with no API key, and sends
+       nothing to anybody until you say so.</p>
+  </div>
+
+  <div class="strip">
+    <span class="lbl">WHAT YOU NEED</span>
+    <div class="grid-3">
+      <div class="panel">
+        <h4>NODE ≥ 22 · PNPM ≥ 11</h4>
+        <p>That is the whole toolchain. The benchmark is seeded and offline and the language-model
+          adapter replays a committed recording, so <b>nothing here needs a key to run or to test</b>.</p>
+      </div>
+      <div class="panel">
+        <h4>A GATEWAY</h4>
+        <p>The Razorpay adapter ships. <code>Gateway</code> and <code>Messenger</code> are
+          <em class="hot">ports</em> — about eighty lines each — so another gateway is an adapter
+          rather than a fork. Nothing in the core imports a network client.</p>
+      </div>
+      <div class="panel">
+        <h4>POSTGRES — OPTIONAL</h4>
+        <p>Without it the recovery worker is a single instance holding its own queue. With it, the
+          queue and the spend authority both live in the database and the same command is a
+          <em class="hot">fleet</em>.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="strip">
+    <span class="lbl">RUN IT</span>
+    <div class="grid-2">
+      <div>
+        <pre class="sh"><span class="p">$</span> git clone https://github.com/AmeyaBorkar/kairos
+<span class="p">$</span> cd kairos &amp;&amp; pnpm install &amp;&amp; pnpm build
+
+<span class="c"># the whole gate: lint, deps, types, 1,092 tests</span>
+<span class="p">$</span> pnpm check
+
+<span class="c"># the signing key. there is no development default —</span>
+<span class="c"># a mandate signed with a known key is one anyone can forge</span>
+<span class="p">$</span> export KAIROS_MANDATE_SECRET=$(openssl rand -hex 32)
+<span class="p">$</span> pnpm --filter @kairos/sentry start
+<span class="c">→ listening on :8080</span></pre>
+      </div>
+      <div>
+        <p class="aside" style="margin-top:0">Two processes, and they do not talk to each other.
+          <code>sentry</code> is stateless and horizontally scalable: it ingests outcomes, runs
+          detection, and answers the checkout. <code>recover-worker</code> drains the casualty queue.
+          They share a mandate and a ledger, not a connection.</p>
+        <p class="aside">The benchmark, the operator console and the copy library all run from the
+          same checkout with no credentials at all — which is the point of keeping every outside
+          system behind a port.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="strip">
+    <span class="lbl">1 · THE CHECKOUT ASKS WHAT TO RENDER</span>
+    <p class="aside" style="max-width:84ch;margin-bottom:18px">One call, on the page you already have,
+      before you render the method list. It answers in Kairos vocabulary <b>and</b> as the
+      <code>config</code> object Razorpay Checkout takes, so a merchant on another gateway needs no
+      translation layer — and neither reading is derived from the other, because that derivation is
+      where a translation bug would live.</p>
+    <div class="grid-2">
+      <div>
+        <pre class="sh"><span class="c"># request</span>
+<span class="p">$</span> curl -X POST localhost:8080/plan \
+    -H 'content-type: application/json' \
+    -d '{"customer":"cus_9f3b2a71c4e8d012",
+         "sequence":["upi","card","netbanking"]}'</pre>
+      </div>
+      <div>
+        <pre class="sh"><span class="c"># response</span>
+{ "sequence": ["upi","card","netbanking"],
+  "suppress": [], "demote": [],
+  "steered": false, "arm": "treated",
+  "checkout": { "display": { … } },
+  "maxAgeMs": 15000,
+  "reason": "nothing in force" }</pre>
+      </div>
+    </div>
+    <table style="margin-top:22px">
+      <thead><tr><th>field</th><th>what to do with it</th></tr></thead>
+      <tbody>
+        <tr><td><code>sequence</code></td><td>Render the methods in this order. Exhaustive over what you offered.</td></tr>
+        <tr><td><code>suppress</code></td><td>Instruments to leave off the page entirely — a specific bank, a specific card issuer.</td></tr>
+        <tr><td><code>demote</code></td><td>Methods pushed down the list. Nothing is removed.</td></tr>
+        <tr><td><code>checkout</code></td><td>The same decision as Razorpay's <code>config</code>. Pass it through unchanged.</td></tr>
+        <tr class="win"><td><code>arm</code></td><td><b>Echo this back on the outcome.</b> It is how the holdout stays honest at an integration that has never heard of one.</td></tr>
+        <tr><td><code>steered</code></td><td>False means this response changes nothing — including when Kairos failed and declined to guess.</td></tr>
+        <tr><td><code>maxAgeMs</code></td><td>How long the answer keeps. Anything fresher is a request the service did not need to answer.</td></tr>
+        <tr><td><code>reason</code></td><td>Why it says what it says, in words. Always present. Log it.</td></tr>
+      </tbody>
+    </table>
+    <p class="aside" style="margin-top:18px"><b>It always answers 200.</b> A body that does not parse
+      gets your own ordering back with the offending field named in <code>reason</code> — visible on
+      the first call an integrator makes, and harmless to the customer waiting on the page. The
+      failure mode of a payment-health tool must never be "no payments".</p>
+  </div>
+
+  <div class="strip">
+    <span class="lbl">2 · RETURN THE OUTCOMES YOU ALREADY GET</span>
+    <div class="grid-2">
+      <div>
+        <pre class="sh"><span class="p">$</span> curl -X POST localhost:8080/outcomes \
+    -H 'content-type: application/json' \
+    -d '{"attempts":[{
+      "id":"pay_1", "orderId":"order_1",
+      "customer":"cus_9f3b2a71c4e8d012",
+      "amountPaise":120000,
+      "method":"upi", "issuer":"hdfc",
+      "status":"failed", "at":1756900000000,
+      "arm":"treated" }]}'
+
+<span class="c">→ {"accepted":1,"opened":0,"incidents":0}</span></pre>
+      </div>
+      <div>
+        <p class="aside" style="margin-top:0">The same events your webhook already delivers, batched
+          up to a thousand at a time. Unlike the plan route this one <b>rejects</b> what it cannot
+          parse rather than coercing it: an outcome of the wrong shape is evidence about the
+          integration, not about the rails, and quietly accepting it would put a slice in the
+          detector that nothing else can reason about.</p>
+        <p class="aside"><code>customer</code> must be at least sixteen characters. That is a
+          structural guard rather than a formality — a keyed hash always clears it and a bare phone
+          number never does, so a raw identifier cannot reach the detector, the ledger or a model
+          prompt by accident.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="strip">
+    <span class="lbl">3 · WORK THE CASUALTIES</span>
+    <div class="grid-2">
+      <div>
+        <pre class="sh"><span class="c"># decides everything, sends nothing</span>
+<span class="p">$</span> KAIROS_MERCHANT_ID=acme \
+  KAIROS_LINK_BASE=https://pay.acme.test \
+  pnpm --filter @kairos/recover-worker start
+
+<span class="c"># one instance → a fleet</span>
+<span class="p">$</span> export KAIROS_DATABASE_URL=postgres://…
+<span class="p">$</span> pnpm --filter @kairos/postgres run schema \
+    | psql "$KAIROS_DATABASE_URL"</pre>
+      </div>
+      <div>
+        <p class="aside" style="margin-top:0"><b>Dry-run delivery is the default and live is opt-in</b>,
+          because getting that backwards is unrecoverable: a message sent by mistake cannot be
+          unsent, and a merchant who meant to observe for a week and instead messaged their customers
+          has a problem no rollback fixes. Every decision is real; nothing leaves the process.</p>
+        <p class="aside">With a database, two things move out of memory and they are not the same
+          protection. <em class="hot">Authority</em> stops two workers double-<i>spending</i>. The
+          queue's atomic <em class="hot">lease</em> stops them double-<i>sending</i> — idempotent
+          authority hands both workers the same grant for the same casualty.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="strip">
+    <span class="lbl">AUTHORISE IT — NOTHING SPENDS WITHOUT A MANDATE</span>
+    <p class="aside" style="max-width:84ch;margin-bottom:18px">A signed mandate is unreadable by
+      design: paise and epoch milliseconds, and the two numbers that matter most are <b>not in it</b>
+      but are products of numbers that are. Nobody authorising spend can be asked to do that
+      arithmetic in their head, so the tool does it and prints it <em class="hot">before</em> it
+      signs.</p>
+    <pre class="sh"><span class="c"># author one in a browser, on loopback — or without one</span>
+<span class="p">$</span> pnpm --filter @kairos/mandate start form
+<span class="p">$</span> kairos-mandate seal spec.json &gt; mandate.json   <span class="c"># reading to stderr, mandate to stdout</span>
+
+MONEY
+  Ceiling for the whole campaign         ₹5,000.00
+  Most one action may cost                   ₹0.60
+  Most that can be committed at once         ₹9.60   (16 actions in flight)
+  Actions the budget buys, worst case        8,333
+
+PEOPLE
+  At most 3 messages to one person per 7 days.
+  Nothing sent between 21:00 and 08:00 at UTC+05:30.
+
+SIGNATURE
+  bb498b0eeb882107c7a193f177469705aa8af57581a70f6d7a0f063820eec3c6
+  Verified. Every field above is covered by this signature and none of them has been altered.</pre>
+    <p class="aside" style="max-width:84ch">The page collects a <em class="hot">spec</em> — rupees,
+      days, clock times — and posts it back for conversion, so there is exactly one implementation of
+      "₹5,000 for 30 days" and the form calls it rather than re-deriving it. It never holds the
+      signing key: the process serving it seals, or says it cannot and refuses. Loopback only, and
+      not configurable.</p>
+  </div>
+
+  <div class="strip">
+    <span class="lbl">CONFIGURATION — EVERY DEFAULT IS THE ONE IN THE CODE</span>
+    <table>
+      <thead><tr><th>variable</th><th class="num">default</th><th>what it decides</th></tr></thead>
+      <tbody>
+        <tr class="win"><td><code>KAIROS_MANDATE_SECRET</code></td><td class="num">—</td><td><b>Required, ≥32 chars.</b> Refused rather than defaulted: a development fallback here is a key that ships to production the first time somebody forgets a variable.</td></tr>
+        <tr><td><code>KAIROS_MERCHANT_ID</code></td><td class="num">—</td><td>Required by the worker. Namespaces the budget and the contact caps.</td></tr>
+        <tr><td><code>KAIROS_DATABASE_URL</code></td><td class="num">unset</td><td>Unset is a single instance. Set is a fleet. That is the whole difference.</td></tr>
+        <tr><td><code>KAIROS_DELIVERY</code></td><td class="num">dry-run</td><td>Anything else needs a live gateway and a DLT-registered sender, and refuses to start without them.</td></tr>
+        <tr><td><code>KAIROS_BUDGET_PAISE</code></td><td class="num">100000</td><td>The campaign's lifetime ceiling — ₹1,000. Not a rate.</td></tr>
+        <tr><td><code>KAIROS_MAX_IN_FLIGHT</code></td><td class="num">16</td><td>Blast radius. Granted by the mandate, so adding workers cannot raise it.</td></tr>
+        <tr><td><code>KAIROS_CONTACT_LIMIT</code></td><td class="num">3</td><td>Messages to one person per window, across every casualty of theirs.</td></tr>
+        <tr><td><code>KAIROS_CONTACT_WINDOW_MS</code></td><td class="num">7 days</td><td>Rolling, not calendar — a calendar week allows six messages in twelve hours.</td></tr>
+        <tr><td><code>KAIROS_RESERVATION_TTL_MS</code></td><td class="num">120000</td><td>How long authority survives unreconciled. Must outlast the slowest action.</td></tr>
+        <tr><td><code>KAIROS_DRAIN_INTERVAL_MS</code></td><td class="num">15000</td><td>How often the worker looks at the queue.</td></tr>
+        <tr><td><code>KAIROS_DB_MIGRATE</code></td><td class="num">on</td><td><code>off</code> hands the schema to a deployment that owns its own migrations.</td></tr>
+        <tr><td><code>PORT</code></td><td class="num">8080</td><td>Where <code>sentry</code> listens.</td></tr>
+      </tbody>
+    </table>
+    <p class="aside">Quiet hours are <b>not</b> configurable. 21:00–08:00 IST, and a merchant who
+      wants to message people at three in the morning wants something Kairos does not do.</p>
+  </div>
+
+  <div class="strip">
+    <span class="lbl">WHAT IT DOES WHEN SOMETHING GOES WRONG</span>
+    <p class="aside" style="max-width:84ch;margin-bottom:18px">Every one of these is a code path with
+      a test, not an intention. The rule underneath all of them: a request that cannot be evaluated
+      must not be acted on, and a checkout that cannot be advised must still render.</p>
+    <table>
+      <thead><tr><th>when</th><th>what happens</th></tr></thead>
+      <tbody>
+        <tr><td>Kairos is unreachable, or slow</td><td>Your checkout renders your own ordering. That is what it would have done without any of this.</td></tr>
+        <tr><td>A plan takes longer than 50 ms</td><td>Same. The budget is measured, not hoped for, and blowing it is a fallback rather than a wait.</td></tr>
+        <tr><td>A customer reference does not parse</td><td>Same, with the fault named in <code>reason</code>. Still a 200.</td></tr>
+        <tr><td>The shared store cannot be read</td><td>The contact allowance reads <b>zero</b>. A policy that cannot tell how much it has already spoken to somebody assumes it has spoken to them enough.</td></tr>
+        <tr><td>The kill switch cannot be read</td><td>Counted as engaged. Not knowing whether you have been told to stop <i>is</i> being told to stop.</td></tr>
+        <tr><td>The audit sink fails</td><td>The admission is refused. A decision that cannot be recorded is not taken.</td></tr>
+        <tr><td>A mandate does not verify</td><td>Every action refused by name — including one whose budget was raised after signing.</td></tr>
+        <tr><td>A worker dies mid-action</td><td>The reservation expires and its authority returns to the pool; the lease expires and the next pass picks the casualty up unchanged. Nothing leaks and nothing is sent twice.</td></tr>
+        <tr class="win"><td>Either kill switch is thrown</td><td>Everything stops. The signed one cannot be cleared by anyone who cannot sign; the store-backed one propagates fleet-wide within one admission with no redeploy.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="strip">
+    <span class="lbl">WHAT IS NOT BUILT — SO YOU FIND OUT NOW</span>
+    <div class="grid-3">
+      <div class="panel">
+        <h4>LIVE DELIVERY</h4>
+        <p>The recovery arm needs a Razorpay account able to charge saved tokens and a DLT-registered
+          sender. It refuses to start pretending otherwise.</p>
+      </div>
+      <div class="panel">
+        <h4>ONE AUDIT CHAIN PER WORKER</h4>
+        <p>A fleet shares its queue and its budget but not its ledger. Every record is still written
+          and still tamper-evident; "show me everything" means interleaving N chains.</p>
+      </div>
+      <div class="panel">
+        <h4>MANDATE DISTRIBUTION</h4>
+        <p>A sealed mandate is a file somebody carries to a worker. There is no control plane that
+          hands one out, rotates it, or revokes it short of the kill switch.</p>
+      </div>
+    </div>
+    <p class="aside" style="margin-top:20px">The full list is eighteen entries long and lives in
+      <code>docs/ARCHITECTURE.md</code> under <b>honest gaps</b>, next to the things that do work.
+      <a href="#benchmarks" data-goto="benchmarks">And the numbers →</a></p>
   </div>
 </main>
 
