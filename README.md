@@ -167,6 +167,70 @@ quietly:
   messages rose — the arm now does what it claimed, and what it claimed is worth slightly less than
   the version that was accidentally late (open question 20).
 
+## Running the whole thing
+
+```sh
+pnpm demo
+```
+
+One command. It generates a signing key on first run — into `.env.demo`, which git will not take,
+because every mandate sealed with a publicly-known secret is a mandate anyone can forge — and brings
+up Postgres, the sentry, a fleet-capable recovery worker, the operator console, and a merchant that
+is not there.
+
+```
+:8080  the sentry    POST /plan · POST /outcomes · GET /health · GET /ledger
+:8081  the console   GET /api/snapshot · GET /api/scenario
+```
+
+What you are watching is the real decision path — detection, steering, classification, the
+expected-value gate, Terminus admission, composition, cost, the hash-chained ledger — driven by
+simulated traffic. Nothing can reach a customer. The worker runs in **dry-run delivery**, which
+decides everything and sends nothing, and refuses to start in any other mode because no live gateway
+is wired.
+
+```sh
+pnpm demo:logs      # the traffic and the worker, side by side
+pnpm demo:down      # stop, and leave nothing behind
+```
+
+Two things about it are demonstration scaffolding rather than product, and both say so out loud in
+the startup line:
+
+- **The clock runs at 60x.** Recovery is slow on purpose — backoff rungs measured in half-hours,
+  quiet hours that hold a message until morning, a wait for the moment a customer is likely to have
+  money. None of that is watchable in real time, so the honest way to show it is to move the clock
+  rather than shorten the rules. Every bound Terminus enforces reads through that one clock, so they
+  all scale together. `KAIROS_CLOCK_SPEED` is refused outright in any delivery mode that can reach a
+  person.
+- **The customer directory is stood in for.** By default the worker's directory returns `null` for
+  everyone, so it holds no personal data at all — which is correct, and means the executor refuses
+  every retry for want of a token and every message for want of a recipient before composing
+  anything. `KAIROS_DIRECTORY=simulated` derives a name, a language and a token from the customer
+  reference by hash, so the two things a dry run exists to show actually appear:
+
+```
+SEND   contact-sms · 1 segment
+       Hi Sara, the HDFC issue that stopped your Rs. 1,519.00 payment is fixed.
+       Finish it here: http://localhost:8080/r/cas_pay_000001kkt
+CHARGE order_000001l1k  Rs. 344.00
+```
+
+The incident to wait for arrives about forty-five seconds in, and another every three minutes after
+that, alternating between a UPI handle and a card BIN. Watch the sentry decide what to do about it:
+
+```
+declined                 demote  upi||  the failing rail is no worse than where its customers
+                                        would be moved to
+awaiting-corroboration   demote  upi||  1 of 2 corroborating windows
+steering                 demote  upi||  in force until 1788469371830
+revoked                  demote  upi||  the incident is no longer reported
+```
+
+The first line is the system refusing to help. Moving every UPI customer onto cards, which fail
+around 11% of the time, is not an improvement over a UPI rail at 10% — and a tool that steered
+anyway would be measured on how decisive it looked rather than on what it recovered.
+
 ## Plugging it in
 
 Three touchpoints, in the order a merchant reaches them.

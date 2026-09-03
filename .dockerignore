@@ -1,0 +1,31 @@
+# The build context. Everything here is either regenerated inside the image, secret, or enormous.
+
+node_modules
+**/node_modules
+dist
+**/dist
+coverage
+*.tsbuildinfo
+
+.git
+.github
+
+# 32 MB of film that no service in the stack serves. The site is deployed, not containerised.
+apps/site/public/film
+apps/site/public/app
+apps/site/public/assets/icons
+apps/site/preview
+
+bench-out
+*.scorecard.json
+
+# Never. The image is built from a public repository and shipped to whoever runs it.
+.env
+.env.*
+*.env
+!.env.example
+
+*.log
+*.tgz
+.DS_Store
+Thumbs.db
