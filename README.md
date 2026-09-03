@@ -179,9 +179,22 @@ up Postgres, the sentry, a fleet-capable recovery worker, the operator console, 
 is not there.
 
 ```
-:8080  the sentry    POST /plan · POST /outcomes · GET /health · GET /ledger
-:8081  the console   GET /api/snapshot · GET /api/scenario
+:8080  the operator view, and the sentry behind it
+       GET /  ·  POST /plan  ·  POST /outcomes  ·  GET /health · /ledger · /metrics
+:8081  the console    GET /api/snapshot · GET /api/scenario
+:9464  the worker     GET /health · /ready · /metrics
 ```
+
+Open **http://localhost:8080** and watch. Everything the operator view shows was already available
+as JSON, and a person reading `curl /ledger | jq` is a person who will not check it twice — so the
+two things a terminal makes hardest are the two it puts first: whether the audit chain still
+verifies, and why the checkout was left alone.
+
+`/health` on the worker answers whether the loop is turning and touches nothing external, because a
+liveness probe that fails when the database is slow gets the process killed for something restarting
+it will not fix. `/ready` answers whether it can read the store, and is allowed to fail. `/metrics`
+always returns 200, even when the store is unreachable — a scrape that fails tells a dashboard
+nothing, and one that succeeds with `kairos_store_readable 0` tells it exactly what is wrong.
 
 What you are watching is the real decision path — detection, steering, classification, the
 expected-value gate, Terminus admission, composition, cost, the hash-chained ledger — driven by

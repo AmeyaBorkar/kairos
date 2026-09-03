@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { DEFAULT_DETECTOR_CONFIG, DetectionEngine, incidentFrom } from "@kairos/detect";
 import {
   type Attempt,
@@ -31,6 +32,7 @@ import {
 import Fastify, { type FastifyInstance } from "fastify";
 import { MemoryStore, type Store } from "throttlekit";
 import { z } from "zod";
+import { renderSentryMetrics } from "./metrics.js";
 import { ATTEMPT_BATCH, PLAN_REQUEST } from "./schema.js";
 
 export interface SentryOptions {
@@ -170,6 +172,11 @@ export function createSentry(options: SentryOptions): Sentry {
   let health = window.snapshot(clock.now());
   let nextTick = 0;
 
+  // Counted here rather than in a metrics library, so the numbers a dashboard reads are the same
+  // increments the routes below perform, with nothing holding a second copy that could disagree.
+  const startedAt = clock.now();
+  const counts = { ingested: 0, rejected: 0, plans: 0, fallbacks: 0 };
+
   const app = Fastify({ logger: options.logger ?? false });
 
   /**
@@ -208,6 +215,7 @@ export function createSentry(options: SentryOptions): Sentry {
     if (!parsed.success) {
       // Zod at the boundary, and a rejection rather than a coercion. An outcome stream that is not
       // the shape we expect is evidence about the integration, not about the rails.
+      counts.rejected++;
       return reply.code(400).send({ error: "invalid batch", detail: z.treeifyError(parsed.error) });
     }
 
@@ -225,6 +233,7 @@ export function createSentry(options: SentryOptions): Sentry {
       accepted++;
     }
 
+    counts.ingested += accepted;
     await maybeAffirm(latest);
     return reply.send({ accepted, opened, incidents: engine.openIncidents().length });
   });
@@ -243,7 +252,15 @@ export function createSentry(options: SentryOptions): Sentry {
    */
   function planFor(rawCustomer: string, offered: readonly PaymentMethod[]): PlanResponse {
     const started = clock.now();
-    const fallback = (reason: string): PlanResponse => ({
+    counts.plans++;
+    const fallback = (reason: string): PlanResponse => {
+      // Counted at the point it is produced, so every route into the fallback is counted once and
+      // no future one can be added without being counted. The ratio of these to plans served is
+      // the single number that says whether the hot path is healthy.
+      counts.fallbacks++;
+      return fallbackPlan(reason);
+    };
+    const fallbackPlan = (reason: string): PlanResponse => ({
       sequence: [...offered],
       suppress: [],
       demote: [],
@@ -381,6 +398,55 @@ export function createSentry(options: SentryOptions): Sentry {
       })),
       ledger: { length: ledger.length, head: ledger.head },
     });
+  });
+
+  /**
+   * The operator view.
+   *
+   * Everything on it was already available as JSON, and a person reading `curl /ledger | jq` is a
+   * person who will not check it twice. The two things a terminal makes hardest are the two worth
+   * seeing: whether the audit chain still verifies, and why the checkout was left alone.
+   *
+   * Read from disk once at construction rather than per request — it is a static file, and a page
+   * that re-read itself on every request would be a file handle per curious refresh.
+   */
+  const page = readFileSync(new URL("../public/index.html", import.meta.url), "utf8");
+  app.get("/", async (_request, reply) => {
+    return reply
+      .type("text/html; charset=utf-8")
+      .header("cache-control", "no-store")
+      .header("x-content-type-options", "nosniff")
+      .send(page);
+  });
+
+  /**
+   * The exposition.
+   *
+   * Text rather than JSON, and on the same port rather than an admin one: this service is already
+   * an HTTP surface that answers only reads, and a second listener would be a second thing to
+   * expose, firewall and forget about.
+   */
+  app.get("/metrics", async (_request, reply) => {
+    const now = clock.now();
+    const verification = ledger.verify();
+    return reply.type("text/plain; version=0.0.4; charset=utf-8").send(
+      renderSentryMetrics({
+        outcomesIngested: counts.ingested,
+        outcomesRejected: counts.rejected,
+        plansServed: counts.plans,
+        plansFallenBack: counts.fallbacks,
+        openIncidents: engine.openIncidents().length,
+        steersInForce: controller.directives().length,
+        ledgerLength: ledger.length,
+        ledgerValid: verification.valid,
+        startedAt,
+        now,
+        fleet: options.store !== undefined,
+        rails: window
+          .snapshot(now)
+          .observations.map((o) => ({ slice: sliceKey(o.slice), failureRate: o.failureRate })),
+      }),
+    );
   });
 
   /** The audit trail, and proof it has not been altered. */

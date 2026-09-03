@@ -8,11 +8,14 @@
 # reach a customer: the worker runs in dry-run delivery, which decides everything and sends nothing,
 # and refuses to start in any other mode because no live gateway is wired.
 #
-#   :8080  the sentry   POST /plan, POST /outcomes, GET /health, GET /ledger
-#   :8081  the console  GET /api/snapshot, GET /api/ledger — the operator view's data
+#   :8080  the operator view, and the sentry behind it
+#          GET /  ·  POST /plan  ·  POST /outcomes  ·  GET /health  ·  /ledger  ·  /metrics
+#   :8081  the console    GET /api/snapshot — the recorded scenario the site replays
+#   :9464  the worker     GET /health · /ready · /metrics
 #
-# The interesting thing to watch is `docker compose logs -f traffic worker`, and the moment worth
-# waiting for is about forty-five seconds in, when a rail starts failing and the detector says so.
+# Open http://localhost:8080 and watch. The moment worth waiting for is about forty-five seconds in,
+# when a rail starts failing, the detector says so, and the audit chain grows a record explaining
+# what was done about it — or, just as often, why nothing was.
 
 name: kairos
 
@@ -83,6 +86,7 @@ services:
       # nobody ever sees bind, and watching the ceiling refuse an action is the point.
       KAIROS_BUDGET_PAISE: 100000
       KAIROS_DRAIN_INTERVAL_MS: 5000
+      KAIROS_ADMIN_PORT: 9464
       # The same multiple the traffic runs at, and it has to be: the queue is stamped in the
       # traffic's timeline, so a worker on a real clock would find nothing due for an hour and
       # look broken. Recovery is slow by design — backoff rungs, quiet hours, waiting for the
@@ -94,6 +98,10 @@ services:
       # recipient, so the two things dry-run delivery exists to show — the words Kairos would
       # send and what sending them would cost — never get composed at all.
       KAIROS_DIRECTORY: simulated
+    ports:
+      # /health, /ready and /metrics. A worker deadlocked on a pool it never gets a connection from
+      # looks exactly like a healthy one from outside, and that is what this makes visible.
+      - "9464:9464"
     restart: unless-stopped
 
   traffic:

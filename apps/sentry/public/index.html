@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kairos — operator</title>
+<meta name="robots" content="noindex">
+<!--
+  The operator view.
+
+  Everything this service knows was already available as JSON, and a person staring at
+  `curl localhost:8080/ledger | jq` is a person who will not check it twice. The two things worth
+  seeing are the ones a terminal makes hardest: whether the audit chain still verifies, and why the
+  checkout was left alone.
+
+  One file, no build, no network beyond this origin. It is served by the process it describes, so it
+  cannot be looking at a different deployment than the one you think you are debugging.
+-->
+<style>
+  :root {
+    --bg: #060f24; --panel: #0d1b34; --panel-2: #142544; --line: #24457a;
+    --ink: #e2ecff; --ink-dim: #7d95bd; --accent: #3395ff;
+    --good: #3ddc97; --warn: #ffc93c; --bad: #ff6161;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 14px/1.5 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  }
+  header {
+    display: flex; flex-wrap: wrap; gap: 10px 26px; align-items: baseline;
+    padding: 16px 22px; border-bottom: 1px solid var(--line); background: var(--panel);
+    position: sticky; top: 0; z-index: 2;
+  }
+  h1 { font-size: 15px; margin: 0 12px 0 0; letter-spacing: .18em; }
+  h1 b { color: var(--accent); }
+  .fact { color: var(--ink-dim); }
+  .fact b { color: var(--ink); font-weight: 600; }
+  main { padding: 22px; display: grid; gap: 22px; max-width: 1500px; }
+  section { border: 1px solid var(--line); background: var(--panel); }
+  h2 {
+    font-size: 11px; letter-spacing: .2em; color: var(--ink-dim); font-weight: 600;
+    margin: 0; padding: 10px 14px; border-bottom: 1px solid var(--line);
+  }
+  h2 span { color: var(--accent); }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 7px 14px; border-bottom: 1px solid var(--panel-2); }
+  th { color: var(--ink-dim); font-weight: 600; font-size: 11px; letter-spacing: .1em; }
+  tr:last-child td { border-bottom: 0; }
+  td.n, th.n { text-align: right; font-variant-numeric: tabular-nums; }
+  .empty { padding: 14px; color: var(--ink-dim); }
+  .chip { padding: 1px 7px; border: 1px solid currentColor; font-size: 11px; }
+  .ok { color: var(--good); } .no { color: var(--bad); } .hot { color: var(--warn); }
+  .dim { color: var(--ink-dim); }
+  .hash { font-size: 11px; color: var(--ink-dim); word-break: break-all; }
+  .verify { padding: 14px; display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: baseline; }
+  .verify.bad { background: rgba(255, 97, 97, .1); }
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+  @media (max-width: 1000px) { .two { grid-template-columns: 1fr; } }
+  footer { padding: 0 22px 30px; color: var(--ink-dim); font-size: 12px; }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>KAIROS <b>/</b> OPERATOR</h1>
+  <span class="fact">state <b id="state">—</b></span>
+  <span class="fact">rails seen <b id="rail-count">—</b></span>
+  <span class="fact">incidents open <b id="incident-count">—</b></span>
+  <span class="fact">steers in force <b id="steer-count">—</b></span>
+  <span class="fact" id="age">—</span>
+</header>
+
+<main>
+  <section>
+    <h2>THE AUDIT CHAIN <span>· every decision, and proof none was altered</span></h2>
+    <div class="verify" id="verify"><span class="dim">reading…</span></div>
+    <table>
+      <thead>
+        <tr>
+          <th class="n">#</th><th>WHEN</th><th>ACTOR</th><th>ACTION</th>
+          <th>TARGET</th><th>ALLOWED</th><th>BINDING</th><th>WHY</th>
+        </tr>
+      </thead>
+      <tbody id="ledger"><tr><td colspan="8" class="empty">reading…</td></tr></tbody>
+    </table>
+  </section>
+
+  <div class="two">
+    <section>
+      <h2>OPEN INCIDENTS <span>· what the detector currently reports</span></h2>
+      <table>
+        <thead><tr><th>SLICE</th><th class="n">BASELINE</th><th class="n">PEAK</th><th class="n">FOUND IN</th></tr></thead>
+        <tbody id="incidents"><tr><td colspan="4" class="empty">reading…</td></tr></tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>STEERING <span>· what the checkout is being told</span></h2>
+      <table>
+        <thead><tr><th>LEVER</th><th>SLICE</th><th>WHY</th></tr></thead>
+        <tbody id="steering"><tr><td colspan="3" class="empty">reading…</td></tr></tbody>
+      </table>
+    </section>
+  </div>
+
+  <section>
+    <h2>RAILS <span>· the rolling window the steering decision reads</span></h2>
+    <table>
+      <thead><tr><th>SLICE</th><th class="n">SHARE</th><th class="n">FAILURE RATE</th></tr></thead>
+      <tbody id="rails"><tr><td colspan="3" class="empty">reading…</td></tr></tbody>
+    </table>
+  </section>
+</main>
+
+<footer>
+  Read-only. This page holds no ports that could act, and neither does the service behind it —
+  the run it observes owns those. Raw: <a href="/health">/health</a> ·
+  <a href="/ledger">/ledger</a> · <a href="/metrics">/metrics</a>.
+  <span id="stale"></span>
+</footer>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const pct = (n) => `${(n * 100).toFixed(1)}%`;
+const clock = (ms) => new Date(ms).toISOString().slice(11, 19);
+
+/** A row of "nothing here", which is a real answer and not an error. */
+function empty(tbody, span, text) {
+  tbody.innerHTML = `<tr><td colspan="${span}" class="empty">${esc(text)}</td></tr>`;
+}
+
+function renderVerify(v, length, head) {
+  const box = $("verify");
+  box.classList.toggle("bad", !v.valid);
+  if (v.valid && length === 0) {
+    // An empty chain verifies trivially, and saying "verified" about it would be the page's one
+    // dishonest sentence: there is nothing here to have been altered.
+    box.innerHTML =
+      `<span class="chip dim">EMPTY</span>` +
+      `<span class="dim">No decision has been recorded yet, so there is nothing to verify.</span>`;
+    return;
+  }
+  if (v.valid) {
+    box.innerHTML =
+      `<span class="chip ok">VERIFIED</span>` +
+      `<span class="dim">${length} record${length === 1 ? "" : "s"}, and every one of them hashes ` +
+      `into the next. Altering any field breaks the chain from that point on.</span>` +
+      `<span class="hash">head ${esc(head)}</span>`;
+    return;
+  }
+  // The one state on this page worth shouting about. A broken chain is not a degraded view of the
+  // audit trail — it is the audit trail telling you it has been edited.
+  box.innerHTML =
+    `<span class="chip no">CHAIN BROKEN</span>` +
+    `<span class="no">at record ${esc(v.brokenAt)} — ${esc(v.detail)}</span>`;
+}
+
+function renderLedger(records) {
+  const tbody = $("ledger");
+  if (records.length === 0) {
+    empty(tbody, 8, "Nothing has been decided yet. This service records a decision only when it makes one.");
+    return;
+  }
+  tbody.innerHTML = [...records].reverse().map((r) => `<tr>
+    <td class="n dim">${r.seq}</td>
+    <td class="dim">${clock(r.at)}</td>
+    <td>${esc(r.actor)}</td>
+    <td>${esc(r.action)}</td>
+    <td class="dim">${esc(r.target)}</td>
+    <td class="${r.allowed ? "ok" : "no"}">${r.allowed ? "allowed" : "refused"}</td>
+    <td class="${r.binding ? "hot" : "dim"}">${esc(r.binding ?? "—")}</td>
+    <td class="dim">${esc(r.reason)}</td>
+  </tr>`).join("");
+}
+
+async function tick() {
+  try {
+    const [health, ledger] = await Promise.all([
+      fetch("/health").then((r) => r.json()),
+      fetch("/ledger").then((r) => r.json()),
+    ]);
+
+    $("state").textContent = health.steering.length > 0 ? "steering" : "watching";
+    $("rail-count").textContent = health.rails.length;
+    $("incident-count").textContent = health.incidents.length;
+    $("steer-count").textContent = health.steering.length;
+    $("age").innerHTML = `as of <b>${clock(health.at)}</b>`;
+    $("stale").textContent = "";
+
+    renderVerify(ledger.verification, health.ledger.length, health.ledger.head);
+    renderLedger(ledger.recent);
+
+    const incidents = $("incidents");
+    if (health.incidents.length === 0) {
+      empty(incidents, 4, "None. Every rail is inside its own baseline.");
+    } else {
+      incidents.innerHTML = health.incidents.map((i) => `<tr>
+        <td>${esc(i.slice)}</td>
+        <td class="n dim">${pct(i.baselineRate)}</td>
+        <td class="n hot">${pct(i.peakRate)}</td>
+        <td class="n dim">${((i.detectedAt - i.onsetAt) / 60000).toFixed(1)} min</td>
+      </tr>`).join("");
+    }
+
+    const steering = $("steering");
+    if (health.steering.length === 0) {
+      empty(steering, 3, "Nothing. The checkout is rendering the merchant's own ordering.");
+    } else {
+      steering.innerHTML = health.steering.map((d) => `<tr>
+        <td class="hot">${esc(d.lever)}</td>
+        <td>${esc(d.slice)}</td>
+        <td class="dim">${esc(d.reason)}</td>
+      </tr>`).join("");
+    }
+
+    const rails = $("rails");
+    if (health.rails.length === 0) {
+      empty(rails, 3, "No traffic yet. A cold sentry is indistinguishable from no sentry, which is the correct failure mode.");
+    } else {
+      // `share` is a decayed observation weight, not a fraction — the domain type says so, and
+      // only ratios of it mean anything. Normalising here rather than in the route keeps the API
+      // reporting what it measured and this page reporting what a reader thinks the word means.
+      const totalShare = health.rails.reduce((sum, r) => sum + r.share, 0) || 1;
+      rails.innerHTML = health.rails.map((r) => `<tr>
+        <td>${esc(r.slice)}</td>
+        <td class="n dim">${pct(r.share / totalShare)}</td>
+        <td class="n ${r.failureRate > 0.15 ? "no" : r.failureRate > 0.06 ? "hot" : ""}">${pct(r.failureRate)}</td>
+      </tr>`).join("");
+    }
+  } catch {
+    // Said rather than swallowed. A page that quietly keeps showing the last good numbers is a page
+    // that will one day be read as current during an outage.
+    $("stale").innerHTML = ` <span class="no">— not reaching the service; everything above is stale.</span>`;
+  }
+}
+
+tick();
+setInterval(tick, 3000);
+</script>
+</body>
+</html>
