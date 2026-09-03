@@ -13,6 +13,8 @@ export interface SentryMetrics {
   readonly outcomesRejected: number;
   readonly plansServed: number;
   readonly plansFallenBack: number;
+  readonly webhooksVerified: number;
+  readonly webhooksRefused: number;
   readonly openIncidents: number;
   readonly steersInForce: number;
   readonly ledgerLength: number;
@@ -52,6 +54,15 @@ export function renderSentryMetrics(m: SentryMetrics): string {
       [
         `kairos_plans_total{result="served"} ${m.plansServed}`,
         `kairos_plans_total{result="fallback"} ${m.plansFallenBack}`,
+      ],
+    ),
+    line(
+      "kairos_webhooks_total",
+      "Inbound gateway webhooks. A rising refusal rate is a rotated secret or somebody probing.",
+      "counter",
+      [
+        `kairos_webhooks_total{result="verified"} ${m.webhooksVerified}`,
+        `kairos_webhooks_total{result="refused"} ${m.webhooksRefused}`,
       ],
     ),
     line("kairos_incidents_open", "Degradations the detector currently reports.", "gauge", [

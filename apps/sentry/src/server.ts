@@ -184,8 +184,18 @@ export function createSentry(options: SentryOptions): Sentry {
 
   // Counted here rather than in a metrics library, so the numbers a dashboard reads are the same
   // increments the routes below perform, with nothing holding a second copy that could disagree.
-  const startedAt = clock.now();
-  const counts = { ingested: 0, rejected: 0, plans: 0, fallbacks: 0 };
+  // The wall clock, not the kernel's. Uptime is a real-world quantity, and a demonstration may
+  // have accelerated the other one — which would report a fourteen-minute-old process as having
+  // run for fourteen hours.
+  const startedAt = Date.now();
+  const counts = {
+    ingested: 0,
+    rejected: 0,
+    plans: 0,
+    fallbacks: 0,
+    webhooks: 0,
+    webhooksRefused: 0,
+  };
 
   const app = Fastify({ logger: options.logger ?? false });
 
@@ -211,12 +221,33 @@ export function createSentry(options: SentryOptions): Sentry {
     registerRazorpayWebhook(app, {
       secret: options.razorpayWebhook.secret,
       piiKey: options.razorpayWebhook.piiKey,
-      now: () => clock.now(),
+      /**
+       * Real seconds, deliberately, even where the rest of this service runs on an accelerated
+       * clock.
+       *
+       * Freshness of an inbound delivery is a question about the outside world. Razorpay stamps
+       * `created_at` in real time and the tolerance is a real five minutes, so verifying against a
+       * clock running at sixty times real speed rejects every genuine webhook as stale within
+       * seconds of boot — which is exactly what happened to the first real delivery this route
+       * ever received.
+       *
+       * The rule this is an instance of: the kernel's clock governs the campaign, the wall clock
+       * governs everything the campaign touches that is not inside this process.
+       */
+      now: () => Date.now(),
       observe: (attempt) => {
         // The same two calls `/outcomes` makes, in the same order, so a real webhook and a
         // reported batch reach the detector by one path rather than two that could drift.
         engine.observe(attempt);
         window.observe(attempt.slice, attempt.status === "failed", attempt.at, "treated");
+        // Counted as an outcome as well as a webhook. The gauge says "offered to the detector",
+        // and a gateway's own report of a payment is exactly that — reading zero while a payment
+        // had plainly been ingested was the metric disagreeing with the log.
+        counts.ingested++;
+        counts.webhooks++;
+      },
+      onRefused: () => {
+        counts.webhooksRefused++;
       },
     });
   }
@@ -477,12 +508,16 @@ export function createSentry(options: SentryOptions): Sentry {
         outcomesRejected: counts.rejected,
         plansServed: counts.plans,
         plansFallenBack: counts.fallbacks,
+        webhooksVerified: counts.webhooks,
+        webhooksRefused: counts.webhooksRefused,
         openIncidents: engine.openIncidents().length,
         steersInForce: controller.directives().length,
         ledgerLength: ledger.length,
         ledgerValid: verification.valid,
         startedAt,
-        now,
+        // Paired with startedAt above, which is wall-clock. Mixing the two frames here would make
+        // the uptime gauge a ratio of two different kinds of second.
+        now: Date.now(),
         fleet: options.store !== undefined,
         rails: window
           .snapshot(now)

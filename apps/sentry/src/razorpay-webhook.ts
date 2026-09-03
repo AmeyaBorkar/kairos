@@ -45,6 +45,13 @@ export interface RazorpayWebhookOptions {
   readonly now: () => number;
   /** What to do with an attempt we managed to read. The detector, in practice. */
   readonly observe: (attempt: Attempt) => void;
+  /**
+   * Told when a delivery was refused, and why.
+   *
+   * Worth counting separately from a bad request. A rising refusal rate means a rotated secret or
+   * somebody probing the endpoint, and both are invisible if the only evidence is a log line.
+   */
+  readonly onRefused?: (reason: string) => void;
 }
 
 declare module "fastify" {
@@ -92,6 +99,7 @@ export function registerRazorpayWebhook(
     );
 
     if (!verdict.ok) {
+      options.onRefused?.(verdict.reason);
       app.log.warn({ reason: verdict.reason }, "razorpay webhook refused");
       return reply.code(200).send({ ok: false, reason: verdict.reason });
     }

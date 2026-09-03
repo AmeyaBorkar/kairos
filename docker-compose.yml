@@ -58,7 +58,14 @@ services:
       # It has to agree with whatever is feeding it. Outcomes stamped in an accelerated timeline
       # arriving at a service on a real clock all land in the future, and a detector whose window
       # contains nothing detects nothing.
-      KAIROS_CLOCK_SPEED: 60
+      #
+      # Set this to 1 when pointing a real gateway at the inbound webhook, and stop the traffic
+      # generator. A webhook is stamped by the outside world; the rolling window decays what it
+      # holds against whatever clock the detector runs on. Under acceleration those are two
+      # timelines, and a real observation is already ancient by the demo's reckoning — accepted,
+      # translated, logged, and then decayed to nothing before anything can read it. One detector
+      # has one clock, and there is no correct merge.
+      KAIROS_CLOCK_SPEED: ${KAIROS_CLOCK_SPEED:-60}
     env_file:
       # The Razorpay credentials, when there are any. Optional so the stack comes up without them:
       # without a webhook secret the inbound route is simply not mounted, and the startup line says
