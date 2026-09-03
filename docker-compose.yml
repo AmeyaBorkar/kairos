@@ -59,6 +59,12 @@ services:
       # arriving at a service on a real clock all land in the future, and a detector whose window
       # contains nothing detects nothing.
       KAIROS_CLOCK_SPEED: 60
+    env_file:
+      # The Razorpay credentials, when there are any. Optional so the stack comes up without them:
+      # without a webhook secret the inbound route is simply not mounted, and the startup line says
+      # so rather than leaving a live endpoint that trusts whatever it is sent.
+      - path: .env
+        required: false
     ports:
       - "8080:8080"
     healthcheck:

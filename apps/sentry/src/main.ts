@@ -69,6 +69,9 @@ function clockSpeed(): number {
 
 const speed = clockSpeed();
 const persistence = await backing();
+
+const webhookSecret = process.env["RAZORPAY_WEBHOOK_SECRET"] || undefined;
+const piiKey = process.env["LEDGER_PII_HASH_KEY"] || undefined;
 const { app } = createSentry({
   mandate,
   secret,
@@ -76,6 +79,12 @@ const { app } = createSentry({
   clock: scaledClock(speed),
   store: persistence.store,
   killSwitch: persistence.killSwitch,
+  // Mounted only when both are present. The route needs a secret to verify a delivery and a
+  // separate key to pseudonymise a contact, and a route missing either would be one that either
+  // trusts anything or leaks a phone number.
+  ...(webhookSecret !== undefined && piiKey !== undefined
+    ? { razorpayWebhook: { secret: webhookSecret, piiKey } }
+    : {}),
 });
 const port = Number(process.env["PORT"] ?? 8080);
 
@@ -85,6 +94,10 @@ app.log.info(
     bounds: persistence.name,
     fleet: persistence.name === "postgres",
     stopSwitch: persistence.name === "postgres",
+    razorpayWebhook:
+      webhookSecret !== undefined && piiKey !== undefined
+        ? "POST /webhooks/razorpay"
+        : "not mounted — needs RAZORPAY_WEBHOOK_SECRET and LEDGER_PII_HASH_KEY",
     ...(speed === 1 ? {} : { clock: `${speed}x` }),
   },
   "sentry",

@@ -33,6 +33,7 @@ import Fastify, { type FastifyInstance } from "fastify";
 import { MemoryStore, type Store } from "throttlekit";
 import { z } from "zod";
 import { renderSentryMetrics } from "./metrics.js";
+import { registerRazorpayWebhook } from "./razorpay-webhook.js";
 import { ATTEMPT_BATCH, PLAN_REQUEST } from "./schema.js";
 
 export interface SentryOptions {
@@ -59,6 +60,15 @@ export interface SentryOptions {
    * steering directive that survived the stop would be the one piece of Kairos still acting.
    */
   readonly killSwitch?: KillSwitch;
+  /**
+   * Credentials for the inbound Razorpay webhook, or absent to leave that route unmounted.
+   *
+   * Absent by default and unmounted rather than mounted-and-rejecting, because an endpoint that
+   * exists without a secret is an endpoint somebody will eventually point a gateway at and wonder
+   * why nothing arrives. `piiKey` is separate from the mandate secret on purpose: it turns a phone
+   * number into a reference, and the blast radius of losing it is different.
+   */
+  readonly razorpayWebhook?: { readonly secret: string; readonly piiKey: string };
   /**
    * How often steering is re-decided, at most.
    *
@@ -178,6 +188,38 @@ export function createSentry(options: SentryOptions): Sentry {
   const counts = { ingested: 0, rejected: 0, plans: 0, fallbacks: 0 };
 
   const app = Fastify({ logger: options.logger ?? false });
+
+  /**
+   * Keep the bytes as well as the parse.
+   *
+   * Razorpay signs what it sent, and `JSON.parse` then `JSON.stringify` does not reproduce it:
+   * key order, unicode escapes and number formatting all move. A verifier handed a re-serialised
+   * body rejects legitimate webhooks in a way that looks like a signature problem, and the usual
+   * response to that is to stop verifying. So the raw string rides along on the request.
+   */
+  app.addContentTypeParser("application/json", { parseAs: "string" }, (request, body, done) => {
+    request.rawBody = body as string;
+    if (body === "") return done(null, undefined);
+    try {
+      done(null, JSON.parse(body as string));
+    } catch (error) {
+      done(error as Error, undefined);
+    }
+  });
+
+  if (options.razorpayWebhook !== undefined) {
+    registerRazorpayWebhook(app, {
+      secret: options.razorpayWebhook.secret,
+      piiKey: options.razorpayWebhook.piiKey,
+      now: () => clock.now(),
+      observe: (attempt) => {
+        // The same two calls `/outcomes` makes, in the same order, so a real webhook and a
+        // reported batch reach the detector by one path rather than two that could drift.
+        engine.observe(attempt);
+        window.observe(attempt.slice, attempt.status === "failed", attempt.at, "treated");
+      },
+    });
+  }
 
   /**
    * Re-decide steering, at most once per tick.
