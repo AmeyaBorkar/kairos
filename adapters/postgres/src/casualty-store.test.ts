@@ -29,6 +29,7 @@ import { ManualClock, sealMandate, Terminus } from "@kairos/terminus";
 import { MemoryStore } from "throttlekit";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { PostgresCasualtyStore } from "./casualty-store.js";
+import { parseCasualty } from "./codec.js";
 import { migrate, schemaSql } from "./schema.js";
 import { assertTableName } from "./sql.js";
 
@@ -202,6 +203,104 @@ describe("round trip", () => {
 
     await expect(store.get(casualtyId("cas_4"))).rejects.toThrow(DomainError);
     await expect(store.due(AT, 10)).rejects.toThrow(/casualty.status/);
+  });
+});
+
+/**
+ * The codec's refusals, one branch at a time.
+ *
+ * These are the branches that only ever run when something upstream has already gone wrong — a
+ * migration, an older build, a restore from a backup taken mid-deploy, a support engineer with
+ * `psql`. They are exactly the code most likely to be written once and never executed until the
+ * night it matters, so each one is exercised deliberately rather than left to a round trip that
+ * happens to touch it.
+ */
+describe("what the codec refuses", () => {
+  const good = () => JSON.parse(JSON.stringify(casualty(1))) as Record<string, unknown>;
+
+  it("accepts a payload that arrived as text rather than as an object", () => {
+    // `pg` parses jsonb; a driver configured not to, or a `text` column somebody migrated from,
+    // hands over a string. Both are the same document.
+    expect(parseCasualty(JSON.stringify(casualty(1)))).toEqual(casualty(1));
+  });
+
+  it("names the field rather than describing the shape in general", () => {
+    const cases: [string, unknown, RegExp][] = [
+      ["kind", "invoice-overdo", /casualty\.kind/],
+      ["retry", "maybe", /casualty\.retry/],
+      ["customer", "too-short", /customerRef/],
+      ["amount", "40000", /casualty\.amount/],
+      ["occurredAt", null, /casualty\.occurredAt/],
+      ["attempts", {}, /casualty\.attempts/],
+      ["slice", null, /casualty\.slice/],
+      ["failure", 7, /casualty\.failure/],
+    ];
+    for (const [field, value, message] of cases) {
+      expect(() => parseCasualty({ ...good(), [field]: value }), field).toThrow(message);
+    }
+  });
+
+  it("refuses a slice, a status or an attempt it cannot reason about", () => {
+    expect(() => parseCasualty({ ...good(), slice: { method: "crypto" } })).toThrow(
+      /slice\.method/,
+    );
+    expect(() =>
+      parseCasualty({ ...good(), status: { ...casualty(1).status, recoverability: "vibes" } }),
+    ).toThrow(/recoverability/);
+    expect(() =>
+      parseCasualty({ ...good(), status: { ...casualty(1).status, recovered: "no" } }),
+    ).toThrow(/status\.recovered/);
+    expect(() =>
+      parseCasualty({
+        ...good(),
+        attempts: [
+          { kind: "telepathy", at: AT, outcome: "delivered", costPaise: 20, externalRef: null },
+        ],
+      }),
+    ).toThrow(/attempts\[0\]\.kind/);
+    expect(() =>
+      parseCasualty({
+        ...good(),
+        attempts: [
+          { kind: "retry", at: AT, outcome: "shrugged", costPaise: 20, externalRef: null },
+        ],
+      }),
+    ).toThrow(/attempts\[0\]\.outcome/);
+  });
+
+  it("refuses a number that is not a number, including the ones that look like one", () => {
+    // NaN and Infinity are the two that survive a `typeof` check and destroy an arithmetic bound.
+    for (const value of [Number.NaN, Number.POSITIVE_INFINITY, "0", null]) {
+      expect(() => parseCasualty({ ...good(), amount: value }), String(value)).toThrow(DomainError);
+    }
+    expect(() => parseCasualty({ ...good(), amount: 40_000.5 })).toThrow(/casualty\.amount/);
+  });
+
+  it("says what shape it got without echoing a value that might be somebody's", () => {
+    // The message goes to a log. A corrupt row is still a customer's row.
+    const thrown = (() => {
+      try {
+        parseCasualty({ ...good(), customer: ["cus_9f3b2a71c4e8d012"] });
+      } catch (error) {
+        return error instanceof Error ? error.message : String(error);
+      }
+      return "";
+    })();
+    expect(thrown).toContain("an array");
+    expect(thrown).not.toContain("cus_9f3b2a71c4e8d012");
+  });
+
+  it("keeps an absent optional absent rather than inventing one", () => {
+    const bare = { ...good(), failure: undefined, attemptId: null };
+    const back = parseCasualty({ ...bare, kind: "checkout-abandoned" });
+    expect(back.failure).toBeNull();
+    expect(back.attemptId).toBeNull();
+  });
+
+  it("refuses something that is not a casualty at all", () => {
+    for (const value of [null, "nope", 7, [], { id: "cas_1" }]) {
+      expect(() => parseCasualty(value), JSON.stringify(value)).toThrow(DomainError);
+    }
   });
 });
 

@@ -34,7 +34,7 @@ import {
  * the domain itself, which is the one place there are tests for it.
  */
 export function parseCasualty(value: unknown): Casualty {
-  const raw = typeof value === "string" ? (JSON.parse(value) as unknown) : value;
+  const raw = typeof value === "string" ? text(value) : value;
   const c = object(raw, "casualty");
   const status = object(c["status"], "casualty.status");
 
@@ -67,6 +67,22 @@ export function parseCasualty(value: unknown): Casualty {
     },
     attempts: array(c["attempts"], "casualty.attempts").map(parseAttempt),
   };
+}
+
+/**
+ * A payload that arrived as text rather than as a parsed document.
+ *
+ * `pg` parses jsonb, but a driver configured not to — or a column somebody migrated from `text` —
+ * hands over a string. Wrapped so that every way a row can be wrong produces the same class of
+ * error: a caller that catches `DomainError` around a read should not also have to catch
+ * `SyntaxError` to cover the case where the corruption was worse.
+ */
+function text(value: string): unknown {
+  try {
+    return JSON.parse(value) as unknown;
+  } catch {
+    throw new DomainError("casualty", "payload is not JSON");
+  }
 }
 
 function parseSlice(value: unknown): Casualty["slice"] {

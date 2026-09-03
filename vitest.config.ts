@@ -33,7 +33,9 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       include: ["packages/*/src/**", "adapters/*/src/**"],
-      exclude: ["**/index.ts", "**/*.test.ts", "**/testing.ts"],
+      // Entry points are excluded the way `apps/` already is: a `*-main.ts` is argv parsing and a
+      // write to stdout, and the thing worth covering is the module it calls.
+      exclude: ["**/index.ts", "**/*.test.ts", "**/testing.ts", "**/*-main.ts"],
       reporter: ["text", "lcov"],
       thresholds: {
         lines: 85,
