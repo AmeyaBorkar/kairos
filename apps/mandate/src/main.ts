@@ -1,10 +1,14 @@
 import { readFileSync } from "node:fs";
 import { createServer, type ServerResponse } from "node:http";
 import type { Mandate } from "@kairos/domain";
+import { migrate } from "@kairos/postgres";
 import { sealMandate, verifyMandate } from "@kairos/terminus";
+import { Pool } from "pg";
+import { PostgresStore } from "throttlekit/postgres";
 import { explainMandate } from "./explain.js";
 import { handle } from "./routes.js";
 import { type MandateSpec, toMandate } from "./spec.js";
+import { engage, release, type StopTarget, status } from "./stop.js";
 
 /**
  * The mandate authoring path.
@@ -33,7 +37,19 @@ import { type MandateSpec, toMandate } from "./spec.js";
  * kairos-mandate seal   [spec.json]     # spec in, signed mandate out (needs the secret)
  * kairos-mandate explain [mandate.json] # what a signed mandate actually authorises
  * kairos-mandate verify  [mandate.json] # exit 0 if the signature is ours (needs the secret)
+ *
+ * kairos-mandate status                 # is this campaign stopped? (needs the database)
+ * kairos-mandate stop "<reason>"        # stop it, fleet-wide, without re-signing anything
+ * kairos-mandate resume                 # let it run again
  * ```
+ *
+ * ## Why the stop lives here
+ *
+ * A mandate is authority granted; the stop is authority withdrawn in a hurry. Somebody who needs
+ * the second at three in the morning should not have to remember that it lives in a different
+ * program. It needs the database and *not* the signing key, which is the opposite of every other
+ * command in this file and is the point: stopping a campaign must not require the ability to mint
+ * one, because the person on call is not necessarily the person who holds the key.
  */
 const USAGE = `kairos-mandate — author, sign, and read a mandate
 
@@ -44,8 +60,18 @@ const USAGE = `kairos-mandate — author, sign, and read a mandate
   explain [mandate.json] Print what a signed mandate authorises, in words.
   verify [mandate.json]  Exit 0 if the signature is this secret's, 1 if it is not.
 
+  status                 Whether this campaign has been stopped, and by whom.
+  stop "<reason>"        Stop it. Fleet-wide, on each worker's next admission.
+  resume                 Let it run again, under the mandate that was always in force.
+
 KAIROS_MANDATE_SECRET must be at least 32 characters. There is no development default:
 a mandate signed with a publicly-known key is a mandate anyone can forge.
+
+status, stop and resume need KAIROS_DATABASE_URL and not the secret. That is deliberate:
+stopping a campaign must not require the ability to mint one, because the person on call
+is not necessarily the person who holds the key.
+KAIROS_MERCHANT_ID and KAIROS_CAMPAIGN_ID name the campaign; the campaign defaults to
+"recovery", which is what the worker uses unless it was told otherwise.
 `;
 
 function secretOrExit(): string {
@@ -222,6 +248,77 @@ function form(argv: readonly string[]): void {
   });
 }
 
+/**
+ * Open the store the fleet shares, run one command against it, and close it.
+ *
+ * A connection per invocation, because this is a command somebody types and not a service. The pool
+ * is closed in a `finally` so a failed read still exits rather than hanging on an open socket — an
+ * operator running `stop` and getting no prompt back would reasonably assume it had not worked and
+ * run it again.
+ */
+async function stopCommand(command: string, rest: readonly string[]): Promise<void> {
+  const url = process.env["KAIROS_DATABASE_URL"];
+  if (url === undefined) {
+    process.stderr.write(
+      "KAIROS_DATABASE_URL must be set. The stop lives in the store the fleet shares, because a\n" +
+        "switch held in one process could only stop that process — and an operator who ran one\n" +
+        "command expecting everything to halt would believe it had.\n",
+    );
+    process.exit(2);
+  }
+
+  const target: StopTarget = {
+    merchantId: process.env["KAIROS_MERCHANT_ID"] ?? "",
+    campaignId: process.env["KAIROS_CAMPAIGN_ID"] ?? "recovery",
+  };
+  if (target.merchantId === "") {
+    process.stderr.write("KAIROS_MERCHANT_ID must be set: a stop has to be aimed at a campaign.\n");
+    process.exit(2);
+  }
+
+  if (command === "stop" && (rest[0] === undefined || rest[0].trim() === "")) {
+    process.stderr.write(
+      'A reason is required: kairos-mandate stop "customers are being messaged twice"\n' +
+        "Whoever finds this stopped campaign next will want to know why, and the first reason\n" +
+        "recorded is the one that is kept.\n",
+    );
+    process.exit(2);
+  }
+
+  const pool = new Pool({ connectionString: url, max: 1 });
+  try {
+    if (process.env["KAIROS_DB_MIGRATE"] !== "off") await migrate(pool);
+    const store = new PostgresStore({ pool, table: "kairos_throttle" });
+    const now = Date.now();
+    try {
+      const lines =
+        command === "status"
+          ? await status(store, target, now)
+          : command === "resume"
+            ? await release(store, target, now)
+            : await engage(
+                store,
+                target,
+                now,
+                rest[0] as string,
+                // Who, as well as they can be identified without asking. An unrecorded "by" is
+                // better than a fabricated one, so this falls back rather than inventing.
+                process.env["KAIROS_OPERATOR"] ??
+                  process.env["USER"] ??
+                  process.env["USERNAME"] ??
+                  "unrecorded",
+              );
+      process.stdout.write(`${lines.join("\n")}\n`);
+    } finally {
+      await store.close();
+    }
+  } catch (error) {
+    fail(error);
+  } finally {
+    await pool.end();
+  }
+}
+
 const [command, ...rest] = process.argv.slice(2);
 
 switch (command) {
@@ -236,6 +333,11 @@ switch (command) {
     break;
   case "verify":
     verify(rest[0]);
+    break;
+  case "status":
+  case "stop":
+  case "resume":
+    await stopCommand(command, rest);
     break;
   default:
     process.stdout.write(USAGE);

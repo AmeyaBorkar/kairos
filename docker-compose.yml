@@ -41,10 +41,17 @@ services:
   sentry:
     build: .
     command: ["node", "apps/sentry/dist/main.js"]
+    depends_on:
+      db:
+        condition: service_healthy
     environment:
       KAIROS_MANDATE_SECRET: ${KAIROS_MANDATE_SECRET:?set it, or run `pnpm demo` which generates one}
       KAIROS_MERCHANT_ID: demo
       PORT: 8080
+      # The blast-radius cap is `maxInFlight` inside Terminus. Two sentries with a store each hold
+      # three steers *each*, so without this the service is one instance by construction. It also
+      # gives it the out-of-band stop, which a per-process switch could not provide.
+      KAIROS_DATABASE_URL: postgres://kairos:kairos@db:5432/kairos
       # It has to agree with whatever is feeding it. Outcomes stamped in an accelerated timeline
       # arriving at a service on a real clock all land in the future, and a detector whose window
       # contains nothing detects nothing.

@@ -11,7 +11,14 @@ import {
   RecoveryModel,
   worstActionCostPaise,
 } from "@kairos/recover";
-import { scaledClock, sealMandate, Terminus } from "@kairos/terminus";
+import {
+  type KillSwitch,
+  openKillSwitch,
+  StopSwitch,
+  scaledClock,
+  sealMandate,
+  Terminus,
+} from "@kairos/terminus";
 import { Pool } from "pg";
 import { MemoryStore, type Store } from "throttlekit";
 import { PostgresStore } from "throttlekit/postgres";
@@ -182,6 +189,14 @@ interface Backing {
   readonly name: string;
   readonly store: Store;
   readonly casualties: CasualtyStore;
+  /**
+   * The out-of-band stop, when there is a shared store to keep it in.
+   *
+   * A per-process switch would stop the process holding it and nothing else, which is worse than
+   * having none: an operator who ran one command expecting the fleet to halt would believe it had.
+   * So without a database there is no switch, and the startup line says so.
+   */
+  readonly killSwitch: KillSwitch;
   close(): Promise<void>;
 }
 
@@ -193,6 +208,7 @@ async function backing(): Promise<Backing> {
       name: "memory",
       store: new MemoryStore(),
       casualties: new MemoryCasualtyStore(),
+      killSwitch: openKillSwitch,
       close: () => Promise.resolve(),
     };
   }
@@ -211,6 +227,7 @@ async function backing(): Promise<Backing> {
     name: "postgres",
     store,
     casualties: new PostgresCasualtyStore({ sql: pool }),
+    killSwitch: new StopSwitch(store),
     close: async () => {
       // ThrottleKit does not end a pool it does not own, so the order matters: stop its sweep
       // first, then close the pool underneath it.
@@ -242,6 +259,7 @@ async function main(): Promise<void> {
     audit: ledger,
     actor: `recover-worker/${process.env["HOSTNAME"] ?? "local"}`,
     clock,
+    killSwitch: persistence.killSwitch,
   });
 
   const worker = new RecoverWorker({
@@ -277,6 +295,8 @@ async function main(): Promise<void> {
       campaign: mandate.campaignId,
       backing: persistence.name,
       fleet: persistence.name === "postgres",
+      stopSwitch:
+        persistence.name === "postgres" ? "kairos-mandate stop" : "none — needs a database",
       directory: process.env["KAIROS_DIRECTORY"] === "simulated" ? "simulated people" : "none",
       ...(speed === 1 ? {} : { clock: `${speed}x — a demonstration, not a deployment` }),
     })}\n`,

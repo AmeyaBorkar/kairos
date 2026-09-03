@@ -231,6 +231,41 @@ The first line is the system refusing to help. Moving every UPI customer onto ca
 around 11% of the time, is not an improvement over a UPI rail at 10% — and a tool that steered
 anyway would be measured on how decisive it looked rather than on what it recovered.
 
+## Stopping it
+
+```sh
+kairos-mandate status
+kairos-mandate stop "customers are being messaged twice"
+kairos-mandate resume
+```
+
+There are two stops and they are for different situations. The **signed** one is a field on the
+mandate: set `killSwitch` and re-seal, and every worker refuses everything the moment it verifies the
+new mandate. It cannot be cleared by anyone who cannot sign, which is exactly right for a decision
+somebody should have to be authorised to reverse — and exactly wrong for three in the morning, when
+you least want to be re-signing authority and rolling processes.
+
+The **out-of-band** one is a flag in the store the fleet already shares. One command, no redeploy,
+nothing re-signed, and it takes effect on each worker's next admission:
+
+```
+{"acted":0,"refused":3,"refusalsByAxis":{"kill-switch":3}}
+```
+
+Either stop halts everything, and neither can be bypassed by a process that forgot to check, because
+the check is inside `admit`. Three properties are worth knowing:
+
+- **It needs the database, not the signing key.** Stopping a campaign must not require the ability to
+  mint one: the person on call is not necessarily the person who holds the key.
+- **A read that fails counts as engaged.** If we cannot tell whether we have been told to stop, we
+  have been told to stop. This is the one place in Kairos where losing the database halts spending
+  rather than falling back to a local decision, and that is the trade the switch exists to make.
+- **It is aimed at a campaign**, not at a deployment, and the first reason recorded is the one kept —
+  a second operator arriving to help should not quietly overwrite the account of what happened.
+
+Nothing is dropped while it is engaged. The queue holds, and `resume` puts the same mandate back in
+force.
+
 ## Plugging it in
 
 Three touchpoints, in the order a merchant reaches them.
