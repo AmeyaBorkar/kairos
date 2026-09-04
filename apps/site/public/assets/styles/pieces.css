@@ -211,16 +211,99 @@ tr.win td:first-child::before {
   }
 }
 
+/* ═══════════════════════════════════════════════════════════════════════
+   THE FOOTER
+
+   Three columns over a rule. The old one was two spans with space-between,
+   which put "Razorpay AI Buildathon" and "SEED 20260826" at opposite ends of
+   a very wide page with nothing in between — a footer by position rather than
+   by structure, and it said nothing about who built the thing.
+
+   Links here are dimmed rather than accented. The global rule gives every
+   anchor a 2px accent underline, which is right in body copy and far too loud
+   in a column of four; they come up to full accent on hover and focus, so the
+   affordance is still carried by more than colour.
+   ═══════════════════════════════════════════════════════════════════════ */
 footer {
   border-top: 3px solid var(--line);
   margin-top: 60px;
-  padding: 26px 0 68px;
-  font-size: 23px;
+  padding: 44px 0 72px;
   color: var(--ink-dim);
+}
+.foot-grid {
+  display: grid;
+  grid-template-columns: 1.3fr 1.15fr 0.95fr;
+  gap: 44px 48px;
+  align-items: start;
+}
+.foot-brand img {
+  display: block;
+  width: 34px;
+  height: auto;
+  margin-bottom: 16px;
+}
+.foot-name {
+  font-family: "Silkscreen", monospace;
+  font-size: 21px;
+  letter-spacing: 0.16em;
+  color: var(--ink);
+  margin-bottom: 12px;
+}
+.foot-line {
+  font-size: 21px;
+  line-height: 1.5;
+  max-width: 34ch;
+}
+.foot-col .lbl {
+  display: block;
+  margin-bottom: 16px;
+}
+.foot-col ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 11px;
+  font-size: 20px;
+  line-height: 1.35;
+}
+.foot-col a {
+  color: var(--ink-dim);
+  border-bottom: 1px solid var(--line);
+}
+.foot-col a:hover,
+.foot-col a:focus-visible {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+.foot-rule {
+  margin-top: 44px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 28px;
+  gap: 10px 28px;
   justify-content: space-between;
+  font-size: 17px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+@media (max-width: 900px) {
+  .foot-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .foot-brand {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 560px) {
+  .foot-grid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+  .foot-brand {
+    grid-column: auto;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
