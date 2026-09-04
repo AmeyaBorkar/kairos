@@ -4,18 +4,30 @@ import { migrate, PostgresCasualtyStore } from "@kairos/postgres";
 import type { Gateway, Messenger } from "@kairos/razorpay";
 import {
   type CasualtyStore,
+  type CustomerDirectory,
   DEFAULT_RECOVERY_CONFIG,
   MemoryCasualtyStore,
   RecoverWorker,
   RecoveryModel,
   worstActionCostPaise,
 } from "@kairos/recover";
-import { sealMandate, systemClock, Terminus } from "@kairos/terminus";
+import {
+  type KillSwitch,
+  openKillSwitch,
+  StopSwitch,
+  scaledClock,
+  sealMandate,
+  Terminus,
+} from "@kairos/terminus";
 import { Pool } from "pg";
 import { MemoryStore, type Store } from "throttlekit";
 import { PostgresStore } from "throttlekit/postgres";
+import { serveAdmin } from "./admin.js";
+import { clockSpeedFrom } from "./clock.js";
+import { simulatedDirectory } from "./directory.js";
 import { dryRunGateway, dryRunMessenger } from "./dry-run.js";
 import { RecoveryExecutor } from "./executor.js";
+import { accumulate, emptyTotals, type MetricsInput } from "./metrics.js";
 
 /**
  * The daemon.
@@ -122,7 +134,15 @@ function adapters(): { gateway: Gateway; messenger: Messenger } {
   };
 
   if (mode === "dry-run") {
-    return { gateway: dryRunGateway({ sink }), messenger: dryRunMessenger({ sink }) };
+    return {
+      gateway: dryRunGateway({ sink }),
+      // The same segment price the executor uses, so the figure this mode settles at is the figure
+      // the executor would have fallen back to rather than a second opinion about the same message.
+      messenger: dryRunMessenger({
+        sink,
+        smsSegmentPaise: optionalInt("KAIROS_SMS_SEGMENT_PAISE", 20),
+      }),
+    };
   }
 
   throw new Error(
@@ -131,6 +151,32 @@ function adapters(): { gateway: Gateway; messenger: Messenger } {
       "DLT-registered SMS or WhatsApp sender. Supply them in main.ts, or leave KAIROS_DELIVERY " +
       "unset to decide everything and send nothing.",
   );
+}
+
+/**
+ * Who the customers are, as far as this process is allowed to know.
+ *
+ * Nobody, by default. The lookup returns `null` for everyone, so no payment can be charged again
+ * and every message is addressed impersonally — the correct behaviour for a process that has not
+ * been handed access to customer records, and structural rather than promised: a component without
+ * this port cannot obtain personal data however much it decides it needs.
+ *
+ * The cost of that default is that a dry run shows almost nothing. The executor refuses a retry
+ * with no token and a message with no recipient before it composes anything, so the two things a
+ * merchant runs dry-run delivery to see — the words that would have been sent, and what sending
+ * them would have cost — never appear. `KAIROS_DIRECTORY=simulated` stands people in for that, and
+ * says so in the startup line, because a demonstration that looked like a deployment would be
+ * worse than no demonstration.
+ */
+function customerDirectory(): CustomerDirectory {
+  if (process.env["KAIROS_DIRECTORY"] !== "simulated") {
+    return { lookup: () => Promise.resolve(null) };
+  }
+  return simulatedDirectory({
+    // The simulator's own default. A merchant with no recurring business has no autonomous retries
+    // at all and a recovery arm made entirely of messages, and this is the number that decides it.
+    mandatedShare: Number(process.env["KAIROS_MANDATED_SHARE"] ?? 0.42),
+  });
 }
 
 /**
@@ -153,6 +199,14 @@ interface Backing {
   readonly name: string;
   readonly store: Store;
   readonly casualties: CasualtyStore;
+  /**
+   * The out-of-band stop, when there is a shared store to keep it in.
+   *
+   * A per-process switch would stop the process holding it and nothing else, which is worse than
+   * having none: an operator who ran one command expecting the fleet to halt would believe it had.
+   * So without a database there is no switch, and the startup line says so.
+   */
+  readonly killSwitch: KillSwitch;
   close(): Promise<void>;
 }
 
@@ -164,6 +218,7 @@ async function backing(): Promise<Backing> {
       name: "memory",
       store: new MemoryStore(),
       casualties: new MemoryCasualtyStore(),
+      killSwitch: openKillSwitch,
       close: () => Promise.resolve(),
     };
   }
@@ -182,6 +237,7 @@ async function backing(): Promise<Backing> {
     name: "postgres",
     store,
     casualties: new PostgresCasualtyStore({ sql: pool }),
+    killSwitch: new StopSwitch(store),
     close: async () => {
       // ThrottleKit does not end a pool it does not own, so the order matters: stop its sweep
       // first, then close the pool underneath it.
@@ -193,8 +249,16 @@ async function backing(): Promise<Backing> {
 
 async function main(): Promise<void> {
   const secret = required("KAIROS_MANDATE_SECRET", 32);
+
+  // Read before anything is constructed. A refusal about how this process handles time belongs
+  // before the first pool is opened, not after a mandate has been sealed against a clock we are
+  // then going to reject.
+  const speed = clockSpeedFrom(process.env, process.env["KAIROS_DELIVERY"] ?? "dry-run");
+  const clock = scaledClock(speed);
+
   const mandate = buildMandate(secret);
   const { gateway, messenger } = adapters();
+  const directory = customerDirectory();
 
   const persistence = await backing();
   const ledger = new MemoryLedger();
@@ -204,16 +268,14 @@ async function main(): Promise<void> {
     store: persistence.store,
     audit: ledger,
     actor: `recover-worker/${process.env["HOSTNAME"] ?? "local"}`,
-    clock: systemClock,
+    clock,
+    killSwitch: persistence.killSwitch,
   });
 
   const worker = new RecoverWorker({
     terminus,
     store: persistence.casualties,
-    // No directory is wired, so every message is addressed impersonally and no payment can be
-    // charged again. That is the correct behaviour for a process with no access to customer data,
-    // rather than a gap that fails at the moment it matters.
-    directory: { lookup: () => Promise.resolve(null) },
+    directory,
     gauge: { isDegraded: () => false, recoveredAt: () => null },
     model: new RecoveryModel(),
     executor: new RecoveryExecutor({
@@ -222,11 +284,68 @@ async function main(): Promise<void> {
       linkFor: (request) => `${required("KAIROS_LINK_BASE")}/${request.casualty.id}`,
       smsSegmentPaise: optionalInt("KAIROS_SMS_SEGMENT_PAISE", 20),
     }),
-    clock: systemClock,
+    clock,
   });
 
   const intervalMs = optionalInt("KAIROS_DRAIN_INTERVAL_MS", 15_000);
+  /**
+   * Two clocks, and every question belongs to exactly one of them.
+   *
+   * Decisions are made against `clock`, which a demonstration may have accelerated: backoff rungs,
+   * quiet hours, reservation TTLs and the drain report's own timestamp all live in that frame,
+   * because they are all about the campaign.
+   *
+   * Liveness is not about the campaign. A probe's timeout, an operator's patience and the number an
+   * uptime graph plots are real seconds, and reading them off an accelerated clock reports a
+   * two-minute-old process as having run for two hours — and then calls it stalled, because the
+   * gap between two passes measured on a 60x clock is sixty times the interval that produced it.
+   */
+  const startedAt = Date.now();
+  let totals = emptyTotals();
   let running = true;
+
+  /**
+   * Everything a scrape needs, read fresh.
+   *
+   * The store reads are allowed to fail and are reported as a failure rather than thrown. A metrics
+   * endpoint that returns 500 when the database is slow removes the one signal that would have told
+   * you the database is slow.
+   */
+  const snapshot = async (): Promise<MetricsInput> => {
+    const budget = await terminus.snapshot().catch(() => null);
+    const stopEngaged =
+      persistence.name === "postgres"
+        ? await persistence.killSwitch.engaged(mandate).catch(() => null)
+        : null;
+    return {
+      totals,
+      budget,
+      stopEngaged,
+      startedAt,
+      now: Date.now(),
+      fleet: persistence.name === "postgres",
+      delivery: gateway.name,
+      campaignId: mandate.campaignId,
+      merchantId: mandate.merchantId,
+    };
+  };
+
+  const admin = serveAdmin({
+    port: optionalInt("KAIROS_ADMIN_PORT", 9464),
+    snapshot,
+    identity: {
+      delivery: gateway.name,
+      campaign: mandate.campaignId,
+      backing: persistence.name,
+      fleet: persistence.name === "postgres",
+    },
+    totals: () => totals,
+    now: () => Date.now(),
+    // Four intervals. One slow pass is not a stuck loop, and a probe that cannot tell the
+    // difference restarts a worker that was about to succeed and loses the lease it was holding.
+    stallAfterMs: intervalMs * 4,
+    startedAt,
+  });
 
   // A drain pass is bounded and idempotent, so a shutdown that interrupts one loses nothing: the
   // lease expires, the reservation expires, and the next pass picks the casualty up unchanged.
@@ -243,21 +362,31 @@ async function main(): Promise<void> {
       campaign: mandate.campaignId,
       backing: persistence.name,
       fleet: persistence.name === "postgres",
+      stopSwitch:
+        persistence.name === "postgres" ? "kairos-mandate stop" : "none — needs a database",
+      directory: process.env["KAIROS_DIRECTORY"] === "simulated" ? "simulated people" : "none",
+      ...(speed === 1 ? {} : { clock: `${speed}x — a demonstration, not a deployment` }),
     })}\n`,
   );
 
   while (running) {
     const report = await worker.drain();
+    // Wall clock, because the only reader of this timestamp is the liveness probe.
+    totals = accumulate(totals, report, Date.now());
     if (report.acted > 0 || report.refused > 0 || report.declined > 0) {
-      process.stdout.write(`${JSON.stringify({ at: Date.now(), ...report })}\n`);
+      // The clock the decisions were made against, not the wall clock. Under an accelerated
+      // clock those differ, and a report stamped in a frame none of its contents belong to is
+      // worse than one with no timestamp at all.
+      process.stdout.write(`${JSON.stringify({ at: clock.now(), ...report })}\n`);
     }
     await new Promise((resolve) => setTimeout(resolve, intervalMs));
   }
 
-  // Read the snapshot before closing: it goes through the store the close is about to release.
-  const snapshot = await terminus.snapshot();
+  // Read the books before closing: they go through the store the close is about to release.
+  const books = await terminus.snapshot();
+  admin.close();
   await persistence.close();
-  process.stdout.write(`${JSON.stringify({ shutdown: true, ledger: ledger.head, ...snapshot })}\n`);
+  process.stdout.write(`${JSON.stringify({ shutdown: true, ledger: ledger.head, ...books })}\n`);
 }
 
 main().catch((error: unknown) => {

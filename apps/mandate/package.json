@@ -15,12 +15,15 @@
   },
   "dependencies": {
     "@kairos/domain": "workspace:*",
+    "@kairos/postgres": "workspace:*",
     "@kairos/recover": "workspace:*",
-    "@kairos/terminus": "workspace:*"
+    "@kairos/terminus": "workspace:*",
+    "pg": "^8.23.0",
+    "throttlekit": "^1.7.0"
   },
   "devDependencies": {
     "@kairos/ledger": "workspace:*",
     "@types/node": "^22.10.0",
-    "throttlekit": "^1.7.0"
+    "@types/pg": "^8.23.1"
   }
 }

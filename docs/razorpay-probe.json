@@ -1,0 +1,57 @@
+{
+  "at": "2026-09-03T21:30:35.014Z",
+  "keyId": "rzp_test_TXhg7C4AhzZJaK",
+  "liveCalls": 3,
+  "orderCreated": "order_TXiGidd0dxx2gS",
+  "errorPathBehaved": true,
+  "verified": "authentication, request shaping, entity parsing and 4xx error mapping, against the live test API",
+  "calls": [
+    {
+      "method": "POST",
+      "path": "/v1/orders",
+      "status": 200,
+      "ms": 235,
+      "requestId": null
+    },
+    {
+      "method": "GET",
+      "path": "/v1/payments/pay_KairosProbeNoSuch",
+      "status": 400,
+      "ms": 820,
+      "requestId": null
+    },
+    {
+      "method": "POST",
+      "path": "/v1/payment_links",
+      "status": 200,
+      "ms": 1148,
+      "requestId": null
+    }
+  ],
+  "steps": [
+    {
+      "name": "create order",
+      "ok": true,
+      "id": "order_TXiGidd0dxx2gS",
+      "amount": 100,
+      "currency": "INR",
+      "status": "created"
+    },
+    {
+      "name": "fetch a payment that does not exist",
+      "ok": false,
+      "status": 400,
+      "code": "BAD_REQUEST_ERROR",
+      "retryable": false,
+      "requestId": null,
+      "detail": "Razorpay returned 400"
+    },
+    {
+      "name": "create payment link",
+      "ok": true,
+      "id": "plink_TXiGkJYyMTzRUS",
+      "status": "created",
+      "url": "https://rzp.io/rzp/VjaVHORW"
+    }
+  ]
+}

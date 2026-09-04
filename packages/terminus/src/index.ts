@@ -33,6 +33,7 @@ export {
   type KillSwitch,
   ManualClock,
   openKillSwitch,
+  scaledClock,
   systemClock,
 } from "./ports.js";
 export {
@@ -47,6 +48,7 @@ export {
   worstCaseSizer,
 } from "./reservation.js";
 export { sealMandate, signMandate, type UnsignedMandate, verifyMandate } from "./signature.js";
+export { StopSwitch, type StopSwitchState, stopSwitchKey } from "./stop-switch.js";
 export {
   CLEAN_STATUS,
   DEFAULT_STOP_CONFIG,

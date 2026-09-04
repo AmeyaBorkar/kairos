@@ -28,6 +28,9 @@ const TYPES = {
   ".png": "image/png",
   ".map": "application/json; charset=utf-8",
   ".woff2": "font/woff2",
+  ".mp4": "video/mp4",
+  ".jpg": "image/jpeg",
+  ".vtt": "text/vtt; charset=utf-8",
 };
 
 function resolveWithin(urlPath) {
@@ -41,6 +44,25 @@ function resolveWithin(urlPath) {
   }
 }
 
+/**
+ * A single-range `Range:` reply, which is all a `<video>` asks for.
+ *
+ * Without this the film loads but will not seek: a browser that cannot fetch a byte range treats
+ * the file as unseekable, and the chapter list does nothing. A real static host has this for free;
+ * a dev server that lacks it makes the page look broken in the one place worth checking by hand.
+ */
+function rangeOf(header, size) {
+  const m = /^bytes=(\d*)-(\d*)$/.exec(header ?? "");
+  if (m === null) return null;
+  const [, rawStart, rawEnd] = m;
+  // `bytes=-500` means the last 500 bytes; `bytes=500-` means everything from 500 on.
+  const start = rawStart === "" ? size - Number(rawEnd) : Number(rawStart);
+  const end = rawStart === "" || rawEnd === "" ? size - 1 : Number(rawEnd);
+  if (!Number.isFinite(start) || !Number.isFinite(end)) return null;
+  if (start < 0 || end < start || start >= size) return null;
+  return { start, end: Math.min(end, size - 1) };
+}
+
 createServer((req, res) => {
   const file = resolveWithin(req.url ?? "/");
   if (file === null) {
@@ -48,8 +70,26 @@ createServer((req, res) => {
     res.end("not found\n");
     return;
   }
+  const type = TYPES[extname(file)] ?? "application/octet-stream";
+  const size = statSync(file).size;
+  const range = rangeOf(req.headers.range, size);
+
+  if (range !== null) {
+    res.writeHead(206, {
+      "content-type": type,
+      "content-range": `bytes ${range.start}-${range.end}/${size}`,
+      "content-length": range.end - range.start + 1,
+      "accept-ranges": "bytes",
+      "cache-control": "no-store",
+    });
+    createReadStream(file, range).pipe(res);
+    return;
+  }
+
   res.writeHead(200, {
-    "content-type": TYPES[extname(file)] ?? "application/octet-stream",
+    "content-type": type,
+    "content-length": size,
+    "accept-ranges": "bytes",
     // No caching in development. A stale bundle is an hour of debugging the wrong file.
     "cache-control": "no-store",
   });

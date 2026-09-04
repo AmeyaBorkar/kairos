@@ -1,0 +1,24 @@
+{
+  "name": "@kairos/traffic",
+  "version": "0.0.0",
+  "private": true,
+  "description": "A merchant that is not there: generates payment traffic, asks Kairos for a plan, reports the outcome, and files the casualties.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json",
+    "start": "node dist/main.js"
+  },
+  "dependencies": {
+    "@kairos/domain": "workspace:*",
+    "@kairos/postgres": "workspace:*",
+    "@kairos/recover": "workspace:*",
+    "@kairos/simulator": "workspace:*",
+    "pg": "^8.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/pg": "^8.23.1"
+  }
+}

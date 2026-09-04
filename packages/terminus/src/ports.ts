@@ -38,6 +38,31 @@ export class ManualClock implements Clock {
 }
 
 /**
+ * A clock that runs at a multiple of another, starting from the same instant.
+ *
+ * Here rather than in an application because it is a combinator over this port and every bound
+ * Terminus enforces reads through it — so scaling it scales reservation TTLs, contact windows,
+ * quiet hours and mandate validity *together*, in one consistent frame, rather than opening a gap
+ * between two of them that a caller assembling this themselves could easily miss.
+ *
+ * It exists for demonstrations. Recovery is slow on purpose: backoff rungs measured in half-hours,
+ * quiet hours that hold a message until morning, a wait for the moment a customer is likely to have
+ * money. Those are decisions the system is right to make and none of them is watchable in real
+ * time, so the honest way to show them is to move the clock rather than to shorten the rules.
+ *
+ * It scales the process's sense of time and not the world's: a gateway's rate limit, a provider's
+ * throughput and a person's patience are all still in real seconds. Anything that can reach a
+ * customer must therefore refuse to run against one of these, and that refusal belongs at the edge
+ * where delivery is configured, because only there is it known.
+ */
+export function scaledClock(speed: number, base: Clock = systemClock): Clock {
+  if (speed === 1) return base;
+
+  const startedAt = base.now();
+  return { now: () => startedAt + Math.round((base.now() - startedAt) * speed) };
+}
+
+/**
  * Where audit records go. The sequence number is assigned by the chain, not the caller.
  *
  * A rejected promise is not a logging inconvenience: per P8 it means the decision is unrecorded,

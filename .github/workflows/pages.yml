@@ -1,0 +1,67 @@
+name: Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# The site is built from the workspace, not served from it: `apps/site/public/app` and the icon set
+# are generated and gitignored, so "point a static host at a branch" would publish a page with no
+# script. This job is the only thing that knows how to produce the deployable directory.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: build the site
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # The site imports @kairos/domain, @kairos/detect, @kairos/terminus and @kairos/console as
+      # workspace packages and compiles them into the browser bundle. `...` builds those first.
+      - name: Build the site and everything it imports
+        run: pnpm --filter @kairos/site... run build
+
+      # A deploy that silently ships an empty page is worse than a failed one.
+      - name: The bundle exists
+        run: |
+          test -f apps/site/public/app/main.js || {
+            echo "apps/site/public/app/main.js is missing — the build produced no bundle" >&2
+            exit 1
+          }
+          test -f apps/site/public/film/kairos.mp4 || {
+            echo "the film is missing from the deploy" >&2
+            exit 1
+          }
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: apps/site/public
+
+  deploy:
+    name: publish to kairosrecovery.site
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4

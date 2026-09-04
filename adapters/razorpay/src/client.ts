@@ -4,10 +4,18 @@
  * ## What is real and what is not
  *
  * The request shapes, authentication, error handling and backoff here are written against
- * Razorpay's published API and are exercised in tests against a stubbed transport. They have **not**
- * been run against the live gateway in this repository, because CI holds no credentials — see
- * §11. That boundary is stated rather than implied: a claim of live integration that dissolves
- * under one question is worth less than an honest description of what has been verified.
+ * Razorpay's published API and are exercised in tests against a stubbed transport.
+ *
+ * Four of those have now also been exercised against the live API in test mode, by
+ * `scripts/probe.mjs`, whose transcript is committed at `docs/razorpay-probe.json`: authentication,
+ * request shaping for `/orders` and `/payment_links`, entity parsing, and the mapping of a 4xx to a
+ * non-retryable {@link RazorpayError}. A real order and a real payment link came back.
+ *
+ * The **retry policy has not**, and cannot be by a probe: 429 and 5xx are what exercise it, and a
+ * healthy gateway does not produce them on demand. The backoff, the `Retry-After` clamp and the
+ * whole-call deadline are therefore still stub-tested only. That boundary is stated rather than
+ * implied, because a claim of live integration that dissolves under one question is worth less than
+ * an honest account of which half was verified.
  */
 
 /** Everything the client needs to talk to Razorpay. Never logged, never serialised. */

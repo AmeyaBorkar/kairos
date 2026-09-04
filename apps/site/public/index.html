@@ -11,10 +11,15 @@
 <link rel="icon" href="assets/icons/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
 
+<link rel="canonical" href="https://kairosrecovery.site/">
+
 <meta property="og:title" content="Kairos — bounded autonomy for payment recovery">
 <meta property="og:description" content="Four questions you would ask before letting software spend your money without asking.">
-<meta property="og:image" content="assets/icons/mark-512.png">
+<meta property="og:image" content="https://kairosrecovery.site/assets/icons/mark-512.png">
+<meta property="og:url" content="https://kairosrecovery.site/">
+<meta property="og:site_name" content="Kairos">
 <meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -27,6 +32,7 @@
 <link rel="stylesheet" href="assets/styles/pieces.css">
 <link rel="stylesheet" href="assets/styles/console.css">
 <link rel="stylesheet" href="assets/styles/reference.css">
+<link rel="stylesheet" href="assets/styles/film.css">
 
 <script type="module" src="app/main.js"></script>
 </head>
@@ -42,11 +48,12 @@
     </span>
     <div class="nav-links" id="nav-links">
       <button type="button" class="nav-link" data-view="case" aria-current="page">THE CASE</button>
+      <button type="button" class="nav-link" data-view="film">FILM</button>
       <button type="button" class="nav-link" data-view="console">CONSOLE</button>
       <button type="button" class="nav-link" data-view="install">INSTALL</button>
       <button type="button" class="nav-link" data-view="how">HOW IT WORKS</button>
       <button type="button" class="nav-link" data-view="benchmarks">BENCHMARKS</button>
-      <a class="nav-link out" id="demo-link" href="https://github.com/AmeyaBorkar/kairos" target="_blank" rel="noopener">SOURCE</a>
+      <a class="nav-link out" href="https://github.com/AmeyaBorkar/kairos" target="_blank" rel="noopener">SOURCE</a>
     </div>
     <button type="button" class="cog" id="cog" aria-expanded="false" aria-controls="sheet">⚙ SETTINGS</button>
   </div>
@@ -440,6 +447,43 @@
 <!-- ══════════════════════════════════════════════════════════════════════
      VIEW · CONSOLE
      ══════════════════════════════════════════════════════════════════════ -->
+<!-- ══════════════════ VIEW · FILM ══════════════════ -->
+<main class="view wrap" id="view-film" hidden>
+  <div class="view-head">
+    <h2><span>01</span> &nbsp;THE FILM</h2>
+  </div>
+
+  <div class="strip">
+    <span class="lbl">THE CASE, IN THREE MINUTES</span>
+    <div class="film-layout">
+      <div class="film-frame">
+        <video id="film-video" controls preload="none" playsinline
+               poster="film/poster.jpg" width="1920" height="1080">
+          <source src="film/kairos.mp4" type="video/mp4">
+          <!-- Off by default: every line is already burned into the picture, so captions over it
+               would be the same words twice. Present because a transcript should exist. -->
+          <track kind="captions" src="film/kairos.vtt" srclang="en" label="On-screen text">
+          <p>This browser will not play the file. <a href="film/kairos.mp4" download>Download it</a>
+             instead &mdash; 1080p60, H.264, 32&nbsp;MB.</p>
+        </video>
+      </div>
+      <div class="chapters">
+        <button type="button" class="chapter" data-at="0"><span class="at">0:00</span><span class="what">Every way to pay is a separate machine</span></button>
+        <button type="button" class="chapter" data-at="18.11"><span class="at">0:18</span><span class="what">What a silent failure actually costs</span></button>
+        <button type="button" class="chapter" data-at="50.62"><span class="at">0:50</span><span class="what">Beside the checkout, never in front of it</span></button>
+        <button type="button" class="chapter" data-at="66.87"><span class="at">1:06</span><span class="what">What it recovers, and what it spent to do it</span></button>
+        <button type="button" class="chapter" data-at="107.50"><span class="at">1:47</span><span class="what">What actually happens to one failed payment</span></button>
+        <button type="button" class="chapter" data-at="140.02"><span class="at">2:20</span><span class="what">An agent you have to watch is a dashboard</span></button>
+        <button type="button" class="chapter" data-at="159.52"><span class="at">2:39</span><span class="what">Where the intelligence actually sits</span></button>
+        <button type="button" class="chapter" data-at="192.03"><span class="at">3:12</span><span class="what">Kairos — the moment, not the clock</span></button>
+      </div>
+    </div>
+    <p class="aside">1080p60 &middot; H.264 &middot; 32&nbsp;MB &middot;
+       <a href="film/kairos.mp4" download>download this cut</a>. Mastered at 3840&times;2160;
+       the 4K file is too large to serve from here.</p>
+  </div>
+</main>
+
 <main class="view wrap" id="view-console" hidden>
   <div class="view-head">
     <h2><span>02</span> &nbsp;SEE IT WORK</h2>
@@ -556,7 +600,7 @@
      ══════════════════════════════════════════════════════════════════════ -->
 <main class="view wrap" id="view-how" hidden>
   <div class="view-head">
-    <h2><span>02</span> &nbsp;HOW IT WORKS</h2>
+    <h2><span>04</span> &nbsp;HOW IT WORKS</h2>
     <p>One incident, from the minute a payment method starts failing to the minute the ledger closes on it. Everything
        below happens without anybody approving anything — which is why the bounds matter more than the
        capabilities.</p>
@@ -710,7 +754,8 @@
       </div>
       <div class="panel">
         <h4>A GATEWAY</h4>
-        <p>The Razorpay adapter ships. <code>Gateway</code> and <code>Messenger</code> are
+        <p>The Razorpay adapter ships, and its client and inbound webhook have both been run
+          against the live API in test mode. <code>Gateway</code> and <code>Messenger</code> are
           <em class="hot">ports</em> — one method each, <code>charge</code> and <code>send</code> — so
           another gateway is an adapter rather than a fork. Nothing in the core imports a network
           client.</p>
@@ -822,6 +867,46 @@
           structural guard rather than a formality — a keyed hash always clears it and a bare phone
           number never does, so a raw identifier cannot reach the detector, the ledger or a model
           prompt by accident.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="strip">
+    <span class="lbl">2 &middot; OR POINT RAZORPAY STRAIGHT AT IT</span>
+    <div class="grid-2">
+      <div>
+        <pre class="sh"><span class="c"># Dashboard &rarr; Settings &rarr; Webhooks</span>
+<span class="p">$</span> RAZORPAY_WEBHOOK_SECRET=&hellip; \
+  LEDGER_PII_HASH_KEY=&hellip; \
+  pnpm --filter @kairos/sentry start
+
+<span class="c">POST /webhooks/razorpay</span>
+
+<span class="c">&rarr; {"event":"payment.failed",</span>
+<span class="c">&nbsp;&nbsp;&nbsp;"method":"card","status":"failed",</span>
+<span class="c">&nbsp;&nbsp;&nbsp;"failure":{</span>
+<span class="c">&nbsp;&nbsp;&nbsp;&nbsp;"code":"BAD_REQUEST_ERROR",</span>
+<span class="c">&nbsp;&nbsp;&nbsp;&nbsp;"source":"business",</span>
+<span class="c">&nbsp;&nbsp;&nbsp;&nbsp;"step":"payment_initiation",</span>
+<span class="c">&nbsp;&nbsp;&nbsp;&nbsp;"reason":"international_</span>
+<span class="c">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;transaction_not_allowed"}}</span></pre>
+      </div>
+      <div>
+        <p class="aside" style="margin-top:0">Report nothing at all: point the dashboard at Kairos
+          and the gateway delivers. Three things must be true before a delivery changes any state —
+          the signature verifies against the <b>raw bytes</b>, the event is recent, and it is not one
+          already handled. Anything failing one of them is answered <code>200</code> with the reason
+          in the body, because a gateway retries a non-2xx for hours and a bad signature does not
+          become good on the fourth attempt.</p>
+        <p class="aside">What the gateway says about the failure is passed through
+          <em class="hot">untranslated</em>. <code>source</code>, <code>step</code> and
+          <code>reason</code> are the triple the classifier reads, and re-coding them into a private
+          enum would put a lossy mapping between the gateway's account of what went wrong and the
+          decision made about it.</p>
+        <p class="aside">A payment carries <code>email</code> and <code>contact</code>. The
+          translation takes a pseudonymiser as a <b>required</b> argument, so a phone number cannot
+          reach the detector by omission — the reference above is a keyed hash and there is nowhere
+          else the raw value goes.</p>
       </div>
     </div>
   </div>
@@ -958,7 +1043,7 @@ SIGNATURE
      ══════════════════════════════════════════════════════════════════════ -->
 <main class="view wrap" id="view-benchmarks" hidden>
   <div class="view-head">
-    <h2><span>04</span> &nbsp;MEASURED, NOT ASSERTED</h2>
+    <h2><span>05</span> &nbsp;MEASURED, NOT ASSERTED</h2>
     <p>Every figure here was produced by a seeded benchmark anybody can re-run, and carries a regression band derived from an eight-seed variance study. Nothing on this page is an estimate.</p>
   </div>
 
@@ -1075,8 +1160,29 @@ SIGNATURE
 
 <div class="wrap">
   <footer>
-    <span>KAIROS · Razorpay AI Buildathon · Track 03 — AI Revenue Recovery</span>
-    <span>RECORDED CONSOLE RUN · SIMULATED TRAFFIC · SEED 20260826</span>
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <img src="assets/icons/mark.svg" alt="" width="24" height="34" decoding="async">
+        <span class="foot-name">KAIROS</span>
+        <p class="foot-line">Payment recovery that knows when not to act.</p>
+      </div>
+
+      <dl class="foot-links">
+        <dt class="lbl">THE PROJECT</dt>
+        <dd>
+          <a href="https://github.com/AmeyaBorkar/kairos" target="_blank" rel="noopener">Source on GitHub</a><i>·</i><wbr><span>Kernel built on <a href="https://throttlekit.in" target="_blank" rel="noopener">ThrottleKit</a></span><i>·</i><wbr><span>Razorpay AI Buildathon, Track 03 — AI Revenue Recovery</span>
+        </dd>
+        <dt class="lbl">BUILT BY</dt>
+        <dd>
+          <a href="https://ameyaborkar.in" target="_blank" rel="me noopener">Ameya Borkar</a><i>·</i><wbr><a href="https://github.com/AmeyaBorkar" target="_blank" rel="me noopener">GitHub</a><i>·</i><wbr><a href="https://www.linkedin.com/in/ameya-borkar-69b947381" target="_blank" rel="me noopener">LinkedIn</a>
+        </dd>
+      </dl>
+    </div>
+
+    <div class="foot-rule">
+      <span>kairosrecovery.site · MIT licensed</span>
+      <span>RECORDED CONSOLE RUN · SIMULATED TRAFFIC · SEED 20260826</span>
+    </div>
   </footer>
 </div>
 </body>

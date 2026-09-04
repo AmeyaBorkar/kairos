@@ -1,0 +1,146 @@
+# The whole system, running.
+#
+#   pnpm demo          # generates a signing key on first run, then brings this up
+#   docker compose up  # if you would rather supply KAIROS_MANDATE_SECRET yourself
+#
+# What comes up is the real decision path — detection, steering, classification, the expected-value
+# gate, Terminus admission, the audit ledger — driven by a merchant that is not there. Nothing can
+# reach a customer: the worker runs in dry-run delivery, which decides everything and sends nothing,
+# and refuses to start in any other mode because no live gateway is wired.
+#
+#   :8080  the operator view, and the sentry behind it
+#          GET /  ·  POST /plan  ·  POST /outcomes  ·  GET /health  ·  /ledger  ·  /metrics
+#   :8081  the console    GET /api/snapshot — the recorded scenario the site replays
+#   :9464  the worker     GET /health · /ready · /metrics
+#
+# Open http://localhost:8080 and watch. The moment worth waiting for is about forty-five seconds in,
+# when a rail starts failing, the detector says so, and the audit chain grows a record explaining
+# what was done about it — or, just as often, why nothing was.
+
+name: kairos
+
+services:
+  db:
+    image: postgres:18-alpine
+    environment:
+      POSTGRES_USER: kairos
+      POSTGRES_PASSWORD: kairos
+      POSTGRES_DB: kairos
+    # Not published. Nothing outside this network has any business reaching it, and a Postgres on
+    # 5432 of the host is how somebody's real database gets a kairos schema in it by accident.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kairos -d kairos"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    tmpfs:
+      # Deliberately not a volume. This is a demonstration: `docker compose down` should leave
+      # nothing behind, and a run that inherits the last run's queue is not the run you asked for.
+      #
+      # The mount is the whole directory, not `data` inside it. Postgres 18 keeps its cluster in a
+      # version-named subdirectory and refuses to start when it finds a mount at the old path.
+      - /var/lib/postgresql
+
+  sentry:
+    build: .
+    command: ["node", "apps/sentry/dist/main.js"]
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      KAIROS_MANDATE_SECRET: ${KAIROS_MANDATE_SECRET:?set it, or run `pnpm demo` which generates one}
+      KAIROS_MERCHANT_ID: demo
+      PORT: 8080
+      # The blast-radius cap is `maxInFlight` inside Terminus. Two sentries with a store each hold
+      # three steers *each*, so without this the service is one instance by construction. It also
+      # gives it the out-of-band stop, which a per-process switch could not provide.
+      KAIROS_DATABASE_URL: postgres://kairos:kairos@db:5432/kairos
+      # It has to agree with whatever is feeding it. Outcomes stamped in an accelerated timeline
+      # arriving at a service on a real clock all land in the future, and a detector whose window
+      # contains nothing detects nothing.
+      #
+      # Set this to 1 when pointing a real gateway at the inbound webhook, and stop the traffic
+      # generator. A webhook is stamped by the outside world; the rolling window decays what it
+      # holds against whatever clock the detector runs on. Under acceleration those are two
+      # timelines, and a real observation is already ancient by the demo's reckoning — accepted,
+      # translated, logged, and then decayed to nothing before anything can read it. One detector
+      # has one clock, and there is no correct merge.
+      KAIROS_CLOCK_SPEED: ${KAIROS_CLOCK_SPEED:-60}
+    env_file:
+      # The Razorpay credentials, when there are any. Optional so the stack comes up without them:
+      # without a webhook secret the inbound route is simply not mounted, and the startup line says
+      # so rather than leaving a live endpoint that trusts whatever it is sent.
+      - path: .env
+        required: false
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8080/health').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  worker:
+    build: .
+    command: ["node", "apps/recover-worker/dist/main.js"]
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      KAIROS_MANDATE_SECRET: ${KAIROS_MANDATE_SECRET:?set it, or run `pnpm demo` which generates one}
+      KAIROS_MERCHANT_ID: demo
+      KAIROS_CAMPAIGN_ID: recovery
+      # Both the queue and the spend authority live here, which is the entire difference between
+      # one worker and a fleet. Scale this service and they share a budget and a lease.
+      KAIROS_DATABASE_URL: postgres://kairos:kairos@db:5432/kairos
+      KAIROS_LINK_BASE: http://localhost:8080/r
+      # ₹1,000 for the whole campaign. Small on purpose: a budget nobody can exhaust is a bound
+      # nobody ever sees bind, and watching the ceiling refuse an action is the point.
+      KAIROS_BUDGET_PAISE: 100000
+      KAIROS_DRAIN_INTERVAL_MS: 5000
+      KAIROS_ADMIN_PORT: 9464
+      # The same multiple the traffic runs at, and it has to be: the queue is stamped in the
+      # traffic's timeline, so a worker on a real clock would find nothing due for an hour and
+      # look broken. Recovery is slow by design — backoff rungs, quiet hours, waiting for the
+      # moment a customer is likely to have money — and none of those delays is watchable at 1x.
+      # Refused outright in any delivery mode that can reach a person.
+      KAIROS_CLOCK_SPEED: 60
+      # Stands people in for a customer directory this process has no right to. Without it the
+      # executor refuses every retry for want of a token and every message for want of a
+      # recipient, so the two things dry-run delivery exists to show — the words Kairos would
+      # send and what sending them would cost — never get composed at all.
+      KAIROS_DIRECTORY: simulated
+    ports:
+      # /health, /ready and /metrics. A worker deadlocked on a pool it never gets a connection from
+      # looks exactly like a healthy one from outside, and that is what this makes visible.
+      - "9464:9464"
+    restart: unless-stopped
+
+  traffic:
+    build: .
+    command: ["node", "apps/traffic/dist/main.js"]
+    depends_on:
+      db:
+        condition: service_healthy
+      sentry:
+        condition: service_healthy
+    environment:
+      KAIROS_SENTRY_URL: http://sentry:8080
+      KAIROS_DATABASE_URL: postgres://kairos:kairos@db:5432/kairos
+      # An hour of trade a minute. Slower than this and the incident takes too long to arrive;
+      # faster and the detector is being shown data it could not have observed in the time.
+      KAIROS_TRAFFIC_SPEED: 60
+      KAIROS_TRAFFIC_APM: 900
+      KAIROS_TRAFFIC_DEGRADE_AFTER_MS: 45000
+    restart: unless-stopped
+
+  console:
+    build: .
+    command: ["node", "apps/console/dist/main.js"]
+    environment:
+      KAIROS_MANDATE_SECRET: ${KAIROS_MANDATE_SECRET:?set it, or run `pnpm demo` which generates one}
+      PORT: 8081
+    ports:
+      - "8081:8081"
+    restart: unless-stopped

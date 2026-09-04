@@ -11,6 +11,7 @@
       "@kairos/razorpay": ["../../adapters/razorpay/src/index.ts"],
       "@kairos/reason": ["../../packages/reason/src/index.ts"],
       "@kairos/recover": ["../../packages/recover/src/index.ts"],
+      "@kairos/simulator": ["../../adapters/simulator/src/index.ts"],
       "@kairos/terminus": ["../../packages/terminus/src/index.ts"]
     }
   },

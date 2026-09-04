@@ -1,5 +1,7 @@
 # Kairos
 
+**[kairosrecovery.site](https://kairosrecovery.site)**
+
 **Catch the moment.** Payment-health defence for Indian merchants — every action bounded by a limit
 it cannot exceed.
 
@@ -165,6 +167,118 @@ quietly:
   messages rose — the arm now does what it claimed, and what it claimed is worth slightly less than
   the version that was accidentally late (open question 20).
 
+## Running the whole thing
+
+```sh
+pnpm demo
+```
+
+One command. It generates a signing key on first run — into `.env.demo`, which git will not take,
+because every mandate sealed with a publicly-known secret is a mandate anyone can forge — and brings
+up Postgres, the sentry, a fleet-capable recovery worker, the operator console, and a merchant that
+is not there.
+
+```
+:8080  the operator view, and the sentry behind it
+       GET /  ·  POST /plan  ·  POST /outcomes  ·  GET /health · /ledger · /metrics
+:8081  the console    GET /api/snapshot · GET /api/scenario
+:9464  the worker     GET /health · /ready · /metrics
+```
+
+Open **http://localhost:8080** and watch. Everything the operator view shows was already available
+as JSON, and a person reading `curl /ledger | jq` is a person who will not check it twice — so the
+two things a terminal makes hardest are the two it puts first: whether the audit chain still
+verifies, and why the checkout was left alone.
+
+`/health` on the worker answers whether the loop is turning and touches nothing external, because a
+liveness probe that fails when the database is slow gets the process killed for something restarting
+it will not fix. `/ready` answers whether it can read the store, and is allowed to fail. `/metrics`
+always returns 200, even when the store is unreachable — a scrape that fails tells a dashboard
+nothing, and one that succeeds with `kairos_store_readable 0` tells it exactly what is wrong.
+
+What you are watching is the real decision path — detection, steering, classification, the
+expected-value gate, Terminus admission, composition, cost, the hash-chained ledger — driven by
+simulated traffic. Nothing can reach a customer. The worker runs in **dry-run delivery**, which
+decides everything and sends nothing, and refuses to start in any other mode because no live gateway
+is wired.
+
+```sh
+pnpm demo:logs      # the traffic and the worker, side by side
+pnpm demo:down      # stop, and leave nothing behind
+```
+
+Two things about it are demonstration scaffolding rather than product, and both say so out loud in
+the startup line:
+
+- **The clock runs at 60x.** Recovery is slow on purpose — backoff rungs measured in half-hours,
+  quiet hours that hold a message until morning, a wait for the moment a customer is likely to have
+  money. None of that is watchable in real time, so the honest way to show it is to move the clock
+  rather than shorten the rules. Every bound Terminus enforces reads through that one clock, so they
+  all scale together. `KAIROS_CLOCK_SPEED` is refused outright in any delivery mode that can reach a
+  person.
+- **The customer directory is stood in for.** By default the worker's directory returns `null` for
+  everyone, so it holds no personal data at all — which is correct, and means the executor refuses
+  every retry for want of a token and every message for want of a recipient before composing
+  anything. `KAIROS_DIRECTORY=simulated` derives a name, a language and a token from the customer
+  reference by hash, so the two things a dry run exists to show actually appear:
+
+```
+SEND   contact-sms · 1 segment
+       Hi Sara, the HDFC issue that stopped your Rs. 1,519.00 payment is fixed.
+       Finish it here: http://localhost:8080/r/cas_pay_000001kkt
+CHARGE order_000001l1k  Rs. 344.00
+```
+
+The incident to wait for arrives about forty-five seconds in, and another every three minutes after
+that, alternating between a UPI handle and a card BIN. Watch the sentry decide what to do about it:
+
+```
+declined                 demote  upi||  the failing rail is no worse than where its customers
+                                        would be moved to
+awaiting-corroboration   demote  upi||  1 of 2 corroborating windows
+steering                 demote  upi||  in force until 1788469371830
+revoked                  demote  upi||  the incident is no longer reported
+```
+
+The first line is the system refusing to help. Moving every UPI customer onto cards, which fail
+around 11% of the time, is not an improvement over a UPI rail at 10% — and a tool that steered
+anyway would be measured on how decisive it looked rather than on what it recovered.
+
+## Stopping it
+
+```sh
+kairos-mandate status
+kairos-mandate stop "customers are being messaged twice"
+kairos-mandate resume
+```
+
+There are two stops and they are for different situations. The **signed** one is a field on the
+mandate: set `killSwitch` and re-seal, and every worker refuses everything the moment it verifies the
+new mandate. It cannot be cleared by anyone who cannot sign, which is exactly right for a decision
+somebody should have to be authorised to reverse — and exactly wrong for three in the morning, when
+you least want to be re-signing authority and rolling processes.
+
+The **out-of-band** one is a flag in the store the fleet already shares. One command, no redeploy,
+nothing re-signed, and it takes effect on each worker's next admission:
+
+```
+{"acted":0,"refused":3,"refusalsByAxis":{"kill-switch":3}}
+```
+
+Either stop halts everything, and neither can be bypassed by a process that forgot to check, because
+the check is inside `admit`. Three properties are worth knowing:
+
+- **It needs the database, not the signing key.** Stopping a campaign must not require the ability to
+  mint one: the person on call is not necessarily the person who holds the key.
+- **A read that fails counts as engaged.** If we cannot tell whether we have been told to stop, we
+  have been told to stop. This is the one place in Kairos where losing the database halts spending
+  rather than falling back to a local decision, and that is the trade the switch exists to make.
+- **It is aimed at a campaign**, not at a deployment, and the first reason recorded is the one kept —
+  a second operator arriving to help should not quietly overwrite the account of what happened.
+
+Nothing is dropped while it is engaged. The queue holds, and `resume` puts the same mandate back in
+force.
+
 ## Plugging it in
 
 Three touchpoints, in the order a merchant reaches them.
@@ -197,7 +311,8 @@ payment-health tool must never be "no payments" — a malformed request gets the
 ordering back with the fault named in `reason`. `arm` is the field worth wiring: echo it back on the
 outcome and the holdout analysis is correct without anyone having to know what a holdout is.
 
-**2 · The outcome stream comes back.** The same events a merchant already has a webhook for.
+**2 · The outcome stream comes back.** The same events a merchant already has a webhook for,
+either reported in batches or delivered by the gateway itself.
 
 ```sh
 curl -X POST localhost:8080/outcomes -H 'content-type: application/json' \
@@ -205,6 +320,27 @@ curl -X POST localhost:8080/outcomes -H 'content-type: application/json' \
        "amountPaise":120000,"method":"upi","issuer":"hdfc","status":"failed","at":1756900000000,
        "arm":"treated"}]}'
 ```
+
+Set `RAZORPAY_WEBHOOK_SECRET` and `LEDGER_PII_HASH_KEY` and `POST /webhooks/razorpay` accepts
+Razorpay's own deliveries, so a merchant points the dashboard at Kairos and reports nothing at all.
+Three things must be true before one changes any state: the signature verifies against the **raw**
+bytes, the event is recent, and it is not one already handled. A delivery failing any of them is
+answered `200` with the reason in the body — Razorpay retries a non-2xx for hours, and a bad
+signature does not become good on the fourth attempt.
+
+What the gateway reports about the failure is passed through untranslated. `source`, `step` and
+`reason` are the triple the classifier reads, and re-coding them into a private enum would put a
+lossy mapping between the gateway's account of what went wrong and the decision made about it:
+
+```json
+{"event":"payment.failed","method":"card","status":"failed",
+ "failure":{"code":"BAD_REQUEST_ERROR","source":"business",
+            "step":"payment_initiation","reason":"international_transaction_not_allowed"}}
+```
+
+Personal data stops at that boundary. A payment entity carries `email` and `contact`; the translation
+takes a pseudonymiser as a **required** argument, so everything past it holds a keyed hash and a
+phone number cannot reach the detector, the ledger or a model prompt by omission.
 
 **3 · A worker drains the casualties.** Dry-run by default: it decides everything and sends nothing.
 
@@ -220,6 +356,42 @@ acting on one casualty. The schema is printable for a deployment that owns its o
 ```sh
 pnpm --filter @kairos/postgres run schema | psql "$DATABASE_URL"
 ```
+
+## Against a real gateway
+
+```sh
+pnpm razorpay:probe          # create an order, read it back, exercise the error path
+pnpm razorpay:probe --link   # also create a payment link
+```
+
+The client's request shapes, authentication, retry policy and error handling are written against
+Razorpay's published API and exercised in tests against a stubbed transport. A stub can be
+confidently wrong about all of them, so the probe wires the same `fetch` the client names as its
+production transport and makes real calls in test mode. It creates an order — a request for money
+nobody has paid, reaching no one and costing nothing — reads back an error for a payment id that
+cannot exist, and records what happened in `docs/razorpay-probe.json`:
+
+```
+POST /v1/orders                          200   165 ms   order_TXhjDUA94yteWS
+GET  /v1/payments/pay_KairosProbeNoSuch  400   620 ms   BAD_REQUEST_ERROR, retryable: false
+POST /v1/payment_links                   200   951 ms
+```
+
+It refuses a live key rather than warning about one. Every credential in this project is test mode
+by policy, and the failure mode of getting that wrong is a real charge to a real person.
+
+**What that verifies, and what it does not.** Authentication, request shaping, entity parsing and the
+mapping of a 4xx to a non-retryable error are exercised against the live API, along with the inbound
+webhook path end to end: signed by Razorpay, verified here, translated, and observed by the detector.
+The **retry policy is not**, and no probe can verify it — 429 and 5xx are what drive it, and a healthy
+gateway will not produce either on request. The recovery arm's live half, charging a saved token and
+sending a message, needs a gateway able to charge with nobody present and a DLT-registered sender:
+things a deployment has and a repository does not.
+
+One thing to know about running both at once. The demonstration accelerates its clock and a real
+webhook is stamped by the outside world; one detector has one clock, so set `KAIROS_CLOCK_SPEED=1`
+and stop the traffic generator when pointing a real gateway at it. That is what a deployment looks
+like anyway.
 
 ## Authoring a mandate
 

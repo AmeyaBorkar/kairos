@@ -1,4 +1,6 @@
+import { smsCostPaise } from "@kairos/domain";
 import type { Gateway, Messenger, RetryResult } from "@kairos/razorpay";
+import { DEFAULT_RECOVERY_CONFIG, type RecoveryConfig } from "@kairos/recover";
 
 /**
  * Adapters that decide everything and send nothing.
@@ -22,6 +24,17 @@ export type DryRunSink = (line: string) => void;
 
 export interface DryRunOptions {
   readonly sink: DryRunSink;
+  /**
+   * The price list to settle against.
+   *
+   * In this mode Kairos *is* the provider, so the figure the executor treats as authoritative has
+   * to come from somewhere, and the only honest somewhere is the same list the decision was priced
+   * against. Anything else would make a dry run's spend disagree with the expected-value gate that
+   * authorised it.
+   */
+  readonly prices?: RecoveryConfig;
+  /** Price per SMS segment, in paise. Matches the executor's own figure. */
+  readonly smsSegmentPaise?: number;
   /**
    * Whether a dry-run charge reports success.
    *
@@ -68,10 +81,21 @@ export function dryRunMessenger(options: DryRunOptions): Messenger {
           text: request.text,
         }),
       );
-      // Reported as delivered so the cost is booked and the contact cap is consumed exactly as it
-      // would be in production. A dry run that spent nothing would understate what the campaign
-      // costs, which is the number somebody is running it to find out.
-      return Promise.resolve({ delivered: true, costPaise: 0, externalRef: null });
+      // Reported as delivered, and priced, so the cost is booked and the contact cap consumed
+      // exactly as they would be in production. Reporting zero would make the one number somebody
+      // runs a dry run to find out — what this campaign would cost — always nothing, and would put
+      // the budget ceiling permanently out of reach of the thing it bounds.
+      //
+      // SMS is priced by segment because that is how it is billed and because a message the model
+      // writes in Devanagari hits three segments at seventy characters. Everything else is a flat
+      // per-message price, taken from the list the decision was already priced against.
+      const config = options.prices ?? DEFAULT_RECOVERY_CONFIG;
+      const costPaise =
+        request.channel === "contact-sms"
+          ? smsCostPaise(request.text, options.smsSegmentPaise ?? 20)
+          : (config.prices.find((p) => p.kind === request.channel)?.sendPaise ?? 0);
+
+      return Promise.resolve({ delivered: true, costPaise, externalRef: null });
     },
   };
 }

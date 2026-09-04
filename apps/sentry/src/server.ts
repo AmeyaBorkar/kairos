@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { DEFAULT_DETECTOR_CONFIG, DetectionEngine, incidentFrom } from "@kairos/detect";
 import {
   type Attempt,
@@ -21,10 +22,18 @@ import {
   SteeringController,
 } from "@kairos/policy";
 import { type CheckoutConfig, defaultCheckout, renderCheckout } from "@kairos/razorpay";
-import { type Clock, systemClock, Terminus } from "@kairos/terminus";
+import {
+  type Clock,
+  type KillSwitch,
+  openKillSwitch,
+  systemClock,
+  Terminus,
+} from "@kairos/terminus";
 import Fastify, { type FastifyInstance } from "fastify";
-import { MemoryStore } from "throttlekit";
+import { MemoryStore, type Store } from "throttlekit";
 import { z } from "zod";
+import { renderSentryMetrics } from "./metrics.js";
+import { registerRazorpayWebhook } from "./razorpay-webhook.js";
 import { ATTEMPT_BATCH, PLAN_REQUEST } from "./schema.js";
 
 export interface SentryOptions {
@@ -34,6 +43,32 @@ export interface SentryOptions {
   readonly defaultSequence?: readonly PaymentMethod[];
   readonly steering?: SteeringConfig;
   readonly clock?: Clock;
+  /**
+   * Where the bounds this service enforces actually live.
+   *
+   * Defaults to memory, which makes a single instance correct and a second instance a liar: the
+   * blast-radius cap is `maxInFlight` inside Terminus, and two sentries with a store each hold
+   * three steers *each*. Supply a shared store and the cap is one cap, taken by the same atomic
+   * step, however many instances are running.
+   */
+  readonly store?: Store;
+  /**
+   * The out-of-band stop, if there is one to consult.
+   *
+   * Defaults to the open switch. A sentry's only power is to reorder a checkout, so this matters
+   * less here than in the worker — but an operator stopping a campaign means all of it, and a
+   * steering directive that survived the stop would be the one piece of Kairos still acting.
+   */
+  readonly killSwitch?: KillSwitch;
+  /**
+   * Credentials for the inbound Razorpay webhook, or absent to leave that route unmounted.
+   *
+   * Absent by default and unmounted rather than mounted-and-rejecting, because an endpoint that
+   * exists without a secret is an endpoint somebody will eventually point a gateway at and wonder
+   * why nothing arrives. `piiKey` is separate from the mandate secret on purpose: it turns a phone
+   * number into a reference, and the blast radius of losing it is different.
+   */
+  readonly razorpayWebhook?: { readonly secret: string; readonly piiKey: string };
   /**
    * How often steering is re-decided, at most.
    *
@@ -136,17 +171,84 @@ export function createSentry(options: SentryOptions): Sentry {
   const terminus = new Terminus({
     mandate: options.mandate,
     secret: options.secret,
-    store: new MemoryStore({ sweepIntervalMs: 0 }),
+    store: options.store ?? new MemoryStore({ sweepIntervalMs: 0 }),
     audit: ledger,
     actor: "sentry",
     clock,
+    killSwitch: options.killSwitch ?? openKillSwitch,
   });
   const controller = new SteeringController({ terminus, config, clock, defaultSequence: sequence });
 
   let health = window.snapshot(clock.now());
   let nextTick = 0;
 
+  // Counted here rather than in a metrics library, so the numbers a dashboard reads are the same
+  // increments the routes below perform, with nothing holding a second copy that could disagree.
+  // The wall clock, not the kernel's. Uptime is a real-world quantity, and a demonstration may
+  // have accelerated the other one — which would report a fourteen-minute-old process as having
+  // run for fourteen hours.
+  const startedAt = Date.now();
+  const counts = {
+    ingested: 0,
+    rejected: 0,
+    plans: 0,
+    fallbacks: 0,
+    webhooks: 0,
+    webhooksRefused: 0,
+  };
+
   const app = Fastify({ logger: options.logger ?? false });
+
+  /**
+   * Keep the bytes as well as the parse.
+   *
+   * Razorpay signs what it sent, and `JSON.parse` then `JSON.stringify` does not reproduce it:
+   * key order, unicode escapes and number formatting all move. A verifier handed a re-serialised
+   * body rejects legitimate webhooks in a way that looks like a signature problem, and the usual
+   * response to that is to stop verifying. So the raw string rides along on the request.
+   */
+  app.addContentTypeParser("application/json", { parseAs: "string" }, (request, body, done) => {
+    request.rawBody = body as string;
+    if (body === "") return done(null, undefined);
+    try {
+      done(null, JSON.parse(body as string));
+    } catch (error) {
+      done(error as Error, undefined);
+    }
+  });
+
+  if (options.razorpayWebhook !== undefined) {
+    registerRazorpayWebhook(app, {
+      secret: options.razorpayWebhook.secret,
+      piiKey: options.razorpayWebhook.piiKey,
+      /**
+       * Real seconds, deliberately, even where the rest of this service runs on an accelerated
+       * clock.
+       *
+       * Freshness of an inbound delivery is a question about the outside world. Razorpay stamps
+       * `created_at` in real time and the tolerance is a real five minutes, so a clock running at
+       * sixty times real speed would reject every genuine webhook as stale within seconds of boot.
+       *
+       * The rule this is an instance of: the kernel's clock governs the campaign, the wall clock
+       * governs everything the campaign touches that is not inside this process.
+       */
+      now: () => Date.now(),
+      observe: (attempt) => {
+        // The same two calls `/outcomes` makes, in the same order, so a real webhook and a
+        // reported batch reach the detector by one path rather than two that could drift.
+        engine.observe(attempt);
+        window.observe(attempt.slice, attempt.status === "failed", attempt.at, "treated");
+        // Counted as an outcome as well as a webhook. The gauge says "offered to the detector",
+        // and a gateway's own report of a payment is exactly that — reading zero while a payment
+        // had plainly been ingested was the metric disagreeing with the log.
+        counts.ingested++;
+        counts.webhooks++;
+      },
+      onRefused: () => {
+        counts.webhooksRefused++;
+      },
+    });
+  }
 
   /**
    * Re-decide steering, at most once per tick.
@@ -158,7 +260,25 @@ export function createSentry(options: SentryOptions): Sentry {
     if (now < nextTick) return;
     nextTick = now + tickMs;
     health = window.snapshot(now);
-    await controller.affirm(engine.openIncidents().map(incidentFrom), health);
+    const outcomes = await controller.affirm(engine.openIncidents().map(incidentFrom), health);
+
+    // Said out loud rather than discarded. Every one of these is an answer to "there is clearly an
+    // incident, so why is the checkout unchanged?" — and until now the only way to find out was to
+    // read the policy source. A decision not to act is a decision, and the operator who has to
+    // defend it is the one who most needs to have seen it.
+    for (const outcome of outcomes) {
+      app.log.info(
+        {
+          incident: outcome.incident,
+          status: outcome.status,
+          detail: outcome.detail,
+          ...(outcome.evaluation === null
+            ? {}
+            : { lever: outcome.evaluation.lever, slice: sliceKey(outcome.evaluation.slice) }),
+        },
+        "steering",
+      );
+    }
   }
 
   app.post("/outcomes", async (request, reply) => {
@@ -166,6 +286,7 @@ export function createSentry(options: SentryOptions): Sentry {
     if (!parsed.success) {
       // Zod at the boundary, and a rejection rather than a coercion. An outcome stream that is not
       // the shape we expect is evidence about the integration, not about the rails.
+      counts.rejected++;
       return reply.code(400).send({ error: "invalid batch", detail: z.treeifyError(parsed.error) });
     }
 
@@ -183,6 +304,7 @@ export function createSentry(options: SentryOptions): Sentry {
       accepted++;
     }
 
+    counts.ingested += accepted;
     await maybeAffirm(latest);
     return reply.send({ accepted, opened, incidents: engine.openIncidents().length });
   });
@@ -201,7 +323,15 @@ export function createSentry(options: SentryOptions): Sentry {
    */
   function planFor(rawCustomer: string, offered: readonly PaymentMethod[]): PlanResponse {
     const started = clock.now();
-    const fallback = (reason: string): PlanResponse => ({
+    counts.plans++;
+    const fallback = (reason: string): PlanResponse => {
+      // Counted at the point it is produced, so every route into the fallback is counted once and
+      // no future one can be added without being counted. The ratio of these to plans served is
+      // the single number that says whether the hot path is healthy.
+      counts.fallbacks++;
+      return fallbackPlan(reason);
+    };
+    const fallbackPlan = (reason: string): PlanResponse => ({
       sequence: [...offered],
       suppress: [],
       demote: [],
@@ -339,6 +469,59 @@ export function createSentry(options: SentryOptions): Sentry {
       })),
       ledger: { length: ledger.length, head: ledger.head },
     });
+  });
+
+  /**
+   * The operator view.
+   *
+   * Everything on it was already available as JSON, and a person reading `curl /ledger | jq` is a
+   * person who will not check it twice. The two things a terminal makes hardest are the two worth
+   * seeing: whether the audit chain still verifies, and why the checkout was left alone.
+   *
+   * Read from disk once at construction rather than per request — it is a static file, and a page
+   * that re-read itself on every request would be a file handle per curious refresh.
+   */
+  const page = readFileSync(new URL("../public/index.html", import.meta.url), "utf8");
+  app.get("/", async (_request, reply) => {
+    return reply
+      .type("text/html; charset=utf-8")
+      .header("cache-control", "no-store")
+      .header("x-content-type-options", "nosniff")
+      .send(page);
+  });
+
+  /**
+   * The exposition.
+   *
+   * Text rather than JSON, and on the same port rather than an admin one: this service is already
+   * an HTTP surface that answers only reads, and a second listener would be a second thing to
+   * expose, firewall and forget about.
+   */
+  app.get("/metrics", async (_request, reply) => {
+    const now = clock.now();
+    const verification = ledger.verify();
+    return reply.type("text/plain; version=0.0.4; charset=utf-8").send(
+      renderSentryMetrics({
+        outcomesIngested: counts.ingested,
+        outcomesRejected: counts.rejected,
+        plansServed: counts.plans,
+        plansFallenBack: counts.fallbacks,
+        webhooksVerified: counts.webhooks,
+        webhooksRefused: counts.webhooksRefused,
+        openIncidents: engine.openIncidents().length,
+        steersInForce: controller.directives().length,
+        ledgerLength: ledger.length,
+        ledgerValid: verification.valid,
+        startedAt,
+        // Paired with startedAt above, which is wall-clock. Mixing the two frames here would make
+        // the uptime gauge a ratio of two different kinds of second.
+        now: Date.now(),
+        fleet: options.store !== undefined,
+        rails: window
+          .snapshot(now)
+          .observations.map((o) => ({ slice: sliceKey(o.slice), failureRate: o.failureRate })),
+      }),
+    );
   });
 
   /** The audit trail, and proof it has not been altered. */

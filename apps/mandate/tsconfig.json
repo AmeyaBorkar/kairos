@@ -4,8 +4,10 @@
     "noEmit": true,
     "types": ["node"],
     "paths": {
+      "@kairos/detect": ["../../packages/detect/src/index.ts"],
       "@kairos/domain": ["../../packages/domain/src/index.ts"],
       "@kairos/ledger": ["../../packages/ledger/src/index.ts"],
+      "@kairos/postgres": ["../../adapters/postgres/src/index.ts"],
       "@kairos/recover": ["../../packages/recover/src/index.ts"],
       "@kairos/terminus": ["../../packages/terminus/src/index.ts"]
     }
