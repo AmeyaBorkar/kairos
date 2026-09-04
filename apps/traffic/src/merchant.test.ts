@@ -136,6 +136,21 @@ describe("the scheduled incident", () => {
     }
   });
 
+  /*
+   * Twenty seconds, against a five-second default, and the number is not padding.
+   *
+   * This walks 550 drain calls over ten simulated minutes at sixty times speed, which is roughly
+   * fifty thousand generated attempts. Uninstrumented that is well under a second; under v8
+   * coverage it is four to six, because the hot loop is exactly the kind of code instrumentation
+   * is most expensive on. It was measured at 6.1s on this machine — already over the limit — and
+   * the only reason it had not gone red before is that `pnpm check` runs vitest without coverage
+   * and CI runs it with. So this was failing for anybody who ran the coverage script, and CI was
+   * one slow runner away from finding out.
+   *
+   * The timeout is raised rather than the work reduced. The volume is what makes the assertion
+   * mean anything: a shorter window would not separate a rail at 46% from one at 11%, which is
+   * the whole point of the test.
+   */
   it("actually degrades that slice and leaves the others alone", () => {
     // Only the plateau counts. Averaging across the whole run instead would mix forty-five healthy
     // simulated minutes into ten sick ones and report a rail at 11% that is really at 46% — which
@@ -162,5 +177,5 @@ describe("the scheduled incident", () => {
     expect(others.total).toBeGreaterThan(500);
     expect(sbiPhonePe.failed / sbiPhonePe.total).toBeGreaterThan(0.3);
     expect(others.failed / others.total).toBeLessThan(0.12);
-  });
+  }, 20_000);
 });
