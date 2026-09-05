@@ -38,6 +38,26 @@
 </head>
 <body>
 
+<noscript>
+  <!-- Six views live in this document and the router reveals one, so with scripting off the page is
+       blank and the navigation — buttons, not links — is inert with it. That is a fair trade for a
+       hash-routed page and a bad one for a link a submission has to survive on, so the film is
+       served here directly. A video element needs no scripting; neither do the three links under it. -->
+  <div style="max-width:900px;margin:0 auto;padding:36px 20px;font:16px/1.6 system-ui,sans-serif">
+    <h1 style="font:700 30px/1.2 system-ui,sans-serif;margin:0 0 10px">Kairos</h1>
+    <p style="margin:0 0 22px">The case, the demo and the benchmarks on this page are drawn by
+       script. The film is not, so it plays here.</p>
+    <video controls preload="metadata" poster="film/poster.jpg" style="width:100%;height:auto">
+      <source src="film/kairos.mp4" type="video/mp4">
+      <track kind="captions" src="film/kairos.vtt" srclang="en" label="On-screen text">
+    </video>
+    <p style="margin:22px 0 0">3:43 &middot; 1080p60 &middot;
+       <a href="film/kairos.mp4">download this cut</a> &middot;
+       <a href="https://drive.google.com/drive/folders/1ch9ozVI_yMbk5rlu8ZE9xJtLmY8wmEJ7">4K master</a>
+       &middot; <a href="https://github.com/AmeyaBorkar/kairos">source on GitHub</a></p>
+  </div>
+</noscript>
+
 <!-- ══════════════════ NAVBAR ══════════════════ -->
 <nav class="nav">
   <div class="nav-inner">
