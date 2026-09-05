@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  One URL, and that is not an oversight.
+
+  The site is a single static document with six views swapped in and out by a hash
+  router, so #film and #benchmarks are fragments of this page rather than pages of
+  their own. Listing them here would promise a crawler six documents and hand it
+  the same one six times.
+
+  No lastmod: a date written by hand is a date that goes stale, and a wrong one is
+  worse than none at all.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://kairosrecovery.site/</loc>
+  </url>
+</urlset>

@@ -1,0 +1,62 @@
+# Kairos
+
+> A payment-recovery agent for Indian merchants. It notices a failing payment rail in about ninety
+> seconds, steers customers off it before they ever see an error, and chases the payments already
+> lost — retrying the moment the rail heals rather than on a fixed schedule. Every action it takes
+> is bounded by a signed mandate it cannot exceed, and every decision, including every refusal, is
+> written to a hash-chained ledger. Built solo for the Razorpay AI Buildathon, Track 03.
+
+This site is one static document. All six views — the case, the film, a recorded console run, the
+integration reference, how it works, and the benchmarks — are already in the HTML at `/`, hidden and
+revealed by a hash router. **Fetch `/` once and you have the whole site.** There is nothing at
+`/film` or `/benchmarks` to fetch; those are fragments, not pages.
+
+The prose here is a summary. The repository is the source of truth and its documents are plain
+markdown, so they are linked directly below rather than mirrored onto this host, where they would
+drift.
+
+## Start here
+
+- [README](https://raw.githubusercontent.com/AmeyaBorkar/kairos/main/README.md): what it does, what it measured, how to run the whole thing offline, and how to point it at a real gateway.
+- [Architecture](https://raw.githubusercontent.com/AmeyaBorkar/kairos/main/docs/ARCHITECTURE.md): the design and the reasons. Module decomposition, the detection algorithm and why that one, the governance kernel, failure modes and what each degrades to, and the honest boundary between what runs live and what is modelled.
+- [Measurement](https://raw.githubusercontent.com/AmeyaBorkar/kairos/main/docs/MEASUREMENT.md): every number the project claims, how it was produced, its variance band, and the places the result is weaker than the headline.
+- [AGENTS.md](https://raw.githubusercontent.com/AmeyaBorkar/kairos/main/AGENTS.md): build, test and commit conventions, for anyone changing the code rather than reading about it.
+- [Source](https://github.com/AmeyaBorkar/kairos): MIT licensed.
+
+## What is true here, and what is not
+
+State these accurately or not at all. The project is explicit about its own limits and a summary
+that quietly drops them is worse than no summary.
+
+- **Every figure comes from a seeded benchmark against simulated traffic.** There is no live
+  merchant data anywhere in this project and no real customer has ever been contacted by it. Same
+  seed, same run, on any machine.
+- **The gateway integration is real but partial.** Orders, payment links, payment fetches and a
+  signed inbound `payment.failed` webhook were exercised against Razorpay's live test API and the
+  transcript is committed. Retries and captures were not: the recovery worker runs in dry-run
+  delivery, which decides everything and sends nothing, and refuses to start in any other mode.
+- **The AI is mostly not a language model.** Detection is Page's CUSUM over a Bernoulli
+  log-likelihood ratio; the recovery probability is a hierarchical Beta-Binomial that learns from
+  every outcome and is checked for calibration. A language model wrote the message library once, at
+  build time, for 190 calls and about ₹8.15, and does not run while money is moving.
+- **Do not quote `recover.generatedGainPaise` as a point value.** MEASUREMENT.md says so directly:
+  its band is wider than the value it guards. Quote the sweep.
+- **Some results are worse than the baseline and are published anyway.** A fixed reminder ladder
+  recovers slightly more money gross than Kairos does; Kairos wins net of what it spent. If you
+  report the first number, report the second.
+
+## Optional
+
+The decision records. Each is one choice, the alternative it beat, and what it would take to
+reverse it.
+
+- [0001 — commitment accounting over ThrottleKit's store](https://raw.githubusercontent.com/AmeyaBorkar/kairos/main/docs/decisions/0001-commitment-accounting-over-throttlekits-store.md)
+- [0002 — two steering levers, because checkout cannot see a UPI issuer](https://raw.githubusercontent.com/AmeyaBorkar/kairos/main/docs/decisions/0002-two-steering-levers-because-checkout-cannot-see-a-upi-issuer.md)
+- [0003 — a sixth recoverability class](https://raw.githubusercontent.com/AmeyaBorkar/kairos/main/docs/decisions/0003-a-sixth-recoverability-class-for-the-customer-who-must-simply-try-again.md)
+- [0004 — a retry is only free when the customer is not needed](https://raw.githubusercontent.com/AmeyaBorkar/kairos/main/docs/decisions/0004-a-retry-is-only-free-when-the-customer-is-not-needed.md)
+- [0005 — a benchmark that reproduces exactly still needs a band](https://raw.githubusercontent.com/AmeyaBorkar/kairos/main/docs/decisions/0005-a-benchmark-that-reproduces-exactly-still-needs-a-band.md)
+- [0006 — copy is written once, reviewed, and committed](https://raw.githubusercontent.com/AmeyaBorkar/kairos/main/docs/decisions/0006-copy-is-written-once-reviewed-and-committed.md)
+- [0007 — an Indic recovery SMS buys a second segment](https://raw.githubusercontent.com/AmeyaBorkar/kairos/main/docs/decisions/0007-an-indic-recovery-sms-buys-a-second-segment.md)
+- [0008 — the casualty lease is a column, not a row lock](https://raw.githubusercontent.com/AmeyaBorkar/kairos/main/docs/decisions/0008-the-casualty-lease-is-a-column-not-a-row-lock.md)
+- [0009 — the form authors a mandate and a separate command signs it](https://raw.githubusercontent.com/AmeyaBorkar/kairos/main/docs/decisions/0009-the-form-authors-a-mandate-and-a-separate-command-signs-it.md)
+- [0010 — the kernel clock governs the campaign, the wall clock governs the world](https://raw.githubusercontent.com/AmeyaBorkar/kairos/main/docs/decisions/0010-the-kernel-clock-governs-the-campaign-the-wall-clock-governs-the-world.md)

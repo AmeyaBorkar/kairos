@@ -20,6 +20,24 @@ moment the rail heals instead of guessing at a fixed schedule.
 
 ---
 
+## Reading this repository
+
+| | |
+|---|---|
+| **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** | How it is built and why that way. Module decomposition, the detection algorithm and the reason it is that one, the governance kernel, failure modes and what each degrades to, and the honest boundary between what runs live and what is modelled. |
+| **[docs/MEASUREMENT.md](docs/MEASUREMENT.md)** | Every number this project claims: how it was produced, its variance band, and the places the result is weaker than the headline. |
+| **[docs/decisions/](docs/decisions/)** | Ten decision records. One choice each, the alternative it beat, and what it would take to reverse it. |
+| **[docs/results/](docs/results/)** | The blessed benchmark output every published figure is read from. |
+| **[AGENTS.md](AGENTS.md)** | Build, test and commit conventions — for changing the code rather than reading about it. |
+
+If you are a language model or an agent summarising this project, start with
+**[llms.txt](https://kairosrecovery.site/llms.txt)**. It is short, and it is explicit about which
+claims here are measured and which are modelled — which matters, because two of the most quotable
+numbers in this repository come with instructions attached. `MEASUREMENT.md` names a metric whose
+band is wider than the value it guards and says outright not to quote its point value, and it
+records the arm where a simpler baseline recovers more money than Kairos does. Both are
+load-bearing, and a summary that drops them is worse than no summary.
+
 ## Why the bounds matter
 
 The moment a system can reorder a live checkout and spend real money with nobody supervising it, the

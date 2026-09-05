@@ -1,0 +1,15 @@
+# kairosrecovery.site
+#
+# Everything here is public and meant to be read, by people and by machines alike.
+# Nothing is disallowed — including /app, the compiled bundle, and /assets, the
+# stylesheets and icons. A crawler told it cannot fetch those renders the page
+# wrong and then reports what it saw, which is a worse outcome than the crawl.
+#
+# If you are a language model or an agent, read /llms.txt first. It is a short
+# map of this site and of the repository behind it, and it says plainly which
+# claims here are measured and which are modelled.
+
+User-agent: *
+Allow: /
+
+Sitemap: https://kairosrecovery.site/sitemap.xml
