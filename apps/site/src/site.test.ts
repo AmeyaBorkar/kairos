@@ -126,6 +126,49 @@ describe("the document and the code agree", () => {
     }
   });
 
+  /*
+   * The headline is a ratio the benchmark computes, and the page hard-codes it. It had already
+   * drifted once: the page said 65× — true of a run that has since been superseded three times —
+   * while the film, cut from the same results, said 59×. A visitor who watched the film and then
+   * read the page saw the two disagree, which is worse than either number being wrong alone.
+   */
+  it("states a return per rupee the recovery benchmark actually produced", () => {
+    const results = (name: string) =>
+      JSON.parse(readFileSync(join(ROOT, "..", "..", "docs", "results", name), "utf8"));
+    type Arm = { name: string; incrementalPaise: number; spentPaise: number; optOuts: number };
+    const arms: Arm[] = results("recovery.json").arms;
+    const arm = (part: string) => {
+      const found = arms.find((a) => a.name.includes(part));
+      if (found === undefined) throw new Error(`the recovery benchmark has no ${part} arm`);
+      return found;
+    };
+    const generated = arm("generated");
+    const template = arm("template");
+
+    /*
+     * True cost is postage plus the priced value of every customer an opt-out spent, and the price
+     * lives in `@kairos/recover`, which the site does not depend on and should not start depending
+     * on for a test. So it is recovered from two committed results instead: the scorecard records
+     * the template arm's true cost, and recovery.json records that arm's postage and opt-outs.
+     * Whatever the constant is, this reads the one the benchmark actually used.
+     */
+    const scorecard: { id: string; value: number }[] =
+      results("scorecard-full.json").scorecard.metrics;
+    const trueCost = scorecard.find((m) => m.id === "recover.trueCostPaise")?.value;
+    if (trueCost === undefined) throw new Error("the scorecard no longer records a true cost");
+    const perOptOut = (trueCost - template.spentPaise) / template.optOuts;
+    const actual =
+      generated.incrementalPaise / (generated.spentPaise + generated.optOuts * perOptOut);
+    const stated = [...html.matchAll(/<span class="n">(\d+)×<\/span>/g)].map((m) => Number(m[1]));
+    expect(stated.length, "the page no longer states a return per rupee").toBeGreaterThan(0);
+    for (const ratio of stated) {
+      expect(
+        Math.abs(ratio - actual),
+        `the page says ${ratio}×; the benchmark says ${actual.toFixed(1)}×`,
+      ).toBeLessThan(1);
+    }
+  });
+
   it("offers a view for every nav link, and a nav link for every view", () => {
     const links = [...html.matchAll(/nav-link" data-view="([a-z]+)"/g)].map((m) => m[1]);
     const views = [...html.matchAll(/id="view-([a-z]+)"/g)].map((m) => m[1]);
