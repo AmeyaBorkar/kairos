@@ -8,7 +8,7 @@
  * typecheck, which is the worst combination available.
  */
 
-import { readdirSync, readFileSync } from "node:fs";
+import { readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
@@ -104,6 +104,26 @@ describe("the document and the code agree", () => {
     );
     expect(linked.length).toBeGreaterThan(0);
     for (const icon of linked) expect(emitted, `nothing generates ${icon}`).toContain(icon);
+  });
+
+  /*
+   * The page states the film's size in two places, and the film is re-rendered whenever an act
+   * changes. It has already drifted once: the eight-act cut took the file from 32 MB to 37 and
+   * both sentences went on saying 32. Nothing catches that — it typechecks, it renders, and it
+   * is simply untrue — which is the exact shape of failure this file exists for.
+   */
+  it("states the film's real size, everywhere it states it", () => {
+    const actual = Math.round(statSync(join(PUBLIC, "film", "kairos.mp4")).size / 1048576);
+    const stated = [...html.matchAll(/(\d+)&nbsp;MB/g)].map((m) => Number(m[1]));
+    expect(stated.length, "the page no longer states a size").toBeGreaterThan(0);
+    for (const mb of stated) {
+      // One megabyte of slack, because the page rounds and MB against MiB is a rounding argument
+      // nobody needs to have. Two is a stale number.
+      expect(
+        Math.abs(mb - actual),
+        `the page says ${mb} MB; the file is ${actual} MB`,
+      ).toBeLessThanOrEqual(1);
+    }
   });
 
   it("offers a view for every nav link, and a nav link for every view", () => {

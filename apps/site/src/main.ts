@@ -35,7 +35,7 @@ function main(): void {
 
   const router = new Router((view: View) => {
     stage.repaintStatic();
-    if (view === "console") console_?.player.onShown();
+    if (view === "demo") console_?.player.onShown();
     // Navigating away from a playing film should stop it. Nothing else on the page makes noise.
     if (view !== "film") film?.pause();
   });
@@ -73,7 +73,7 @@ function main(): void {
   // only advances while it is playing, so an idle tab costs a bounding-box read per frame.
   const loop = (now: number): void => {
     if (router.view === "case") stage.frame();
-    else if (router.view === "console") {
+    else if (router.view === "demo") {
       console_?.walkthrough?.step(now);
       console_?.player.step(now);
     }
@@ -84,7 +84,7 @@ function main(): void {
   // The console is data, so it arrives late and must not hold up the artwork.
   void mountConsole(still).then((mounted) => {
     console_ = mounted;
-    if (router.view === "console") mounted?.player.onShown();
+    if (router.view === "demo") mounted?.player.onShown();
   });
 }
 

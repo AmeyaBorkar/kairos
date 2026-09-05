@@ -49,7 +49,7 @@
     <div class="nav-links" id="nav-links">
       <button type="button" class="nav-link" data-view="case" aria-current="page">THE CASE</button>
       <button type="button" class="nav-link" data-view="film">FILM</button>
-      <button type="button" class="nav-link" data-view="console">CONSOLE</button>
+      <button type="button" class="nav-link" data-view="demo">DEMO</button>
       <button type="button" class="nav-link" data-view="install">INSTALL</button>
       <button type="button" class="nav-link" data-view="how">HOW IT WORKS</button>
       <button type="button" class="nav-link" data-view="benchmarks">BENCHMARKS</button>
@@ -105,7 +105,7 @@
        and recovers the customers already lost. <b>Four questions first.</b></p>
     <div class="hero-go">
       <button type="button" class="more go" data-goto="install">INSTALL IT →</button>
-      <button type="button" class="more" data-goto="console">SEE IT WORK →</button>
+      <button type="button" class="more" data-goto="demo">SEE IT WORK →</button>
     </div>
   </div>
   <div class="cue">SCROLL<i>▼</i></div>
@@ -385,7 +385,7 @@
       <div class="step beat"><p>Every refusal <em>names the bound</em>.</p></div>
       <div class="step">
         <p class="huge">No figure without a record.</p>
-        <button type="button" class="more" data-goto="console">SCRUB A REAL RUN →</button>
+        <button type="button" class="more" data-goto="demo">SCRUB A REAL RUN →</button>
       </div>
     </div>
   </div>
@@ -454,7 +454,7 @@
   </div>
 
   <div class="strip">
-    <span class="lbl">THE CASE, IN THREE MINUTES</span>
+    <span class="lbl">THE CASE, END TO END</span>
     <div class="film-layout">
       <div class="film-frame">
         <video id="film-video" controls preload="none" playsinline
@@ -464,7 +464,7 @@
                would be the same words twice. Present because a transcript should exist. -->
           <track kind="captions" src="film/kairos.vtt" srclang="en" label="On-screen text">
           <p>This browser will not play the file. <a href="film/kairos.mp4" download>Download it</a>
-             instead &mdash; 1080p60, H.264, 32&nbsp;MB.</p>
+             instead &mdash; 1080p60, H.264, 37&nbsp;MB.</p>
         </video>
       </div>
       <div class="chapters">
@@ -478,18 +478,26 @@
         <button type="button" class="chapter" data-at="192.03"><span class="at">3:12</span><span class="what">Kairos — the moment, not the clock</span></button>
       </div>
     </div>
-    <p class="aside">1080p60 &middot; H.264 &middot; 32&nbsp;MB &middot;
+    <p class="aside">1080p60 &middot; H.264 &middot; 37&nbsp;MB &middot;
        <a href="film/kairos.mp4" download>download this cut</a>. Mastered at 3840&times;2160;
        the 4K file is too large to serve from here.</p>
+    <p class="aside">The film is the argument. The system itself is next door — a recorded run of
+       the real detector, kernel and ledger, steppable a decision at a time:
+       <a href="#demo" data-goto="demo">open the demo &rarr;</a></p>
   </div>
 </main>
 
-<main class="view wrap" id="view-console" hidden>
+<main class="view wrap" id="view-demo" hidden>
   <div class="view-head">
     <h2><span>02</span> &nbsp;SEE IT WORK</h2>
+    <p><b>Kairos is a backend service with no interface of its own.</b> It sits behind a checkout
+       somebody else built and works a queue nobody watches, so there is no product screen to show
+       you and this page is not a screenshot of one. It is a worked simulation: the real detector,
+       kernel and ledger, replayed from a recorded run and drawn out so decisions taken in
+       milliseconds can be read at the speed a person reads.</p>
     <p>One payment method starts failing. Here is what Kairos does about it, a step at a time — and,
-       at the end, what it refuses to do. Every number below is read out of a recorded run of the real
-       detector, kernel and ledger. Nothing on this page is computed to make a point.</p>
+       at the end, what it refuses to do. Every number on this page comes out of that run. Nothing
+       here is computed to make a point.</p>
   </div>
 
   <div class="prov">
@@ -588,7 +596,7 @@
 
         <div class="panel flat">
           <span class="lbl">RECOVERY</span>
-          <p class="aside" style="margin:0;border-left-color:var(--warn)">Not driven by this run. The recovery arm is measured in the benchmark, where it recovers <b>₹6,82,069</b> — but the console does not yet step it, so <b>contact-cap</b> and <b>campaign-budget</b> never bind here. That gap is why <b>budget-exhaustion</b> below never exhausts its ₹20: a steer reserves ₹3 and reconciles to zero.</p>
+          <p class="aside" style="margin:0;border-left-color:var(--warn)">Not driven by this run. The recovery arm is measured in the benchmark, where it recovers <b>₹6,82,069</b> — but the demo does not yet step it, so <b>contact-cap</b> and <b>campaign-budget</b> never bind here. That gap is why <b>budget-exhaustion</b> below never exhausts its ₹20: a steer reserves ₹3 and reconciles to zero.</p>
         </div>
       </div>
     </div>
@@ -633,7 +641,7 @@
   </ol>
   <p class="aside" style="max-width:76ch">Two of those steps are the whole argument. At 14:16 the money was
     committed <b>before</b> it was spent, and at 15:30 something the system wanted to do simply did not happen.
-    <a href="#console" data-goto="console">Scrub a real run of this →</a></p>
+    <a href="#demo" data-goto="demo">Scrub a real run of this →</a></p>
 
   <div class="strip">
     <span class="lbl">WHERE THE MODEL IS — AND WHERE IT IS NOT</span>
@@ -689,7 +697,7 @@
       <article><h4>adapters/simulator</h4><p>Seeded traffic, rail degradations, a customer population with a language mix.</p><span class="dep">test surface only</span></article>
       <article><h4>adapters/razorpay</h4><p>The real ports: Checkout ordering, messaging, retries. Template copy lives here as the control arm.</p><span class="dep">depends on: domain</span></article>
       <article><h4>apps/bench</h4><p>Five arms, eight seeds, regression bands. The gate CI runs.</p><span class="dep">depends on: everything</span></article>
-      <article><h4>apps/console</h4><p>The read model behind the previous tab, plus <code>explain</code>.</p><span class="dep">depends on: everything</span></article>
+      <article><h4>apps/console</h4><p>The read model behind the demo, plus <code>explain</code>.</p><span class="dep">depends on: everything</span></article>
       <article><h4>adapters/postgres</h4><p>The casualty queue, durable. An atomic lease is what turns the worker from one instance into a fleet.</p><span class="dep">depends on: domain, recover</span></article>
       <article><h4>apps/mandate</h4><p>A form that authors a mandate and a command that signs it — deliberately two programs, so the key stays where it is.</p><span class="dep">depends on: domain, recover, terminus</span></article>
     </div>
@@ -1181,7 +1189,7 @@ SIGNATURE
 
     <div class="foot-rule">
       <span>kairosrecovery.site · MIT licensed</span>
-      <span>RECORDED CONSOLE RUN · SIMULATED TRAFFIC · SEED 20260826</span>
+      <span>RECORDED RUN · SIMULATED TRAFFIC · SEED 20260826</span>
     </div>
   </footer>
 </div>

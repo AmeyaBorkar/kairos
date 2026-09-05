@@ -6,7 +6,7 @@
  * about routes and no build step that would need to know the deploy path.
  */
 
-export const VIEWS = ["case", "film", "console", "install", "how", "benchmarks"] as const;
+export const VIEWS = ["case", "film", "demo", "install", "how", "benchmarks"] as const;
 export type View = (typeof VIEWS)[number];
 
 export const DEFAULT_VIEW: View = "case";

@@ -6,7 +6,7 @@
 > is bounded by a signed mandate it cannot exceed, and every decision, including every refusal, is
 > written to a hash-chained ledger. Built solo for the Razorpay AI Buildathon, Track 03.
 
-This site is one static document. All six views — the case, the film, a recorded console run, the
+This site is one static document. All six views — the case, the film, the demo, the
 integration reference, how it works, and the benchmarks — are already in the HTML at `/`, hidden and
 revealed by a hash router. **Fetch `/` once and you have the whole site.** There is nothing at
 `/film` or `/benchmarks` to fetch; those are fragments, not pages.
