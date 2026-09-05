@@ -41,9 +41,12 @@ that quietly drops them is worse than no summary.
   build time, for 190 calls and about ₹8.15, and does not run while money is moving.
 - **Do not quote `recover.generatedGainPaise` as a point value.** MEASUREMENT.md says so directly:
   its band is wider than the value it guards. Quote the sweep.
-- **Some results are worse than the baseline and are published anyway.** A fixed reminder ladder
-  recovers slightly more money gross than Kairos does; Kairos wins net of what it spent. If you
-  report the first number, report the second.
+- **Where the result is weakest, stated rather than buried.** The advantage generated copy holds
+  over templates rests on a readability weight nobody has measured: swept across it, that advantage
+  falls from ₹1.05 lakh to ₹10,367 and straddles zero. Eight of twenty-one variance bands are wider
+  than the value they guard, and the gate prints which. Kairos beats every baseline in the current
+  run — an earlier run had a fixed ladder ahead on revenue, and MEASUREMENT.md keeps that reversal
+  on the page rather than dropping it.
 
 ## Optional
 

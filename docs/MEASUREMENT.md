@@ -604,18 +604,21 @@ hundred rupees — and it is the term that dominates. Postage is almost free; co
 
 ### The result, stated the way it came out
 
-**On templates, Kairos recovers about 3% less than the fixed ladder.** Brute force works: messaging
-every casualty three times finds money that thinking about it does not.
+**On templates, Kairos recovers 5% more than the fixed ladder and spends 56% less doing it.**
+₹6,13,843 incremental against ₹5,84,006, on 5,817 messages against 10,681, costing 58 customers
+their consent rather than 132 — ₹12,452 of true cost against ₹28,495.
 
-It works by sending **2.0× the messages** and costing **155 customers their consent rather than 67**.
-Priced, that is **133% more true cost** for 3% more revenue. The claim worth making on this row is
-that Kairos matches brute force at well under half the damage — not that it beats it. With generated
-copy it does beat it, on both counts at once, and that is the [Phase 5.75
-result](#the-result) rather than this one.
+**This reverses what the section said until `5cfa489`, and the reversal is left visible.** It read
+that brute force won on revenue by about 3%, and that the claim worth making was that Kairos matched
+it at well under half the damage rather than beat it. That comparison ran against the stale baseline
+described above — a ladder no configuration in this repository produces. Regenerating the baseline
+rows brought the ladder down and turned the result around. The weaker claim is the one that was
+published, and a reader who saw it is owed the correction rather than a quietly better table.
 
-The immediate-blast arm is the useful control on the other side: one message to everyone, at once,
-recovers only ₹1.41 lakh incremental against the ladder's ₹6.41 lakh. Timing is most of what the
-ladder is doing, and most of what Kairos improves on.
+What the reversal does not change is the shape of the argument. The ladder buys its recovery with
+4,864 extra messages, and the immediate-blast arm on the other side — one message to everyone, at
+once — recovers only ₹1.41 lakh incremental against the ladder's ₹5.84 lakh. Timing is most of what
+the ladder is doing, and most of what Kairos improves on.
 
 ### The spontaneous window, which reversed
 

@@ -1029,12 +1029,15 @@ confidence.
    population collected — rather than the gross figure every dunning dashboard shows. The gap is
    large: on the class that recovers best unaided, nearly nine in ten of the recoveries a message
    appears to produce were already on their way. It costs real revenue and is run anyway.
-12. **The fixed ladder recovers slightly more money than Kairos does.** Measured: about 6% more
-   incremental revenue, by sending 2.1x the messages and costing 153 customers their consent rather
-   than 43. Whether the trade is worth taking depends entirely on what a merchant thinks consent is
-   worth, and the harness prices it at ₹200 per opt-out on a stated derivation rather than a
-   measurement. A merchant with a real churn model would get a different answer, and the honest claim
-   is that Kairos matches brute force at a third of the damage — not that it beats it.
+12. **What a merchant thinks consent is worth sets the size of the win, and it is not measured.**
+   The harness prices an opt-out at ₹200 on a stated derivation rather than a measurement, and it is
+   the term that dominates true cost — postage is almost free. At `5cfa489` Kairos beats the fixed
+   ladder on every axis at once: 5% more incremental revenue, 46% fewer messages, 58 customers'
+   consent against 132. So the price of consent no longer decides who wins, only by how much, and a
+   merchant with a real churn model would get a different margin. Earlier runs had the ladder ahead
+   on revenue, which is why this entry used to say the honest claim was that Kairos matched brute
+   force rather than beat it; that reversal is kept on the page in
+   [MEASUREMENT.md](MEASUREMENT.md) rather than dropped.
 13. **The spontaneous window is probably too short.** The sweep says messages and wasted actions fall
    monotonically with it while incremental recovery does not, so 45 minutes is defensible and two
    hours looked better. The opt-out counts across the sweep are too noisy for the cheapest row to be

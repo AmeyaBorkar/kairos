@@ -77,4 +77,5 @@ units rather than one commit per file touched.
 
 `docs/MEASUREMENT.md` is also where the project records what it *cannot* claim. It names one metric
 whose band is wider than the value it guards and says outright not to quote its point value, and it
-records the arm where a simpler baseline beats Kairos. Read it before writing a summary.
+keeps a published comparison that later reversed on the page rather than dropping it. Read it
+before writing a summary.
