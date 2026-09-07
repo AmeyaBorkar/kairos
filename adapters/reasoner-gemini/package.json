@@ -25,7 +25,7 @@
     "@kairos/reason": "workspace:*",
     "@kairos/recover": "workspace:*",
     "throttlekit": "^1.7.0",
-    "zod": "^4.1.0"
+    "zod": "^4.5.4"
   },
   "devDependencies": {
     "@types/node": "^22.10.0"
