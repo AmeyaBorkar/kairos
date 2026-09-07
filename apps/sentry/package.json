@@ -18,7 +18,7 @@
     "@kairos/postgres": "workspace:*",
     "@kairos/razorpay": "workspace:*",
     "@kairos/terminus": "workspace:*",
-    "fastify": "^5.2.0",
+    "fastify": "^5.12.3",
     "pg": "^8.23.0",
     "throttlekit": "^1.7.0",
     "zod": "^4.1.0"
