@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@kairos/domain": "workspace:*",
-    "zod": "^4.1.0"
+    "zod": "^4.5.4"
   },
   "devDependencies": {
     "@types/node": "^22.10.0"
