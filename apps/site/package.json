@@ -16,7 +16,7 @@
     "preview": "node scripts/preview-scene.mjs"
   },
   "devDependencies": {
-    "@types/node": "^22.10.0"
+    "@types/node": "^22.20.2"
   },
   "dependencies": {
     "@kairos/console": "workspace:*",

@@ -23,7 +23,7 @@
   },
   "devDependencies": {
     "@kairos/ledger": "workspace:*",
-    "@types/node": "^22.10.0",
+    "@types/node": "^22.20.2",
     "@types/pg": "^8.23.1"
   }
 }
