@@ -29,7 +29,7 @@
     "@electric-sql/pglite": "^0.5.8",
     "@kairos/ledger": "workspace:*",
     "@kairos/terminus": "workspace:*",
-    "@types/node": "^22.10.0",
+    "@types/node": "^22.20.4",
     "throttlekit": "^1.7.0"
   }
 }
