@@ -15,7 +15,7 @@
     "@kairos/postgres": "workspace:*",
     "@kairos/recover": "workspace:*",
     "@kairos/simulator": "workspace:*",
-    "pg": "^8.23.0"
+    "pg": "^8.23.1"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",

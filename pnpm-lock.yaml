@@ -56,7 +56,7 @@ importers:
         version: 22.20.1
       throttlekit:
         specifier: ^1.7.0
-        version: 1.7.0(fastify@5.12.1)(pg@8.23.0)
+        version: 1.7.0(fastify@5.12.5)(pg@8.23.1)
 
   adapters/razorpay:
     dependencies:
@@ -87,7 +87,7 @@ importers:
         version: link:../../packages/recover
       throttlekit:
         specifier: ^1.7.0
-        version: 1.7.0(fastify@5.12.1)(pg@8.23.0)
+        version: 1.7.0(fastify@5.12.5)(pg@8.23.1)
       zod:
         specifier: ^4.1.0
         version: 4.4.3
@@ -136,7 +136,7 @@ importers:
         version: link:../../packages/terminus
       throttlekit:
         specifier: ^1.7.0
-        version: 1.7.0(fastify@5.12.1)(pg@8.23.0)
+        version: 1.7.0(fastify@5.12.5)(pg@8.23.1)
     devDependencies:
       '@types/node':
         specifier: ^22.10.0
@@ -172,11 +172,11 @@ importers:
         specifier: workspace:*
         version: link:../../packages/terminus
       fastify:
-        specifier: ^5.2.0
-        version: 5.12.1
+        specifier: ^5.12.5
+        version: 5.12.5
       throttlekit:
         specifier: ^1.7.0
-        version: 1.7.0(fastify@5.12.1)(pg@8.23.0)
+        version: 1.7.0(fastify@5.12.5)(pg@8.23.1)
     devDependencies:
       '@types/node':
         specifier: ^22.10.0
@@ -197,11 +197,11 @@ importers:
         specifier: workspace:*
         version: link:../../packages/terminus
       pg:
-        specifier: ^8.23.0
-        version: 8.23.0
+        specifier: ^8.23.1
+        version: 8.23.1
       throttlekit:
         specifier: ^1.7.0
-        version: 1.7.0(fastify@5.12.1)(pg@8.23.0)
+        version: 1.7.0(fastify@5.12.5)(pg@8.23.1)
     devDependencies:
       '@kairos/ledger':
         specifier: workspace:*
@@ -240,11 +240,11 @@ importers:
         specifier: workspace:*
         version: link:../../packages/terminus
       pg:
-        specifier: ^8.23.0
-        version: 8.23.0
+        specifier: ^8.23.1
+        version: 8.23.1
       throttlekit:
         specifier: ^1.7.0
-        version: 1.7.0(fastify@5.12.1)(pg@8.23.0)
+        version: 1.7.0(fastify@5.12.5)(pg@8.23.1)
     devDependencies:
       '@types/node':
         specifier: ^22.10.0
@@ -275,7 +275,7 @@ importers:
         version: link:../../packages/terminus
       throttlekit:
         specifier: ^1.7.0
-        version: 1.7.0(fastify@5.12.1)(pg@8.23.0)
+        version: 1.7.0(fastify@5.12.5)(pg@8.23.1)
     devDependencies:
       '@types/node':
         specifier: ^22.10.0
@@ -305,14 +305,14 @@ importers:
         specifier: workspace:*
         version: link:../../packages/terminus
       fastify:
-        specifier: ^5.2.0
-        version: 5.12.1
+        specifier: ^5.12.5
+        version: 5.12.5
       pg:
-        specifier: ^8.23.0
-        version: 8.23.0
+        specifier: ^8.23.1
+        version: 8.23.1
       throttlekit:
         specifier: ^1.7.0
-        version: 1.7.0(fastify@5.12.1)(pg@8.23.0)
+        version: 1.7.0(fastify@5.12.5)(pg@8.23.1)
       zod:
         specifier: ^4.1.0
         version: 4.4.3
@@ -358,8 +358,8 @@ importers:
         specifier: workspace:*
         version: link:../../adapters/simulator
       pg:
-        specifier: ^8.23.0
-        version: 8.23.0
+        specifier: ^8.23.1
+        version: 8.23.1
     devDependencies:
       '@types/node':
         specifier: ^22.10.0
@@ -415,7 +415,7 @@ importers:
         version: 22.20.1
       throttlekit:
         specifier: ^1.7.0
-        version: 1.7.0(fastify@5.12.1)(pg@8.23.0)
+        version: 1.7.0(fastify@5.12.5)(pg@8.23.1)
 
   packages/proof:
     dependencies:
@@ -463,7 +463,7 @@ importers:
         version: 22.20.1
       throttlekit:
         specifier: ^1.7.0
-        version: 1.7.0(fastify@5.12.1)(pg@8.23.0)
+        version: 1.7.0(fastify@5.12.5)(pg@8.23.1)
 
   packages/terminus:
     dependencies:
@@ -475,7 +475,7 @@ importers:
         version: link:../ledger
       throttlekit:
         specifier: ^1.7.0
-        version: 1.7.0(fastify@5.12.1)(pg@8.23.0)
+        version: 1.7.0(fastify@5.12.5)(pg@8.23.1)
     devDependencies:
       '@types/node':
         specifier: ^22.10.0
@@ -1115,8 +1115,8 @@ packages:
   fast-uri@4.1.3:
     resolution: {integrity: sha512-7+72G6vLt7jjNas8SmSATx2qeyRIjxeqO3i4IkmDTxlqYZRKANhOe1bnovcp4WZmvsYrp60WyqPyHqgRiX0yXw==}
 
-  fastify@5.12.1:
-    resolution: {integrity: sha512-FWi+tQvwxR/PeRX7Z2mhfEF5ozJ3jn9asiiclzKXNSzJRHAYcU924aIOKAdHFJ+YIKieh3cqr1IwCOvTr41B3Q==}
+  fastify@5.12.5:
+    resolution: {integrity: sha512-OB2k1dlxs5/NAABqeKV2FUHkSD2BbENsCak8yULVcymn3fHIPDVa9TI3SDnJSWYSllZmSYuZXy2gTnsT+Sut1A==}
 
   fastq@1.20.1:
     resolution: {integrity: sha512-GGToxJ/w1x32s/D2EKND7kTil4n8OVk/9mycTc4VDza13lOvpUZTGX3mFSCtV9ksdGBVzvsyAVLM6mHFThxXxw==}
@@ -1326,11 +1326,11 @@ packages:
   pathe@2.0.3:
     resolution: {integrity: sha512-WUjGcAqP1gQacoQe+OBJsFA7Ld4DyXuUIjZ5cc75cLHvJ7dtNsTugphxIADwspS+AraAUePCKrSVtPLFj/F88w==}
 
-  pg-cloudflare@1.4.0:
-    resolution: {integrity: sha512-Vo7z/6rrQYxpNRylp4Tlob2elzbh+N/MOQbxFVWCxS7oEx6jF53GTJFxK2WWpKuBRkmiin4Mt+xofFDjx09R0A==}
+  pg-cloudflare@1.4.1:
+    resolution: {integrity: sha512-6PQbsFWZcp9EmJEwy5cGQ2La+AMWpP46lgbb8X+U/XsHIUweYDNCpeuKck5RxL2MdVFi7krbbEi5nX4Zh7JhrQ==}
 
-  pg-connection-string@2.14.0:
-    resolution: {integrity: sha512-XwWDGcLRGCXAR8F/AM5bG7Q+A3Wm2s6QeEjlOKZLlH3UYcguiqCWKyWXVag5TLTIjR7oOJUY8kcADaZgWPyLeg==}
+  pg-connection-string@2.14.1:
+    resolution: {integrity: sha512-qR3kGNPBLpCNtz0evbKA0Y/MRFXwSSdT+pTJvYp/bXTcReZbvX1kzF0IyTc1QnxqF7AZbOeBhNL8R5mYQZV/MA==}
 
   pg-int8@1.0.1:
     resolution: {integrity: sha512-WCtabS6t3c8SkpDBUlb1kjOs7l66xsGdKpIPZsg4wR+B3+u9UAum2odSsF9tnvxg80h4ZxLWMy4pRjOsFIqQpw==}
@@ -1344,12 +1344,15 @@ packages:
   pg-protocol@1.16.0:
     resolution: {integrity: sha512-sILXutLVjCLjcDuOmvhX5e2Z4cS5qG/6Bu3VkpFwdf/633ElGLpEh9bgmuI5I4sqKqkifQiGyiCcx1HdtrK7tg==}
 
+  pg-protocol@1.16.1:
+    resolution: {integrity: sha512-p9VOFMiHB/ZbJATetbg+99PxssTVSQRnyuPSQ67mN1+1KBOjZaZ83ZQzltnxPhJwSsC3nwVjJ10DVJlerbFzLg==}
+
   pg-types@2.2.0:
     resolution: {integrity: sha512-qTAAlrEsl8s4OiEQY69wDvcMIdQN6wdz5ojQiOy6YRMuynxenON0O5oCpJI6lshc6scgAY8qvJ2On/p+CXY0GA==}
     engines: {node: '>=4'}
 
-  pg@8.23.0:
-    resolution: {integrity: sha512-Ip2EQCngowJLGOfCwkFhPXU7/ljlhn6Rxlmy4XYfL2Y+vyRM59+8uR2xqRWKdYmbXmxCFOAmKxBuSUCdF34qLg==}
+  pg@8.23.1:
+    resolution: {integrity: sha512-aL96AHANtWjPLDOLqnhx+ngp9+UK7ETEU8VJrDCGvsSSi/mGLcWYsS6Herg7lmaBJe4uwrfqsa7gTEFaSizDoQ==}
     engines: {node: '>= 16.0.0'}
     peerDependencies:
       pg-native: '>=3.0.1'
@@ -2195,7 +2198,7 @@ snapshots:
 
   fast-uri@4.1.3: {}
 
-  fastify@5.12.1:
+  fastify@5.12.5:
     dependencies:
       '@fastify/ajv-compiler': 4.0.6
       '@fastify/error': 4.2.0
@@ -2376,18 +2379,20 @@ snapshots:
 
   pathe@2.0.3: {}
 
-  pg-cloudflare@1.4.0:
+  pg-cloudflare@1.4.1:
     optional: true
 
-  pg-connection-string@2.14.0: {}
+  pg-connection-string@2.14.1: {}
 
   pg-int8@1.0.1: {}
 
-  pg-pool@3.14.0(pg@8.23.0):
+  pg-pool@3.14.0(pg@8.23.1):
     dependencies:
-      pg: 8.23.0
+      pg: 8.23.1
 
   pg-protocol@1.16.0: {}
+
+  pg-protocol@1.16.1: {}
 
   pg-types@2.2.0:
     dependencies:
@@ -2397,15 +2402,15 @@ snapshots:
       postgres-date: 1.0.7
       postgres-interval: 1.2.0
 
-  pg@8.23.0:
+  pg@8.23.1:
     dependencies:
-      pg-connection-string: 2.14.0
-      pg-pool: 3.14.0(pg@8.23.0)
-      pg-protocol: 1.16.0
+      pg-connection-string: 2.14.1
+      pg-pool: 3.14.0(pg@8.23.1)
+      pg-protocol: 1.16.1
       pg-types: 2.2.0
       pgpass: 1.0.5
     optionalDependencies:
-      pg-cloudflare: 1.4.0
+      pg-cloudflare: 1.4.1
 
   pgpass@1.0.5:
     dependencies:
@@ -2543,10 +2548,10 @@ snapshots:
     dependencies:
       real-require: 1.0.0
 
-  throttlekit@1.7.0(fastify@5.12.1)(pg@8.23.0):
+  throttlekit@1.7.0(fastify@5.12.5)(pg@8.23.1):
     optionalDependencies:
-      fastify: 5.12.1
-      pg: 8.23.0
+      fastify: 5.12.5
+      pg: 8.23.1
 
   tinybench@2.9.0: {}
 
