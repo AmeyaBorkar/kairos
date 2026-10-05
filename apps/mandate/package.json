@@ -18,7 +18,7 @@
     "@kairos/postgres": "workspace:*",
     "@kairos/recover": "workspace:*",
     "@kairos/terminus": "workspace:*",
-    "pg": "^8.23.0",
+    "pg": "^8.23.1",
     "throttlekit": "^1.7.0"
   },
   "devDependencies": {
