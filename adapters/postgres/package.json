@@ -26,10 +26,10 @@
     "@kairos/recover": "workspace:*"
   },
   "devDependencies": {
-    "@electric-sql/pglite": "^0.5.8",
+    "@electric-sql/pglite": "^0.5.10",
     "@kairos/ledger": "workspace:*",
     "@kairos/terminus": "workspace:*",
-    "@types/node": "^22.10.0",
+    "@types/node": "^22.20.5",
     "throttlekit": "^1.7.0"
   }
 }
